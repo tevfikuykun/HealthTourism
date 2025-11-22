@@ -1,0 +1,326 @@
+version: '3.8'
+
+services:
+  # MySQL Databases
+  mysql-user:
+    image: mysql:8.0
+    container_name: mysql-user
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: user_db
+    ports:
+      - "3307:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-hospital:
+    image: mysql:8.0
+    container_name: mysql-hospital
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: hospital_db
+    ports:
+      - "3308:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-doctor:
+    image: mysql:8.0
+    container_name: mysql-doctor
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: doctor_db
+    ports:
+      - "3309:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-accommodation:
+    image: mysql:8.0
+    container_name: mysql-accommodation
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: accommodation_db
+    ports:
+      - "3310:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-flight:
+    image: mysql:8.0
+    container_name: mysql-flight
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: flight_db
+    ports:
+      - "3311:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-car-rental:
+    image: mysql:8.0
+    container_name: mysql-car-rental
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: car_rental_db
+    ports:
+      - "3312:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-transfer:
+    image: mysql:8.0
+    container_name: mysql-transfer
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: transfer_db
+    ports:
+      - "3313:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-package:
+    image: mysql:8.0
+    container_name: mysql-package
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: package_db
+    ports:
+      - "3314:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-reservation:
+    image: mysql:8.0
+    container_name: mysql-reservation
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: reservation_db
+    ports:
+      - "3315:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-payment:
+    image: mysql:8.0
+    container_name: mysql-payment
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: payment_db
+    ports:
+      - "3316:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-notification:
+    image: mysql:8.0
+    container_name: mysql-notification
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: notification_db
+    ports:
+      - "3317:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-medical-document:
+    image: mysql:8.0
+    container_name: mysql-medical-document
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: medical_document_db
+    ports:
+      - "3318:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-telemedicine:
+    image: mysql:8.0
+    container_name: mysql-telemedicine
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: telemedicine_db
+    ports:
+      - "3319:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-patient-followup:
+    image: mysql:8.0
+    container_name: mysql-patient-followup
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: patient_followup_db
+    ports:
+      - "3320:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-blog:
+    image: mysql:8.0
+    container_name: mysql-blog
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: blog_db
+    ports:
+      - "3321:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-faq:
+    image: mysql:8.0
+    container_name: mysql-faq
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: faq_db
+    ports:
+      - "3322:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-favorite:
+    image: mysql:8.0
+    container_name: mysql-favorite
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: favorite_db
+    ports:
+      - "3323:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-appointment-calendar:
+    image: mysql:8.0
+    container_name: mysql-appointment-calendar
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: appointment_calendar_db
+    ports:
+      - "3324:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-contact:
+    image: mysql:8.0
+    container_name: mysql-contact
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: contact_db
+    ports:
+      - "3325:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-testimonial:
+    image: mysql:8.0
+    container_name: mysql-testimonial
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: testimonial_db
+    ports:
+      - "3326:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-gallery:
+    image: mysql:8.0
+    container_name: mysql-gallery
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: gallery_db
+    ports:
+      - "3327:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-insurance:
+    image: mysql:8.0
+    container_name: mysql-insurance
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: insurance_db
+    ports:
+      - "3328:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-auth:
+    image: mysql:8.0
+    container_name: mysql-auth
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: auth_db
+    ports:
+      - "3329:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-monitoring:
+    image: mysql:8.0
+    container_name: mysql-monitoring
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: monitoring_db
+    ports:
+      - "3330:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-logging:
+    image: mysql:8.0
+    container_name: mysql-logging
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: logging_db
+    ports:
+      - "3331:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-file-storage:
+    image: mysql:8.0
+    container_name: mysql-file-storage
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: file_storage_db
+    ports:
+      - "3333:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-admin:
+    image: mysql:8.0
+    container_name: mysql-admin
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: admin_db
+    ports:
+      - "3335:3306"
+    networks:
+      - health-tourism-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - health-tourism-network
+    command: redis-server --appendonly yes
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - health-tourism-network
+
+networks:
+  health-tourism-network:
+    driver: bridge
+
