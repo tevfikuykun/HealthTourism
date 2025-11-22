@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İstanbul Sağlık Turizmi - Health Tourism</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <i class="fas fa-heartbeat"></i>
+                <span>İstanbul Sağlık Turizmi</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home">Ana Sayfa</a></li>
+                <li><a href="#hospitals">Hastaneler</a></li>
+                <li><a href="#doctors">Doktorlar</a></li>
+                <li><a href="#accommodations">Konaklama</a></li>
+                <li><a href="#flights">Uçak Bileti</a></li>
+                <li><a href="#car-rentals">Araç Kiralama</a></li>
+                <li><a href="#transfers">Transfer</a></li>
+                <li><a href="#packages">Paketler</a></li>
+                <li><a href="#reservations">Rezervasyonlarım</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>İstanbul'da Sağlık Turizmi</h1>
+            <p>Dünya standartlarında sağlık hizmetleri, deneyimli doktorlar ve konforlu konaklama imkanları</p>
+            <button class="btn-primary" onclick="scrollToSection('hospitals')">Hastaneleri Keşfet</button>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <section class="search-section">
+        <div class="container">
+            <div class="search-box">
+                <div class="search-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <input type="text" id="citySearch" placeholder="Şehir ara...">
+                </div>
+                <div class="search-item">
+                    <i class="fas fa-stethoscope"></i>
+                    <input type="text" id="specializationSearch" placeholder="Uzmanlık alanı...">
+                </div>
+                <button class="btn-search" onclick="searchHospitals()">
+                    <i class="fas fa-search"></i> Ara
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hospitals Section -->
+    <section id="hospitals" class="section">
+        <div class="container">
+            <h2 class="section-title">Hastaneler</h2>
+            <div id="hospitalsList" class="cards-grid">
+                <!-- Hospitals will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Doctors Section -->
+    <section id="doctors" class="section">
+        <div class="container">
+            <h2 class="section-title">Doktorlar</h2>
+            <div id="doctorsList" class="cards-grid">
+                <!-- Doctors will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Accommodations Section -->
+    <section id="accommodations" class="section">
+        <div class="container">
+            <h2 class="section-title">Konaklama İmkanları</h2>
+            <div id="accommodationsList" class="cards-grid">
+                <!-- Accommodations will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Reservation Modal -->
+    <div id="reservationModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Rezervasyon Oluştur</h2>
+            <form id="reservationForm">
+                <div class="form-group">
+                    <label>Kullanıcı ID</label>
+                    <input type="number" id="userId" required>
+                </div>
+                <div class="form-group">
+                    <label>Hastane</label>
+                    <select id="hospitalSelect" required onchange="loadDoctors()"></select>
+                </div>
+                <div class="form-group">
+                    <label>Doktor</label>
+                    <select id="doctorSelect" required onchange="loadAccommodations()"></select>
+                </div>
+                <div class="form-group">
+                    <label>Konaklama (Opsiyonel)</label>
+                    <select id="accommodationSelect">
+                        <option value="">Konaklama seçmeyin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Randevu Tarihi ve Saati</label>
+                    <input type="datetime-local" id="appointmentDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Giriş Tarihi</label>
+                    <input type="date" id="checkInDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Çıkış Tarihi</label>
+                    <input type="date" id="checkOutDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Notlar</label>
+                    <textarea id="notes" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn-primary">Rezervasyon Oluştur</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Flights Section -->
+    <section id="flights" class="section">
+        <div class="container">
+            <h2 class="section-title">Uçak Bileti</h2>
+            <div class="search-box" style="max-width: 600px; margin-bottom: 30px;">
+                <input type="text" id="departureCity" placeholder="Kalkış şehri">
+                <input type="text" id="arrivalCity" placeholder="Varış şehri">
+                <button class="btn-primary" onclick="searchFlights()">Uçuş Ara</button>
+            </div>
+            <div id="flightsList" class="cards-grid">
+                <!-- Flights will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Car Rentals Section -->
+    <section id="car-rentals" class="section">
+        <div class="container">
+            <h2 class="section-title">Araç Kiralama</h2>
+            <div class="search-box" style="max-width: 400px; margin-bottom: 30px;">
+                <select id="carTypeFilter" onchange="filterCarRentals()">
+                    <option value="">Tüm Araçlar</option>
+                    <option value="Economy">Ekonomi</option>
+                    <option value="Standard">Standart</option>
+                    <option value="Luxury">Lüks</option>
+                    <option value="SUV">SUV</option>
+                    <option value="Van">Minibüs</option>
+                </select>
+            </div>
+            <div id="carRentalsList" class="cards-grid">
+                <!-- Car rentals will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Transfer Services Section -->
+    <section id="transfers" class="section">
+        <div class="container">
+            <h2 class="section-title">Havaalanı Transfer Hizmetleri</h2>
+            <div id="transfersList" class="cards-grid">
+                <!-- Transfers will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Travel Packages Section -->
+    <section id="packages" class="section">
+        <div class="container">
+            <h2 class="section-title">Sağlık Turizmi Paketleri</h2>
+            <div id="packagesList" class="cards-grid">
+                <!-- Packages will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Reservations Section -->
+    <section id="reservations" class="section">
+        <div class="container">
+            <h2 class="section-title">Rezervasyonlarım</h2>
+            <div class="search-box" style="max-width: 400px; margin-bottom: 30px;">
+                <input type="number" id="userReservationId" placeholder="Kullanıcı ID girin">
+                <button class="btn-primary" onclick="loadUserReservations()">Rezervasyonları Getir</button>
+            </div>
+            <div id="reservationsList" class="cards-grid">
+                <!-- Reservations will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 İstanbul Sağlık Turizmi. Tüm hakları saklıdır.</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
