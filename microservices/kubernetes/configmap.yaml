@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: health-tourism-config
+  namespace: health-tourism
+data:
+  eureka.url: "http://eureka-server:8761/eureka/"
+  postgres.url: "jdbc:postgresql://postgres-core:5432/healthtourism_core"
+  mongodb.url: "mongodb://mongodb:27017"
+  elasticsearch.url: "http://elasticsearch:9200"
+  kafka.url: "kafka:9092"
+  redis.url: "redis:6379"
+
+

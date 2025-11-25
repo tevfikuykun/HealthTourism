@@ -1,0 +1,57 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up JDK 25
+      uses: actions/setup-java@v3
+      with:
+        java-version: '25'
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: Build with Maven
+      run: |
+        cd microservices
+        mvn clean install -DskipTests
+    
+    - name: Run Tests
+      run: |
+        cd microservices
+        mvn test
+    
+    - name: Build Docker Images
+      run: |
+        docker-compose -f docker-compose-advanced.yml build
+    
+    - name: Run Integration Tests
+      run: |
+        docker-compose -f docker-compose-advanced.yml up -d
+        sleep 30
+        # Add integration tests here
+        docker-compose -f docker-compose-advanced.yml down
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to Production
+      run: |
+        echo "Deploy to production environment"
+        # Add deployment steps here
+
+

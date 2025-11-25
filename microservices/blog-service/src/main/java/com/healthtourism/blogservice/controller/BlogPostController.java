@@ -25,7 +25,7 @@ public class BlogPostController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<BlogPostDTO> getPostById(@PathVariable Long id) {
+    public ResponseEntity<BlogPostDTO> getPostById(@PathVariable String id) {
         try {
             return ResponseEntity.ok(blogPostService.getPostById(id));
         } catch (RuntimeException e) {

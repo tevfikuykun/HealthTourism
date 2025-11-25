@@ -14,7 +14,7 @@ public class MedicalDocumentService {
     private MedicalDocumentRepository medicalDocumentRepository;
     
     public List<MedicalDocumentDTO> getDocumentsByUser(Long userId) {
-        return medicalDocumentRepository.findByUserIdOrderByUploadedAtDesc(userId)
+        return medicalDocumentRepository.findByUserIdAndIsActiveTrueOrderByUploadedAtDesc(userId)
                 .stream().map(this::convertToDTO).collect(Collectors.toList());
     }
     
@@ -23,9 +23,9 @@ public class MedicalDocumentService {
                 .stream().map(this::convertToDTO).collect(Collectors.toList());
     }
     
-    public MedicalDocumentDTO getDocumentById(Long id) {
+    public MedicalDocumentDTO getDocumentById(String id) {
         MedicalDocument document = medicalDocumentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Belge bulunamadı"));
+            .orElseThrow(() -> new RuntimeException("Belge bulunamadı"));
         return convertToDTO(document);
     }
     

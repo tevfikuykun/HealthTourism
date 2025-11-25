@@ -15,7 +15,7 @@ public class BlogPostService {
     private BlogPostRepository blogPostRepository;
     
     public List<BlogPostDTO> getAllPublishedPosts() {
-        return blogPostRepository.findAllPublishedOrderByPublishedAtDesc()
+        return blogPostRepository.findByIsPublishedTrueOrderByPublishedAtDesc()
                 .stream().map(this::convertToDTO).collect(Collectors.toList());
     }
     
@@ -24,14 +24,13 @@ public class BlogPostService {
                 .stream().map(this::convertToDTO).collect(Collectors.toList());
     }
     
-    public BlogPostDTO getPostById(Long id) {
+    public BlogPostDTO getPostById(String id) {
         BlogPost post = blogPostRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Blog yazısı bulunamadı"));
+            .orElseThrow(() -> new RuntimeException("Blog yazısı bulunamadı"));
         incrementViewCount(post);
         return convertToDTO(post);
     }
     
-    @Transactional
     private void incrementViewCount(BlogPost post) {
         post.setViewCount(post.getViewCount() + 1);
         blogPostRepository.save(post);

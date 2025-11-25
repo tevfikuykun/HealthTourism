@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GalleryImageDTO {
-    private Long id;
+    private String id;
     private String imageUrl;
     private String imageType;
     private Long relatedId;

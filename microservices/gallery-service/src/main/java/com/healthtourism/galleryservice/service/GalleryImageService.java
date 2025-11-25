@@ -19,11 +19,11 @@ public class GalleryImageService {
     }
     
     public List<GalleryImageDTO> getImagesByTypeAndRelatedId(String imageType, Long relatedId) {
-        return galleryImageRepository.findByImageTypeAndRelatedIdOrderByDisplayOrder(imageType, relatedId)
+        return galleryImageRepository.findByImageTypeAndRelatedIdAndIsActiveTrueOrderByDisplayOrderAsc(imageType, relatedId)
                 .stream().map(this::convertToDTO).collect(Collectors.toList());
     }
     
-    public GalleryImageDTO getImageById(Long id) {
+    public GalleryImageDTO getImageById(String id) {
         GalleryImage image = galleryImageRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Görsel bulunamadı"));
         return convertToDTO(image);
