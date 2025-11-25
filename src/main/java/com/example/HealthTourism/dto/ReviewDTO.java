@@ -18,5 +18,8 @@ public class ReviewDTO {
     private String userName;
     private Long doctorId;
     private String doctorName;
+    private Long hospitalId;
+    private String hospitalName;
+    private String reviewType; // DOCTOR, HOSPITAL
 }
 

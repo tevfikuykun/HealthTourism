@@ -41,6 +41,12 @@ public class User {
     @Column(nullable = false)
     private Boolean isActive;
 
+    @Column(nullable = false)
+    private Boolean emailVerified;
+
+    private String verificationToken;
+    private LocalDateTime verificationTokenExpiry;
+
     private LocalDateTime lastLogin;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -51,6 +57,9 @@ public class User {
         updatedAt = LocalDateTime.now();
         if (isActive == null) {
             isActive = true;
+        }
+        if (emailVerified == null) {
+            emailVerified = false;
         }
     }
 

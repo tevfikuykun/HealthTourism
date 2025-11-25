@@ -53,29 +53,72 @@ public class AuthController {
     public ResponseEntity<Boolean> validateToken(@RequestBody TokenRequest request) {
         return ResponseEntity.ok(authService.validateToken(request.getToken()));
     }
-    
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<String> verifyEmail(@RequestParam String token) {
+        try {
+            authService.verifyEmail(token);
+            return ResponseEntity.ok("Email verified successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<String> resendVerificationEmail(@RequestBody EmailRequest request) {
+        try {
+            authService.resendVerificationEmail(request.getEmail());
+            return ResponseEntity.ok("Verification email sent");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> requestPasswordReset(@RequestBody EmailRequest request) {
+        try {
+            authService.requestPasswordReset(request.getEmail());
+            return ResponseEntity.ok("Password reset email sent");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody PasswordResetRequest request) {
+        try {
+            authService.resetPassword(request.getToken(), request.getNewPassword());
+            return ResponseEntity.ok("Password reset successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // Inner classes for request DTOs
     private static class RefreshTokenRequest {
         private String refreshToken;
-        
-        public String getRefreshToken() {
-            return refreshToken;
-        }
-        
-        public void setRefreshToken(String refreshToken) {
-            this.refreshToken = refreshToken;
-        }
+        public String getRefreshToken() { return refreshToken; }
+        public void setRefreshToken(String refreshToken) { this.refreshToken = refreshToken; }
     }
-    
+
     private static class TokenRequest {
         private String token;
-        
-        public String getToken() {
-            return token;
-        }
-        
-        public void setToken(String token) {
-            this.token = token;
-        }
+        public String getToken() { return token; }
+        public void setToken(String token) { this.token = token; }
+    }
+
+    private static class EmailRequest {
+        private String email;
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+    }
+
+    private static class PasswordResetRequest {
+        private String token;
+        private String newPassword;
+        public String getToken() { return token; }
+        public void setToken(String token) { this.token = token; }
+        public String getNewPassword() { return newPassword; }
+        public void setNewPassword(String newPassword) { this.newPassword = newPassword; }
     }
 }
-
