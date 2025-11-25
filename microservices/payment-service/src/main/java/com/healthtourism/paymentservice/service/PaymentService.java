@@ -19,6 +19,12 @@ public class PaymentService {
     @Autowired
     private PaymentRepository paymentRepository;
     
+    @Autowired
+    private KafkaEventService kafkaEventService;
+    
+    @Autowired
+    private EventStoreService eventStoreService;
+    
     @Transactional
     public PaymentDTO processPayment(PaymentRequestDTO request) {
         // Ödeme işlemi simülasyonu (Gerçek uygulamada Stripe/PayPal entegrasyonu olacak)
@@ -36,6 +42,34 @@ public class PaymentService {
         payment.setTransactionId("TXN-" + UUID.randomUUID().toString().substring(0, 16).toUpperCase());
         
         Payment saved = paymentRepository.save(payment);
+        
+        // Save event to event store
+        com.healthtourism.paymentservice.event.PaymentEvent event = 
+            new com.healthtourism.paymentservice.event.PaymentEvent();
+        event.setEventType("PAYMENT_" + saved.getStatus());
+        event.setPaymentId(saved.getId());
+        event.setPaymentNumber(saved.getPaymentNumber());
+        event.setUserId(saved.getUserId());
+        event.setReservationId(saved.getReservationId());
+        event.setReservationType(saved.getReservationType());
+        event.setAmount(saved.getAmount());
+        event.setCurrency(saved.getCurrency());
+        event.setPaymentMethod(saved.getPaymentMethod());
+        event.setStatus(saved.getStatus());
+        event.setTransactionId(saved.getTransactionId());
+        event.setPaymentDate(saved.getPaymentDate());
+        event.setEventTimestamp(java.time.LocalDateTime.now());
+        event.setEventId(java.util.UUID.randomUUID().toString());
+        
+        eventStoreService.saveEvent("PAYMENT_" + saved.getStatus(), saved.getId(), event, 1L);
+        
+        // Publish event to Kafka
+        if ("COMPLETED".equals(saved.getStatus())) {
+            kafkaEventService.publishPaymentCompleted(saved.getId(), saved.getTransactionId());
+        } else {
+            kafkaEventService.publishPaymentCreated(saved.getId(), saved.getReservationId(), saved.getStatus(), saved.getAmount());
+        }
+        
         return convertToDTO(saved);
     }
     
@@ -63,6 +97,29 @@ public class PaymentService {
         
         payment.setStatus("REFUNDED");
         Payment saved = paymentRepository.save(payment);
+        
+        // Save event to event store
+        com.healthtourism.paymentservice.event.PaymentEvent event = 
+            new com.healthtourism.paymentservice.event.PaymentEvent();
+        event.setEventType("PAYMENT_REFUNDED");
+        event.setPaymentId(saved.getId());
+        event.setPaymentNumber(saved.getPaymentNumber());
+        event.setStatus(saved.getStatus());
+        event.setEventTimestamp(java.time.LocalDateTime.now());
+        event.setEventId(java.util.UUID.randomUUID().toString());
+        
+        // Get current version from event store
+        java.util.List<com.healthtourism.paymentservice.entity.PaymentEventStore> events = 
+            eventStoreService.getEventsByPaymentId(saved.getId());
+        Long version = events.stream()
+            .mapToLong(e -> e.getAggregateVersion())
+            .max()
+            .orElse(0L) + 1;
+        eventStoreService.saveEvent("PAYMENT_REFUNDED", saved.getId(), event, version);
+        
+        // Publish event to Kafka
+        kafkaEventService.publishPaymentRefunded(saved.getId());
+        
         return convertToDTO(saved);
     }
     

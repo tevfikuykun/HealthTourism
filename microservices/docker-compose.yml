@@ -320,6 +320,16 @@ services:
     networks:
       - health-tourism-network
 
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - health-tourism-network
+    environment:
+      - STORAGE_TYPE=mem
+
 networks:
   health-tourism-network:
     driver: bridge

@@ -25,7 +25,7 @@ public class GalleryImageController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<GalleryImageDTO> getImageById(@PathVariable Long id) {
+    public ResponseEntity<GalleryImageDTO> getImageById(@PathVariable String id) {
         try {
             return ResponseEntity.ok(galleryImageService.getImageById(id));
         } catch (RuntimeException e) {

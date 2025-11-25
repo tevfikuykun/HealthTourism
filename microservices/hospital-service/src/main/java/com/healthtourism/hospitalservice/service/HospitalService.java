@@ -4,6 +4,8 @@ import com.healthtourism.hospitalservice.dto.HospitalDTO;
 import com.healthtourism.hospitalservice.entity.Hospital;
 import com.healthtourism.hospitalservice.repository.HospitalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,40 +13,67 @@ import java.util.stream.Collectors;
 
 @Service
 public class HospitalService {
+    
     @Autowired
     private HospitalRepository hospitalRepository;
     
-    public List<HospitalDTO> getAllActiveHospitals() {
-        return hospitalRepository.findAllActiveOrderByRatingDesc()
-                .stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-    
+    @Cacheable(value = "hospitals", key = "#id")
     public HospitalDTO getHospitalById(Long id) {
-        Hospital hospital = hospitalRepository.findByIdAndIsActiveTrue(id)
-                .orElseThrow(() -> new RuntimeException("Hastane bulunamadı"));
+        Hospital hospital = hospitalRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Hastane bulunamadı"));
         return convertToDTO(hospital);
     }
     
+    @Cacheable(value = "hospitals", key = "'all-active'")
+    public List<HospitalDTO> getAllActiveHospitals() {
+        return hospitalRepository.findAllActiveOrderByRatingDesc()
+            .stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+    }
+    
+    @Cacheable(value = "hospitals", key = "#city")
     public List<HospitalDTO> getHospitalsByCity(String city) {
-        return hospitalRepository.findByCityAndIsActiveTrue(city)
-                .stream().map(this::convertToDTO).collect(Collectors.toList());
+        return hospitalRepository.findByCity(city)
+            .stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+    }
+    
+    @CacheEvict(value = "hospitals", allEntries = true)
+    public HospitalDTO createHospital(Hospital hospital) {
+        Hospital saved = hospitalRepository.save(hospital);
+        return convertToDTO(saved);
+    }
+    
+    @CacheEvict(value = "hospitals", key = "#id")
+    public HospitalDTO updateHospital(Long id, Hospital hospital) {
+        Hospital existing = hospitalRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Hastane bulunamadı"));
+        
+        existing.setName(hospital.getName());
+        existing.setAddress(hospital.getAddress());
+        existing.setCity(hospital.getCity());
+        existing.setAirportDistance(hospital.getAirportDistance());
+        existing.setRating(hospital.getRating());
+        existing.setIsActive(hospital.getIsActive());
+        
+        Hospital saved = hospitalRepository.save(existing);
+        return convertToDTO(saved);
     }
     
     public List<HospitalDTO> getHospitalsByDistrict(String district) {
         return hospitalRepository.findByDistrictAndIsActiveTrue(district)
-                .stream().map(this::convertToDTO).collect(Collectors.toList());
+            .stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
     }
     
     public List<HospitalDTO> getHospitalsNearAirport(Double maxDistance) {
         return hospitalRepository.findByAirportDistanceLessThanEqual(maxDistance)
-                .stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-    
-    public HospitalDTO createHospital(Hospital hospital) {
-        hospital.setIsActive(true);
-        hospital.setRating(0.0);
-        hospital.setTotalReviews(0);
-        return convertToDTO(hospitalRepository.save(hospital));
+            .stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
     }
     
     private HospitalDTO convertToDTO(Hospital hospital) {
@@ -66,4 +95,3 @@ public class HospitalService {
         return dto;
     }
 }
-

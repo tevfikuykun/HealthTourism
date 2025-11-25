@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -63,6 +64,61 @@ public class NotificationService {
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
+    }
+    
+    public void sendReservationCreatedNotification(Long userId, Map<String, Object> event) {
+        NotificationRequestDTO request = new NotificationRequestDTO();
+        request.setUserId(userId);
+        request.setType("EMAIL");
+        request.setCategory("RESERVATION");
+        request.setSubject("Rezervasyonunuz Oluşturuldu");
+        request.setMessage("Rezervasyonunuz başarıyla oluşturuldu. Rezervasyon ID: " + event.get("reservationId"));
+        request.setRecipient("user-" + userId + "@example.com"); // Gerçek uygulamada user email'den alınacak
+        sendNotification(request);
+    }
+    
+    public void sendReservationUpdatedNotification(Long userId, Map<String, Object> event) {
+        NotificationRequestDTO request = new NotificationRequestDTO();
+        request.setUserId(userId);
+        request.setType("EMAIL");
+        request.setCategory("RESERVATION");
+        request.setSubject("Rezervasyonunuz Güncellendi");
+        request.setMessage("Rezervasyonunuz güncellendi. Yeni durum: " + event.get("status"));
+        request.setRecipient("user-" + userId + "@example.com");
+        sendNotification(request);
+    }
+    
+    public void sendReservationCancelledNotification(Long userId, Map<String, Object> event) {
+        NotificationRequestDTO request = new NotificationRequestDTO();
+        request.setUserId(userId);
+        request.setType("EMAIL");
+        request.setCategory("RESERVATION");
+        request.setSubject("Rezervasyonunuz İptal Edildi");
+        request.setMessage("Rezervasyonunuz iptal edildi. Rezervasyon ID: " + event.get("reservationId"));
+        request.setRecipient("user-" + userId + "@example.com");
+        sendNotification(request);
+    }
+    
+    public void sendPaymentCompletedNotification(Long userId, Map<String, Object> event) {
+        NotificationRequestDTO request = new NotificationRequestDTO();
+        request.setUserId(userId);
+        request.setType("EMAIL");
+        request.setCategory("PAYMENT");
+        request.setSubject("Ödemeniz Tamamlandı");
+        request.setMessage("Ödemeniz başarıyla tamamlandı. İşlem ID: " + event.get("transactionId"));
+        request.setRecipient("user-" + userId + "@example.com");
+        sendNotification(request);
+    }
+    
+    public void sendPaymentFailedNotification(Long userId, Map<String, Object> event) {
+        NotificationRequestDTO request = new NotificationRequestDTO();
+        request.setUserId(userId);
+        request.setType("EMAIL");
+        request.setCategory("PAYMENT");
+        request.setSubject("Ödeme Başarısız");
+        request.setMessage("Ödemeniz başarısız oldu. Sebep: " + event.get("reason"));
+        request.setRecipient("user-" + userId + "@example.com");
+        sendNotification(request);
     }
     
     private NotificationDTO convertToDTO(Notification notification) {

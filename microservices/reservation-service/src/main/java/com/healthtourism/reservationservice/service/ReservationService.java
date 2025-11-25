@@ -18,6 +18,12 @@ public class ReservationService {
     @Autowired
     private ReservationRepository reservationRepository;
     
+    @Autowired
+    private KafkaEventService kafkaEventService;
+    
+    @Autowired
+    private EventStoreService eventStoreService;
+    
     @Transactional
     public ReservationDTO createReservation(ReservationRequestDTO request) {
         LocalDateTime appointmentEnd = request.getAppointmentDate().plusHours(1);
@@ -47,7 +53,34 @@ public class ReservationService {
         reservation.setNotes(request.getNotes());
         reservation.setCreatedAt(LocalDateTime.now());
         
-        return convertToDTO(reservationRepository.save(reservation));
+        Reservation saved = reservationRepository.save(reservation);
+        
+        // Save event to event store
+        com.healthtourism.reservationservice.event.ReservationEvent event = 
+            new com.healthtourism.reservationservice.event.ReservationEvent();
+        event.setEventType("RESERVATION_CREATED");
+        event.setReservationId(saved.getId());
+        event.setReservationNumber(saved.getReservationNumber());
+        event.setUserId(saved.getUserId());
+        event.setHospitalId(saved.getHospitalId());
+        event.setDoctorId(saved.getDoctorId());
+        event.setAccommodationId(saved.getAccommodationId());
+        event.setAppointmentDate(saved.getAppointmentDate());
+        event.setCheckInDate(saved.getCheckInDate());
+        event.setCheckOutDate(saved.getCheckOutDate());
+        event.setNumberOfNights(saved.getNumberOfNights());
+        event.setTotalPrice(saved.getTotalPrice());
+        event.setStatus(saved.getStatus());
+        event.setNotes(saved.getNotes());
+        event.setEventTimestamp(java.time.LocalDateTime.now());
+        event.setEventId(java.util.UUID.randomUUID().toString());
+        
+        eventStoreService.saveEvent("RESERVATION_CREATED", saved.getId(), event, 1L);
+        
+        // Publish event to Kafka
+        kafkaEventService.publishReservationCreated(saved.getId(), saved.getUserId(), saved.getHospitalId());
+        
+        return convertToDTO(saved);
     }
     
     public List<ReservationDTO> getReservationsByUser(Long userId) {
@@ -64,9 +97,33 @@ public class ReservationService {
     @Transactional
     public ReservationDTO updateReservationStatus(Long id, String status) {
         Reservation reservation = reservationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Rezervasyon bulunamadı"));
+            .orElseThrow(() -> new RuntimeException("Rezervasyon bulunamadı"));
         reservation.setStatus(status);
-        return convertToDTO(reservationRepository.save(reservation));
+        Reservation saved = reservationRepository.save(reservation);
+        
+        // Save event to event store
+        com.healthtourism.reservationservice.event.ReservationEvent event = 
+            new com.healthtourism.reservationservice.event.ReservationEvent();
+        event.setEventType("RESERVATION_UPDATED");
+        event.setReservationId(saved.getId());
+        event.setReservationNumber(saved.getReservationNumber());
+        event.setStatus(saved.getStatus());
+        event.setEventTimestamp(java.time.LocalDateTime.now());
+        event.setEventId(java.util.UUID.randomUUID().toString());
+        
+        // Get current version from event store
+        java.util.List<com.healthtourism.reservationservice.entity.ReservationEventStore> events = 
+            eventStoreService.getEventsByReservationId(saved.getId());
+        Long version = events.stream()
+            .mapToLong(e -> e.getAggregateVersion())
+            .max()
+            .orElse(0L) + 1;
+        eventStoreService.saveEvent("RESERVATION_UPDATED", saved.getId(), event, version);
+        
+        // Publish event to Kafka
+        kafkaEventService.publishReservationUpdated(saved.getId(), saved.getStatus());
+        
+        return convertToDTO(saved);
     }
     
     private ReservationDTO convertToDTO(Reservation reservation) {

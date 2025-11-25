@@ -25,7 +25,7 @@ public class MedicalDocumentController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<MedicalDocumentDTO> getDocumentById(@PathVariable Long id) {
+    public ResponseEntity<MedicalDocumentDTO> getDocumentById(@PathVariable String id) {
         try {
             return ResponseEntity.ok(medicalDocumentService.getDocumentById(id));
         } catch (RuntimeException e) {

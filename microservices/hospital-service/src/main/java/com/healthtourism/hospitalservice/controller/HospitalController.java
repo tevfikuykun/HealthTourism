@@ -1,8 +1,10 @@
 package com.healthtourism.hospitalservice.controller;
 
 import com.healthtourism.hospitalservice.dto.HospitalDTO;
+import com.healthtourism.hospitalservice.dto.HospitalRequestDTO;
 import com.healthtourism.hospitalservice.entity.Hospital;
 import com.healthtourism.hospitalservice.service.HospitalService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -47,8 +49,27 @@ public class HospitalController {
     }
     
     @PostMapping
-    public ResponseEntity<HospitalDTO> createHospital(@RequestBody Hospital hospital) {
+    public ResponseEntity<HospitalDTO> createHospital(@Valid @RequestBody HospitalRequestDTO request) {
+        Hospital hospital = new Hospital();
+        hospital.setName(request.getName());
+        hospital.setAddress(request.getAddress());
+        hospital.setCity(request.getCity());
+        hospital.setAirportDistance(request.getAirportDistance());
+        hospital.setRating(request.getRating());
+        hospital.setIsActive(request.getIsActive() != null ? request.getIsActive() : true);
         return ResponseEntity.ok(hospitalService.createHospital(hospital));
+    }
+    
+    @PutMapping("/{id}")
+    public ResponseEntity<HospitalDTO> updateHospital(@PathVariable Long id, @Valid @RequestBody HospitalRequestDTO request) {
+        Hospital hospital = new Hospital();
+        hospital.setName(request.getName());
+        hospital.setAddress(request.getAddress());
+        hospital.setCity(request.getCity());
+        hospital.setAirportDistance(request.getAirportDistance());
+        hospital.setRating(request.getRating());
+        hospital.setIsActive(request.getIsActive());
+        return ResponseEntity.ok(hospitalService.updateHospital(id, hospital));
     }
 }
 
