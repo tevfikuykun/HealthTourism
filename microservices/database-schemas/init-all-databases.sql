@@ -21,5 +21,10 @@ SOURCE monitoring_db.sql;
 SOURCE logging_db.sql;
 SOURCE file_storage_db.sql;
 SOURCE admin_db.sql;
+SOURCE visa_consultation_db.sql;
+SOURCE translation_db.sql;
+SOURCE currency_db.sql;
+SOURCE chat_db.sql;
+SOURCE promotion_db.sql;
 
 

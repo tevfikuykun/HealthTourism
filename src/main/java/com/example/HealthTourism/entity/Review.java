@@ -31,7 +31,14 @@ public class Review {
     private User user;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "doctor_id", nullable = false)
+    @JoinColumn(name = "doctor_id")
     private Doctor doctor;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "hospital_id")
+    private Hospital hospital;
+
+    @Column(nullable = false)
+    private String reviewType; // DOCTOR, HOSPITAL
 }
 
