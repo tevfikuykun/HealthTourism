@@ -1,58 +1,49 @@
-// src/theme.js
 import { createTheme } from '@mui/material/styles';
 
-const theme = createTheme({
+const getTheme = (mode = 'light') => {
+  return createTheme({
     palette: {
-        primary: {
-            main: '#007A8A', // Derin Mavi/Turkuaz (Güven ve Profesyonellik)
-            light: '#E0F7FA',
-            dark: '#004D40',
-        },
-        secondary: {
-            main: '#FF9800', // Parlak Turuncu (Aksiyon ve Sıcaklık)
-            light: '#FFB74D',
-            dark: '#F57C00',
-        },
-        error: {
-            main: '#D32F2F',
-        },
+      mode,
+      primary: {
+        main: '#1976d2',
+      },
+      secondary: {
+        main: '#dc004e',
+      },
+      ...(mode === 'dark' && {
         background: {
-            default: '#F8F9FA', // Açık Gri Arka Plan
-            paper: '#FFFFFF',
+          default: '#121212',
+          paper: '#1e1e1e',
         },
-        text: {
-            primary: '#212121',
-            secondary: '#757575',
-        }
+      }),
     },
     typography: {
-        fontFamily: [
-            'Poppins',
-            'Arial',
-            'sans-serif',
-        ].join(','),
-        h3: {
-            fontWeight: 700,
-        },
-        button: {
-            textTransform: 'none',
-            fontWeight: 600,
-        }
+      fontFamily: [
+        '-apple-system',
+        'BlinkMacSystemFont',
+        '"Segoe UI"',
+        'Roboto',
+        '"Helvetica Neue"',
+        'Arial',
+        'sans-serif',
+      ].join(','),
     },
     components: {
-        MuiButton: {
-            defaultProps: {
-                disableElevation: true,
-            },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            textTransform: 'none',
+            borderRadius: 8,
+          },
         },
-        MuiCard: {
-            styleOverrides: {
-                root: {
-                    borderRadius: 12,
-                },
-            },
-        },
-    }
-});
+      },
+    },
+  });
+};
+
+// localStorage'dan tema tercihini al
+const savedTheme = localStorage.getItem('theme') || 'light';
+const theme = getTheme(savedTheme);
 
 export default theme;
+export { getTheme };

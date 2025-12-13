@@ -1,193 +1,158 @@
-// src/pages/Contact.jsx
 import React, { useState } from 'react';
 import {
-    Container, Box, Typography, Grid, Card, CardContent,
-    Button, Paper, useTheme, Divider, TextField,
-    List, ListItem, ListItemIcon, ListItemText
+  Container,
+  Box,
+  Typography,
+  Grid,
+  TextField,
+  Button,
+  Paper,
+  Alert,
 } from '@mui/material';
-import PhoneIcon from '@mui/icons-material/Phone';
-import EmailIcon from '@mui/icons-material/Email';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { contactService } from '../services/api';
 import SendIcon from '@mui/icons-material/Send';
-import HeadsetMicIcon from '@mui/icons-material/HeadsetMic';
+import Loading from '../components/Loading';
 
-// --- ÖRNEK BİLGİLER ---
-const contactInfo = {
-    phone: '+90 850 444 0000',
-    email: 'info@saglikturizmiplatformu.com',
-    address: 'Büyükdere Cd. No: 100, 34394 Şişli/İstanbul, Türkiye',
-    workingHours: 'Pazartesi - Cuma: 09:00 - 18:00 (GMT+3)',
-    emergencyLine: '+90 532 123 4567 (7/24 Acil Hat)',
-};
-// --- ÖRNEK BİLGİLER SONU ---
+const contactSchema = yup.object().shape({
+  name: yup.string().required('Ad soyad gereklidir'),
+  email: yup.string().email('Geçerli bir e-posta adresi girin').required('E-posta adresi gereklidir'),
+  phone: yup.string().required('Telefon numarası gereklidir'),
+  subject: yup.string().required('Konu gereklidir'),
+  message: yup.string().required('Mesaj gereklidir').min(10, 'Mesaj en az 10 karakter olmalıdır'),
+});
 
+export default function Contact() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
 
-// --- BİLEŞEN: ContactForm ---
-const ContactForm = () => {
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        subject: '',
-        message: ''
-    });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: yupResolver(contactSchema),
+  });
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
+  const onSubmit = async (data) => {
+    try {
+      setIsLoading(true);
+      setError('');
+      setSuccess(false);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // Form gönderme mantığı burada yer alacaktır (API/Mail entegrasyonu)
-        alert(`Mesajınız alındı. En kısa sürede (${formData.email}) adresinden size dönüş yapılacaktır.`);
-        setFormData({ name: '', email: '', subject: '', message: '' });
-    };
+      await contactService.send(data);
+      setSuccess(true);
+      reset();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Mesaj gönderilirken bir hata oluştu');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    return (
-        <Paper sx={{ p: { xs: 3, md: 5 }, borderRadius: 2, boxShadow: 6 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, color: 'primary.dark' }}>
-                Bize Mesaj Gönderin
-            </Typography>
-            <form onSubmit={handleSubmit}>
-                <Grid container spacing={3}>
-                    <Grid item xs={12} sm={6}>
-                        <TextField
-                            fullWidth
-                            label="Adınız Soyadınız"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            required
-                            size="small"
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <TextField
-                            fullWidth
-                            label="E-posta Adresiniz"
-                            name="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            required
-                            size="small"
-                        />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <TextField
-                            fullWidth
-                            label="Konu (Teklif, Randevu, Genel Soru)"
-                            name="subject"
-                            value={formData.subject}
-                            onChange={handleChange}
-                            required
-                            size="small"
-                        />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <TextField
-                            fullWidth
-                            label="Mesajınız"
-                            name="message"
-                            multiline
-                            rows={5}
-                            value={formData.message}
-                            onChange={handleChange}
-                            required
-                        />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            color="secondary"
-                            fullWidth
-                            size="large"
-                            startIcon={<SendIcon />}
-                            sx={{ mt: 1, fontWeight: 'bold' }}
-                        >
-                            Mesajı Gönder
-                        </Button>
-                    </Grid>
-                </Grid>
-            </form>
-        </Paper>
-    );
-};
-// --- BİLEŞEN SONU: ContactForm ---
+  if (isLoading) {
+    return <Loading message="Mesaj gönderiliyor..." />;
+  }
 
+  return (
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Typography variant="h4" align="center" gutterBottom>
+        İletişim
+      </Typography>
+      <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 4 }}>
+        Sorularınız, önerileriniz veya şikayetleriniz için bizimle iletişime geçebilirsiniz.
+      </Typography>
 
-// --- BİLEŞEN: Contact.jsx ---
-function Contact() {
-    const theme = useTheme();
+      <Paper sx={{ p: 4 }}>
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
 
-    return (
-        <Container maxWidth="lg" sx={{ py: 5 }}>
-            <Box textAlign="center" sx={{ mb: 5 }}>
-                <HeadsetMicIcon sx={{ fontSize: 60, color: 'primary.main' }} />
-                <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', mt: 1 }}>
-                    Bize Ulaşın
-                </Typography>
-                <Typography variant="h6" color="text.secondary">
-                    Tıbbi sorularınız, teklif talepleriniz ve tüm destek ihtiyaçlarınız için hazırız.
-                </Typography>
-            </Box>
+        {success && (
+          <Alert severity="success" sx={{ mb: 3 }}>
+            Mesajınız başarıyla gönderildi! En kısa sürede size dönüş yapacağız.
+          </Alert>
+        )}
 
-            <Grid container spacing={4}>
-
-                {/* Sol Kolon: İletişim Formu */}
-                <Grid item xs={12} md={8}>
-                    <ContactForm />
-                </Grid>
-
-                {/* Sağ Kolon: Bilgiler ve Harita */}
-                <Grid item xs={12} md={4}>
-                    {/* İletişim Bilgileri */}
-                    <Card sx={{ p: 3, borderRadius: 2, mb: 3, boxShadow: 3, bgcolor: theme.palette.mode === 'dark' ? 'grey.900' : 'background.paper' }}>
-                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: 'primary.main' }}>
-                            İletişim Kanallarımız
-                        </Typography>
-                        <Divider sx={{ mb: 2 }} />
-                        <List disablePadding>
-                            <ListItem>
-                                <ListItemIcon><PhoneIcon color="primary" /></ListItemIcon>
-                                <ListItemText primary="Çağrı Merkezi" secondary={contactInfo.phone} />
-                            </ListItem>
-                            <ListItem>
-                                <ListItemIcon><EmailIcon color="primary" /></ListItemIcon>
-                                <ListItemText primary="E-posta" secondary={contactInfo.email} />
-                            </ListItem>
-                            <ListItem>
-                                <ListItemIcon><LocationOnIcon color="primary" /></ListItemIcon>
-                                <ListItemText primary="Merkez Adresimiz" secondary={contactInfo.address} />
-                            </ListItem>
-                            <ListItem>
-                                <ListItemIcon><AccessTimeIcon color="primary" /></ListItemIcon>
-                                <ListItemText primary="Çalışma Saatleri" secondary={contactInfo.workingHours} />
-                            </ListItem>
-                        </List>
-                        <Button
-                            variant="outlined"
-                            color="secondary"
-                            fullWidth
-                            sx={{ mt: 2 }}
-                            startIcon={<PhoneIcon />}
-                        >
-                            {contactInfo.emergencyLine} (7/24 Acil)
-                        </Button>
-                    </Card>
-
-                    {/* Harita Yer Tutucu */}
-                    <Paper sx={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'grey.200', borderRadius: 2, boxShadow: 3 }}>
-                        <Typography variant="subtitle1" color="text.secondary">
-                            Google Haritası Yer Tutucusu
-                        </Typography>
-                    </Paper>
-                </Grid>
+        <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                {...register('name')}
+                fullWidth
+                label="Ad Soyad"
+                error={!!errors.name}
+                helperText={errors.name?.message}
+              />
             </Grid>
-        </Container>
-    );
-}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                {...register('email')}
+                fullWidth
+                label="E-posta"
+                type="email"
+                error={!!errors.email}
+                helperText={errors.email?.message}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                {...register('phone')}
+                fullWidth
+                label="Telefon"
+                error={!!errors.phone}
+                helperText={errors.phone?.message}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                {...register('subject')}
+                fullWidth
+                label="Konu"
+                error={!!errors.subject}
+                helperText={errors.subject?.message}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                {...register('message')}
+                fullWidth
+                multiline
+                rows={6}
+                label="Mesajınız"
+                error={!!errors.message}
+                helperText={errors.message?.message}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Button type="submit" variant="contained" size="large" startIcon={<SendIcon />} fullWidth>
+                Gönder
+              </Button>
+            </Grid>
+          </Grid>
+        </Box>
 
-export default Contact;
+        <Box sx={{ mt: 4, pt: 4, borderTop: 1, borderColor: 'divider' }}>
+          <Typography variant="h6" gutterBottom>
+            İletişim Bilgileri
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            E-posta: info@healthtourism.com
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Telefon: +90 (212) 123 45 67
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Adres: İstanbul, Türkiye
+          </Typography>
+        </Box>
+      </Paper>
+    </Container>
+  );
+}
