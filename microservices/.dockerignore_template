@@ -1,0 +1,14 @@
+# .dockerignore Template for Spring Boot Microservices
+
+target/
+.mvn/
+mvnw
+*.md
+*.bat
+*.sh
+.git
+.gitignore
+.idea
+.vscode
+*.iml
+

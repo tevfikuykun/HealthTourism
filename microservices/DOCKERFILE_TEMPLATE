@@ -1,0 +1,23 @@
+# Dockerfile Template for Spring Boot Microservices
+# Replace SERVICE_NAME with your service name
+
+FROM openjdk:25-jdk-slim
+
+WORKDIR /app
+
+# Copy Maven files
+COPY pom.xml .
+COPY mvnw .
+COPY .mvn .mvn
+
+# Copy source code
+COPY src ./src
+
+# Build the application
+RUN ./mvnw clean package -DskipTests
+
+# Run the application
+EXPOSE SERVICE_PORT
+
+ENTRYPOINT ["java", "-jar", "target/SERVICE_NAME-0.0.1-SNAPSHOT.jar"]
+
