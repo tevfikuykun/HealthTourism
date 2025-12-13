@@ -1,15 +1,24 @@
 // src/App.jsx
 
-import React, { lazy, Suspense } from 'react'; // 'lazy' ve 'Suspense' eklendi
+import React, { lazy, Suspense, useMemo, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Box, CssBaseline, ThemeProvider, Typography, CircularProgress } from '@mui/material'; // CircularProgress eklendi
+import { Box, CssBaseline, ThemeProvider, Typography, CircularProgress } from '@mui/material';
 
-import theme from './theme';
+// 🚨 Yeni Importlar (Redux ve React Query)
+import { Provider } from 'react-redux'; 
+import store from './store'; 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; 
+
+import { getTheme } from './theme';
 import Header from './components/Header.jsx';
 import Footer from './components/Footer.jsx';
-import appRoutes from './config/routes.js'; // Rota listesini içe aktar
+import ChatWidget from './components/Chat/ChatWidget';
+import Tour from './components/Onboarding/Tour';
+import Breadcrumb from './components/Breadcrumb';
+// Orijinal rota listenizi kullanmak için
+import appRoutes from './config/routes.js'; 
 
-// 🚨 SAYFALARI TEMBEL YÜKLEME (LAZY LOADING) İLE TANIMLAMA 🚨
+// 🚨 Sayfaları Tembel Yükleme (Lazy Loading) ile içe aktarma
 const LazyHome = lazy(() => import('./pages/Home.jsx'));
 const LazyHospitals = lazy(() => import('./pages/Hospitals.jsx'));
 const LazyDoctors = lazy(() => import('./pages/Doctors.jsx'));
@@ -20,9 +29,27 @@ const LazyTransfers = lazy(() => import('./pages/Transfers.jsx'));
 const LazyPackages = lazy(() => import('./pages/Packages.jsx'));
 const LazyReservations = lazy(() => import('./pages/Reservations.jsx'));
 const LazyPayments = lazy(() => import('./pages/Payments.jsx'));
-const LazyAboutUs = lazy(() => import('./pages/AboutUs.jsx')); // AboutUs da tembel yüklendi
+const LazyAboutUs = lazy(() => import('./pages/AboutUs.jsx'));
+const LazyLogin = lazy(() => import('./pages/Login.jsx'));
+const LazyRegister = lazy(() => import('./pages/Register.jsx'));
+const LazyDashboard = lazy(() => import('./pages/Dashboard.jsx'));
+const LazyForgotPassword = lazy(() => import('./pages/ForgotPassword.jsx'));
+const LazyResetPassword = lazy(() => import('./pages/ResetPassword.jsx'));
+const LazyVerifyEmail = lazy(() => import('./pages/VerifyEmail.jsx'));
+const LazyReservationDetail = lazy(() => import('./pages/ReservationDetail.jsx'));
+const LazyPaymentSuccess = lazy(() => import('./pages/PaymentSuccess.jsx'));
+const LazyPaymentFailed = lazy(() => import('./pages/PaymentFailed.jsx'));
+const LazyNotFound = lazy(() => import('./pages/errors/NotFound.jsx'));
+const LazyServerError = lazy(() => import('./pages/errors/ServerError.jsx'));
+const LazyForbidden = lazy(() => import('./pages/errors/Forbidden.jsx'));
+const LazyUnauthorized = lazy(() => import('./pages/errors/Unauthorized.jsx'));
+const LazyAdminLogin = lazy(() => import('./pages/admin/AdminLogin.jsx'));
+const LazyAdminDashboard = lazy(() => import('./pages/admin/AdminDashboard.jsx'));
+const LazyFavorites = lazy(() => import('./pages/Favorites.jsx'));
+const LazyNotificationsPage = lazy(() => import('./pages/Notifications.jsx'));
 
-// Rota ve bileşen eşleşmesini dinamik hale getiren harita
+const queryClient = new QueryClient(); // React Query Client
+
 const routeMap = {
     '/': LazyHome,
     '/hospitals': LazyHospitals,
@@ -34,10 +61,10 @@ const routeMap = {
     '/packages': LazyPackages,
     '/reservations': LazyReservations,
     '/payments': LazyPayments,
-    '/about': LazyAboutUs, // Footer linki için
+    '/about': LazyAboutUs,
 };
 
-// Ek Bilgi Sayfaları için yer tutucu bileşen (Bu sabit kalabilir)
+// Ek Bilgi Sayfaları için yer tutucu bileşen (Orijinal kodunuzdan)
 const PlaceholderPage = ({ title }) => (
     <Box sx={{ py: 10, textAlign: 'center' }}>
         <Typography variant="h4">{title}</Typography>
@@ -46,9 +73,24 @@ const PlaceholderPage = ({ title }) => (
 );
 
 function App() {
-    // Yükleme sırasında gösterilecek ortak yükleyici bileşeni
+    const [mode, setMode] = useState(() => {
+        return localStorage.getItem('theme') || 'light';
+    });
+
+    useEffect(() => {
+        // Tema değişikliklerini dinle
+        const handleStorageChange = () => {
+            const newMode = localStorage.getItem('theme') || 'light';
+            setMode(newMode);
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
+
+    const theme = useMemo(() => getTheme(mode), [mode]);
+
     const renderSuspense = (Element) => (
-        <Suspense
+        <Suspense 
             fallback={
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
                     <CircularProgress color="primary" />
@@ -60,50 +102,86 @@ function App() {
     );
 
     return (
-        <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <Router>
-                <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        // 🚨 Providerlar ile Sarma 🚨
+        <QueryClientProvider client={queryClient}>
+            <Provider store={store}>
+                <ThemeProvider theme={theme}>
+                    <CssBaseline />
+                    <Router>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
 
-                    <Header />
+                            <Header />
 
-                    <Box component="main" sx={{ flexGrow: 1 }}>
-                        <Routes>
-                            {/* 🚀 DİNAMİK ROTA TANIMI: appRoutes listesini kullanma */}
-                            {appRoutes.map((route) => {
-                                const Element = routeMap[route.path];
-                                if (!Element) return null;
+                            <Box component="main" sx={{ flexGrow: 1 }}>
+                                <Breadcrumb />
+                                <Routes>
+                                    {/* Dinamik Ana Rotalar */}
+                                    {appRoutes.map((route) => {
+                                        const Element = routeMap[route.path];
+                                        if (!Element) return null;
 
-                                return (
-                                    <Route
-                                        key={route.path}
-                                        path={route.path}
-                                        // Tembel yüklenmiş bileşeni Suspense içine sarar
-                                        element={renderSuspense(Element)}
-                                    />
-                                );
-                            })}
+                                        return (
+                                            <Route
+                                                key={route.path}
+                                                path={route.path}
+                                                element={renderSuspense(Element)} 
+                                            />
+                                        );
+                                    })}
+                                    
+                                    {/* Authentication Routes */}
+                                    <Route path="/login" element={renderSuspense(LazyLogin)} />
+                                    <Route path="/register" element={renderSuspense(LazyRegister)} />
+                                    <Route path="/forgot-password" element={renderSuspense(LazyForgotPassword)} />
+                                    <Route path="/reset-password/:token" element={renderSuspense(LazyResetPassword)} />
+                                    <Route path="/verify-email" element={renderSuspense(LazyVerifyEmail)} />
+                                    
+                                    {/* User Dashboard */}
+                                    <Route path="/dashboard" element={renderSuspense(LazyDashboard)} />
+                                    <Route path="/favorites" element={renderSuspense(LazyFavorites)} />
+                                    <Route path="/notifications" element={renderSuspense(LazyNotificationsPage)} />
+                                    
+                                    {/* Reservation Details */}
+                                    <Route path="/reservations/:id" element={renderSuspense(LazyReservationDetail)} />
+                                    
+                                    {/* Admin Routes */}
+                                    <Route path="/admin/login" element={renderSuspense(LazyAdminLogin)} />
+                                    <Route path="/admin/dashboard" element={renderSuspense(LazyAdminDashboard)} />
+                                    
+                                    {/* Payment Routes */}
+                                    <Route path="/payment/success" element={renderSuspense(LazyPaymentSuccess)} />
+                                    <Route path="/payment/failed" element={renderSuspense(LazyPaymentFailed)} />
+                                    
+                                    {/* Footer ve Detay Rotaları (Manuel) */}
+                                    <Route path="/about" element={renderSuspense(LazyAboutUs)} />
+                                    <Route path="/why-us" element={<PlaceholderPage title="Neden Biz?" />} />
+                                    <Route path="/privacy" element={<PlaceholderPage title="Gizlilik Politikası" />} />
+                                    <Route path="/terms" element={<PlaceholderPage title="Kullanım Koşulları" />} />
 
-                            {/* Footer ve Detay Rotaları (Manuel olarak Placeholder veya Detay rotaları) */}
-                            <Route path="/about" element={renderSuspense(LazyAboutUs)} />
-                            <Route path="/why-us" element={<PlaceholderPage title="Neden Biz?" />} />
-                            <Route path="/privacy" element={<PlaceholderPage title="Gizlilik Politikası" />} />
-                            <Route path="/terms" element={<PlaceholderPage title="Kullanım Koşulları" />} />
+                                    <Route path="/hospitals/:slug" element={<PlaceholderPage title="Hastane Detayları" />} />
+                                    <Route path="/doctors/:slug" element={<PlaceholderPage title="Doktor Profili" />} />
+                                    <Route path="/accommodations/:slug" element={<PlaceholderPage title="Konaklama Detayları" />} />
+                                    <Route path="/packages/:slug" element={<PlaceholderPage title="Paket Teklif Sayfası" />} />
 
-                            <Route path="/hospitals/:slug" element={<PlaceholderPage title="Hastane Detayları" />} />
-                            <Route path="/doctors/:slug" element={<PlaceholderPage title="Doktor Profili" />} />
-                            <Route path="/accommodations/:slug" element={<PlaceholderPage title="Konaklama Detayları" />} />
-                            <Route path="/packages/:slug" element={<PlaceholderPage title="Paket Teklif Sayfası" />} />
+                                    {/* Error Pages */}
+                                    <Route path="/404" element={renderSuspense(LazyNotFound)} />
+                                    <Route path="/500" element={renderSuspense(LazyServerError)} />
+                                    <Route path="/403" element={renderSuspense(LazyForbidden)} />
+                                    <Route path="/401" element={renderSuspense(LazyUnauthorized)} />
+                                    
+                                    <Route path="*" element={renderSuspense(LazyNotFound)} />
+                                </Routes>
+                            </Box>
 
-                            <Route path="*" element={<PlaceholderPage title="404 - Sayfa Bulunamadı" />} />
-                        </Routes>
-                    </Box>
+                            <Footer />
 
-                    <Footer />
-
-                </Box>
-            </Router>
-        </ThemeProvider>
+                        </Box>
+                        <ChatWidget />
+                        <Tour />
+                    </Router>
+                </ThemeProvider>
+            </Provider>
+        </QueryClientProvider>
     );
 }
 

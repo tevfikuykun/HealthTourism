@@ -31,3 +31,51 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Frontend ###
+microservices/frontend/node_modules/
+microservices/frontend/dist/
+microservices/frontend/.vite/
+microservices/frontend/.env
+microservices/frontend/.env.local
+microservices/frontend/.env.production
+microservices/frontend/.env.development
+microservices/frontend/coverage/
+microservices/frontend/.DS_Store
+microservices/frontend/*.log
+microservices/frontend/.cache/
+
+### Environment Variables ###
+.env
+.env.local
+.env.production
+.env.development
+*.env
+
+### Logs ###
+*.log
+logs/
+*.log.*
+
+### OS ###
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+### Database ###
+*.db
+*.sqlite
+*.sqlite3
+
+### Docker ###
+docker-compose.override.yml
+.dockerignore
+
+### Security ###
+*.pem
+*.key
+*.crt
+secrets/
+*.secret

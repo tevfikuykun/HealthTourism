@@ -4,20 +4,22 @@ import com.healthtourism.authservice.dto.AuthResponse;
 import com.healthtourism.authservice.dto.LoginRequest;
 import com.healthtourism.authservice.dto.RegisterRequest;
 import com.healthtourism.authservice.service.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
+@Validated
 public class AuthController {
     
     @Autowired
     private AuthService authService;
     
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         try {
             return ResponseEntity.ok(authService.register(request));
         } catch (RuntimeException e) {
@@ -26,7 +28,7 @@ public class AuthController {
     }
     
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         try {
             return ResponseEntity.ok(authService.login(request));
         } catch (RuntimeException e) {

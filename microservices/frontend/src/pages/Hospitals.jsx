@@ -1,5 +1,7 @@
 // src/pages/Hospitals.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { hospitalService } from '../services/api';
 import { 
     Container, Box, Typography, Grid, Card, CardContent, CardMedia, 
     TextField, Button, FormControl, InputLabel, Select, MenuItem,
@@ -8,21 +10,14 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import StarIcon from '@mui/icons-material/Star';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import FavoriteButton from '../components/FavoriteButton';
+import Pagination from '../components/Pagination';
+import Loading from '../components/Loading';
+import EmptyState from '../components/EmptyState';
 import { Link as RouterLink } from 'react-router-dom';
-
-// --- ÖRNEK VERİLER ---
-const dummyHospitals = [
-    { id: 1, name: 'MedGlobal Tıp Merkezi', city: 'İstanbul', specialty: 'Kardiyoloji', rating: 4.8, accreditations: ['JCI', 'ISO'], image: 'https://source.unsplash.com/random/400x250/?cardiology-hospital', slug: 'medglobal-tıp-merkezi', treatments: 120 },
-    { id: 2, name: 'Ankara Estetik Cerrahi', city: 'Ankara', specialty: 'Estetik', rating: 4.6, accreditations: ['TÜRKAK'], image: 'https://source.unsplash.com/random/400x250/?aesthetic-clinic', slug: 'ankara-estetik-cerrahi', treatments: 85 },
-    { id: 3, name: 'İzmir Ortopedi Merkezi', city: 'İzmir', specialty: 'Ortopedi', rating: 4.9, accreditations: ['JCI'], image: 'https://source.unsplash.com/random/400x250/?orthopedic-hospital', slug: 'izmir-ortopedi-merkezi', treatments: 150 },
-    { id: 4, name: 'Akdeniz Göz Kliniği', city: 'Antalya', specialty: 'Göz Hastalıkları', rating: 4.5, accreditations: ['ISO'], image: 'https://source.unsplash.com/random/400x250/?eye-clinic', slug: 'akdeniz-göz-kliniği', treatments: 90 },
-    { id: 5, name: 'Bursa Onkoloji Enstitüsü', city: 'Bursa', specialty: 'Onkoloji', rating: 4.7, accreditations: ['JCI', 'ESC'], image: 'https://source.unsplash.com/random/400x250/?oncology-center', slug: 'bursa-onkoloji-enstitüsü', treatments: 70 },
-];
 
 const specialties = ['Kardiyoloji', 'Estetik', 'Diş Hekimliği', 'Onkoloji', 'Ortopedi', 'Göz Hastalıkları', 'Genel Cerrahi'];
 const cities = ['İstanbul', 'Ankara', 'İzmir', 'Antalya', 'Bursa', 'Muğla', 'Adana'];
-// --- ÖRNEK VERİLER SONU ---
 
 
 // --- BİLEŞEN: HospitalCard ---
@@ -59,18 +54,9 @@ const HospitalCard = ({ hospital }) => {
                         fontWeight: 'bold'
                     }}
                 />
-                <IconButton
-                    aria-label="favorilere ekle"
-                    sx={{
-                        position: 'absolute',
-                        top: 10,
-                        right: 10,
-                        bgcolor: 'rgba(255, 255, 255, 0.8)',
-                        '&:hover': { bgcolor: 'white' }
-                    }}
-                >
-                    <FavoriteBorderIcon color="action" />
-                </IconButton>
+                <Box sx={{ position: 'absolute', top: 10, right: 10 }}>
+                    <FavoriteButton itemId={hospital.id} itemType="hospital" />
+                </Box>
             </Box>
             <CardContent sx={{ flexGrow: 1 }}>
                 <Typography gutterBottom variant="h6" component="div" sx={{ fontWeight: 700 }}>
@@ -117,17 +103,38 @@ function Hospitals() {
         city: '',
         specialty: '',
     });
+    const [page, setPage] = useState(1);
+    const itemsPerPage = 12;
+
+    // Backend API entegrasyonu
+    const { data, isLoading, error } = useQuery({
+        queryKey: ['hospitals', filters, page],
+        queryFn: () => {
+            const params = {
+                page: page - 1,
+                size: itemsPerPage,
+            };
+            if (filters.search) params.search = filters.search;
+            if (filters.city) params.city = filters.city;
+            if (filters.specialty) params.specialty = filters.specialty;
+            return hospitalService.getAll(params);
+        },
+    });
+
+    const hospitals = data?.data?.content || data?.data || [];
+    const totalPages = data?.data?.totalPages || 1;
+    const totalItems = data?.data?.totalElements || hospitals.length;
 
     const handleChange = (event) => {
         const { name, value } = event.target;
         setFilters(prev => ({ ...prev, [name]: value }));
+        setPage(1); // Filtre değiştiğinde sayfayı sıfırla
     };
 
-    const filteredHospitals = dummyHospitals.filter(h =>
-        h.name.toLowerCase().includes(filters.search.toLowerCase()) &&
-        (filters.city === '' || h.city === filters.city) &&
-        (filters.specialty === '' || h.specialty === filters.specialty)
-    );
+    const handlePageChange = (newPage) => {
+        setPage(newPage);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     return (
         <Container maxWidth="lg" sx={{ py: 5 }}>
@@ -191,30 +198,47 @@ function Hospitals() {
                 </Grid>
             </Paper>
 
-            <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                    Gösterilen Sonuç: {filteredHospitals.length} Hastane
-                </Typography>
-            </Box>
+            {isLoading ? (
+                <Loading message="Hastaneler yükleniyor..." />
+            ) : error ? (
+                <EmptyState
+                    title="Hata oluştu"
+                    description="Hastaneler yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin."
+                />
+            ) : (
+                <>
+                    <Box sx={{ mb: 3 }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                            Gösterilen Sonuç: {totalItems} Hastane
+                        </Typography>
+                    </Box>
 
-            {/* Hastane Listesi */}
-            <Grid container spacing={4}>
-                {filteredHospitals.length > 0 ? (
-                    filteredHospitals.map(hospital => (
-                        <Grid item xs={12} sm={6} lg={4} key={hospital.id}>
-                            <HospitalCard hospital={hospital} />
-                        </Grid>
-                    ))
-                ) : (
-                    <Grid item xs={12}>
-                        <Paper sx={{ p: 4, textAlign: 'center', bgcolor: 'background.default' }}>
-                            <Typography variant="h6" color="text.secondary">
-                                Aradığınız kriterlere uygun hastane bulunamadı. Lütfen filtreleri değiştirin.
-                            </Typography>
-                        </Paper>
-                    </Grid>
-                )}
-            </Grid>
+                    {/* Hastane Listesi */}
+                    {hospitals.length > 0 ? (
+                        <>
+                            <Grid container spacing={4}>
+                                {hospitals.map(hospital => (
+                                    <Grid item xs={12} sm={6} lg={4} key={hospital.id}>
+                                        <HospitalCard hospital={hospital} />
+                                    </Grid>
+                                ))}
+                            </Grid>
+                            <Pagination
+                                currentPage={page}
+                                totalPages={totalPages}
+                                totalItems={totalItems}
+                                itemsPerPage={itemsPerPage}
+                                onPageChange={handlePageChange}
+                            />
+                        </>
+                    ) : (
+                        <EmptyState
+                            title="Hastane bulunamadı"
+                            description="Aradığınız kriterlere uygun hastane bulunamadı. Lütfen filtreleri değiştirin."
+                        />
+                    )}
+                </>
+            )}
         </Container>
     );
 }
