@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import BlockIcon from '@mui/icons-material/Block';
 import HomeIcon from '@mui/icons-material/Home';
 import LockIcon from '@mui/icons-material/Lock';
+import { useTranslation } from 'react-i18next';
 
 export default function Forbidden() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return (
@@ -26,10 +28,10 @@ export default function Forbidden() {
           403
         </Typography>
         <Typography variant="h4" gutterBottom>
-          Erişim Reddedildi
+          {t('accessDenied', 'Erişim Reddedildi')}
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 500 }}>
-          Bu sayfaya erişim yetkiniz bulunmamaktadır. Lütfen yöneticinizle iletişime geçin.
+          {t('accessDeniedDescription', 'Bu sayfaya erişim yetkiniz bulunmamaktadır. Lütfen yöneticinizle iletişime geçin.')}
         </Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button
@@ -38,7 +40,7 @@ export default function Forbidden() {
             startIcon={<HomeIcon />}
             onClick={() => navigate('/')}
           >
-            Ana Sayfaya Dön
+            {t('backToHome', 'Ana Sayfaya Dön')}
           </Button>
           <Button
             variant="outlined"
@@ -46,7 +48,7 @@ export default function Forbidden() {
             startIcon={<LockIcon />}
             onClick={() => navigate('/login')}
           >
-            Giriş Yap
+            {t('login', 'Giriş Yap')}
           </Button>
         </Box>
       </Box>

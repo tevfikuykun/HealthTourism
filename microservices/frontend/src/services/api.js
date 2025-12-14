@@ -10,7 +10,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 30000, // 30 seconds
+  timeout: 30000,
 });
 
 // Request interceptor - Add auth token
@@ -33,14 +33,12 @@ api.interceptors.response.use(
   (error) => {
     const appError = handleApiError(error);
     
-    // Handle 401 - Unauthorized (logout user)
     if (appError.statusCode === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
     
-    // Show error toast for non-401 errors
     if (appError.statusCode !== 401) {
       toast.error(appError.message);
     }
@@ -60,6 +58,7 @@ export const authService = {
   resendVerification: (email) => api.post('/auth/resend-verification', { email }),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token, newPassword) => api.post('/auth/reset-password', { token, newPassword }),
+  socialLogin: (data) => api.post('/auth/social/login', data),
 };
 
 export const userService = {
@@ -90,12 +89,20 @@ export const doctorService = {
 export const accommodationService = {
   getAll: (params) => api.get('/accommodations', { params }),
   getById: (id) => api.get(`/accommodations/${id}`),
+  getBySlug: (slug) => api.get(`/accommodations/slug/${slug}`),
   search: (query) => api.get('/accommodations/search', { params: { q: query } }),
 };
 
 export const flightService = {
   search: (params) => api.post('/flights/search', params),
   getById: (id) => api.get(`/flights/${id}`),
+};
+
+export const packageService = {
+  getAll: (params) => api.get('/packages', { params }),
+  getById: (id) => api.get(`/packages/${id}`),
+  getBySlug: (slug) => api.get(`/packages/slug/${slug}`),
+  search: (query) => api.get('/packages/search', { params: { q: query } }),
 };
 
 export const paymentService = {
@@ -128,6 +135,85 @@ export const fileStorageService = {
   upload: (formData, config) => api.post('/files/upload', formData, { ...config, headers: { 'Content-Type': 'multipart/form-data' } }),
   getById: (id) => api.get(`/files/${id}`),
   delete: (id) => api.delete(`/files/${id}`),
+};
+
+// New Feature Services
+export const comparisonService = {
+  compare: (items, type) => api.post('/comparison/compare', { items, type }),
+  getComparison: (type) => api.get(`/comparison/${type}`),
+};
+
+export const analyticsService = {
+  getRevenue: (params) => api.get('/analytics/revenue', { params }),
+  getUsers: (params) => api.get('/analytics/users', { params }),
+  getReservations: (params) => api.get('/analytics/reservations', { params }),
+  getServices: (params) => api.get('/analytics/services', { params }),
+};
+
+export const healthRecordsService = {
+  getAll: () => api.get('/health-records'),
+  getById: (id) => api.get(`/health-records/${id}`),
+  create: (record) => api.post('/health-records', record),
+  update: (id, record) => api.put(`/health-records/${id}`, record),
+  delete: (id) => api.delete(`/health-records/${id}`),
+};
+
+export const reviewService = {
+  create: (review) => api.post('/reviews', review),
+  update: (id, review) => api.put(`/reviews/${id}`, review),
+  getByEntity: (entityType, entityId) => api.get(`/reviews/entity/${entityType}/${entityId}`),
+  addDoctorResponse: (id, response) => api.post(`/reviews/${id}/response`, { response }),
+  markHelpful: (id, helpful) => api.post(`/reviews/${id}/helpful`, { helpful }),
+  verify: (id) => api.post(`/reviews/${id}/verify`),
+};
+
+export const postTreatmentService = {
+  createCarePackage: (packageData) => api.post('/post-treatment', packageData),
+  getByUser: (userId) => api.get(`/post-treatment/user/${userId}`),
+  updateTaskStatus: (id, taskIndex, isCompleted) => api.put(`/post-treatment/${id}/task/${taskIndex}`, { isCompleted }),
+  scheduleFollowUp: (id, date) => api.post(`/post-treatment/${id}/follow-up`, { date }),
+};
+
+export const influencerService = {
+  register: (influencer) => api.post('/influencers/register', influencer),
+  approve: (id) => api.post(`/influencers/${id}/approve`),
+  createCampaign: (campaign) => api.post('/influencers/campaigns', campaign),
+  getCampaigns: (influencerId) => api.get(`/influencers/campaigns/${influencerId}`),
+  updatePerformance: (id, clicks, conversions) => api.put(`/influencers/campaigns/${id}/performance`, { clicks, conversions }),
+  calculateCommission: (id) => api.get(`/influencers/campaigns/${id}/commission`),
+};
+
+export const affiliateService = {
+  register: (userId) => api.post('/affiliate/register', { userId }),
+  getByCode: (code) => api.get(`/affiliate/code/${code}`),
+  trackClick: (referralCode, userId) => api.post('/affiliate/track/click', { referralCode, userId }),
+  trackConversion: (referralId, reservationId, amount) => api.post('/affiliate/track/conversion', { referralId, reservationId, amount }),
+  getReferrals: (affiliateId) => api.get(`/affiliate/referrals/${affiliateId}`),
+};
+
+export const gamificationService = {
+  addPoints: (userId, points, reason) => api.post('/gamification/points/add', { userId, points, reason }),
+  awardBadge: (userId, badgeId) => api.post('/gamification/badges/award', { userId, badgeId }),
+  getAllBadges: () => api.get('/gamification/badges'),
+  getUserBadges: (userId) => api.get(`/gamification/badges/user/${userId}`),
+  getLeaderboard: (limit) => api.get('/gamification/leaderboard', { params: { limit } }),
+  createChallenge: (challenge) => api.post('/gamification/challenges', challenge),
+  getActiveChallenges: () => api.get('/gamification/challenges/active'),
+};
+
+export const searchService = {
+  search: (query, params) => api.get('/search', { params: { q: query, ...params } }),
+  getHistory: () => api.get('/search/history'),
+  saveSearch: (search) => api.post('/search/save', search),
+};
+
+export const currencyService = {
+  getRates: () => api.get('/currency/rates'),
+  convert: (from, to, amount) => api.post('/currency/convert', { from, to, amount }),
+};
+
+export const taxService = {
+  calculate: (amount, taxRate, includeTax) => api.post('/tax/calculate', { amount, taxRate, includeTax }),
 };
 
 export default api;

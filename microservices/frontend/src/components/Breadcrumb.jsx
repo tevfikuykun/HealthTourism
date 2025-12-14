@@ -1,30 +1,32 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Breadcrumbs, Link, Typography } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import HomeIcon from '@mui/icons-material/Home';
-
-const routeLabels = {
-  '/': 'Ana Sayfa',
-  '/hospitals': 'Hastaneler',
-  '/doctors': 'Doktorlar',
-  '/accommodations': 'Konaklama',
-  '/flights': 'Uçak Bileti',
-  '/car-rentals': 'Araç Kiralama',
-  '/transfers': 'Transfer Hizmetleri',
-  '/packages': 'Paketler',
-  '/reservations': 'Rezervasyonlar',
-  '/payments': 'Ödemeler',
-  '/dashboard': 'Dashboard',
-  '/favorites': 'Favoriler',
-  '/notifications': 'Bildirimler',
-  '/contact': 'İletişim',
-  '/about': 'Hakkımızda',
-};
+import { useTranslation } from 'react-i18next';
 
 export default function Breadcrumb() {
+  const { t } = useTranslation();
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
+
+  const routeLabels = useMemo(() => ({
+    '/': t('home', 'Ana Sayfa'),
+    '/hospitals': t('hospitals', 'Hastaneler'),
+    '/doctors': t('doctors', 'Doktorlar'),
+    '/accommodations': t('accommodations', 'Konaklama'),
+    '/flights': t('flights', 'Uçak Bileti'),
+    '/car-rentals': t('carRentals', 'Araç Kiralama'),
+    '/transfers': t('transfers', 'Transfer Hizmetleri'),
+    '/packages': t('packages', 'Paketler'),
+    '/reservations': t('reservations', 'Rezervasyonlar'),
+    '/payments': t('payments', 'Ödemeler'),
+    '/dashboard': t('dashboard', 'Dashboard'),
+    '/favorites': t('favorites', 'Favoriler'),
+    '/notifications': t('notifications', 'Bildirimler'),
+    '/contact': t('contact', 'İletişim'),
+    '/about': t('about', 'Hakkımızda'),
+  }), [t]);
 
   return (
     <Breadcrumbs
@@ -34,7 +36,7 @@ export default function Breadcrumb() {
     >
       <Link component={RouterLink} to="/" underline="hover" color="inherit" sx={{ display: 'flex', alignItems: 'center' }}>
         <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
-        Ana Sayfa
+        {t('home', 'Ana Sayfa')}
       </Link>
       {pathnames.map((value, index) => {
         const last = index === pathnames.length - 1;

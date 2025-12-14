@@ -13,6 +13,7 @@ import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import WifiIcon from '@mui/icons-material/Wifi';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import { Link as RouterLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 // --- ÖRNEK VERİLER ---
 const dummyAccommodations = [
@@ -30,6 +31,7 @@ const cities = ['İstanbul', 'Ankara', 'İzmir', 'Antalya', 'Bursa'];
 
 // --- BİLEŞEN: AccommodationCard ---
 const AccommodationCard = ({ item }) => {
+    const { t } = useTranslation();
     const theme = useTheme();
     const typeIcon = item.type === 'Otel' ? HotelIcon : HomeWorkIcon;
 
@@ -86,7 +88,7 @@ const AccommodationCard = ({ item }) => {
                 <Box sx={{ mt: 'auto', borderTop: `1px solid ${theme.palette.divider}`, pt: 1 }}>
                     <Typography variant="h5" color="primary" sx={{ fontWeight: 700 }}>
                         ${item.pricePerNight}
-                        <Typography component="span" variant="body2" color="text.secondary"> / Gece</Typography>
+                        <Typography component="span" variant="body2" color="text.secondary"> / {t('night', 'Gece')}</Typography>
                     </Typography>
                 </Box>
 
@@ -98,7 +100,7 @@ const AccommodationCard = ({ item }) => {
                     to={`/accommodations/${item.id}`}
                     sx={{ mt: 2 }}
                 >
-                    Teklif Al / Rezervasyon
+                    {t('getQuote')} / {t('makeReservation')}
                 </Button>
             </CardContent>
         </Card>
@@ -108,6 +110,7 @@ const AccommodationCard = ({ item }) => {
 
 
 function Accommodations() {
+    const { t } = useTranslation();
     const theme = useTheme();
     const [filters, setFilters] = useState({
         search: '',
@@ -153,7 +156,7 @@ function Accommodations() {
     return (
         <Container maxWidth="lg" sx={{ py: 5 }}>
             <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', mb: 1 }}>
-                Konaklama Çözümleri
+                {t('accommodationSolutions', 'Konaklama Çözümleri')}
             </Typography>
             <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
                 Tedaviye yakın, konforlu otel ve rezidansları keşfedin.
@@ -164,17 +167,17 @@ function Accommodations() {
                 {/* Sol Kolon: Filtreler */}
                 <Grid item xs={12} md={3}>
                     <Paper sx={{ p: 3, borderRadius: 2, position: 'sticky', top: 100 }}>
-                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>Filtrele</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>{t('filter')}</Typography>
                         <Divider sx={{ mb: 2 }} />
 
                         {/* Şehir Filtresi */}
                         <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-                            <InputLabel id="city-label">Şehir</InputLabel>
+                            <InputLabel id="city-label">{t('city')}</InputLabel>
                             <Select
                                 labelId="city-label"
                                 name="city"
                                 value={filters.city}
-                                label="Şehir"
+                                label={t('city')}
                                 onChange={handleChange}
                             >
                                 <MenuItem value="">Tümü</MenuItem>
@@ -186,12 +189,12 @@ function Accommodations() {
 
                         {/* Tip Filtresi */}
                         <FormControl fullWidth size="small" sx={{ mb: 3 }}>
-                            <InputLabel id="type-label">Konaklama Tipi</InputLabel>
+                            <InputLabel id="type-label">{t('accommodationType')}</InputLabel>
                             <Select
                                 labelId="type-label"
                                 name="type"
                                 value={filters.type}
-                                label="Konaklama Tipi"
+                                label={t('accommodationType')}
                                 onChange={handleChange}
                             >
                                 <MenuItem value="">Tümü</MenuItem>
@@ -203,7 +206,7 @@ function Accommodations() {
 
                         {/* Fiyat Aralığı Slider */}
                         <Typography variant="subtitle1" gutterBottom sx={{ mt: 1 }}>
-                            Fiyat Aralığı (Gecelik):
+                            {t('priceRange')} ({t('perNight', 'Gecelik')}):
                             <Box component="span" sx={{ fontWeight: 'bold', color: theme.palette.primary.main, ml: 1 }}>
                                 ${filters.priceRange[0]} - ${filters.priceRange[1]}
                             </Box>
@@ -264,7 +267,7 @@ function Accommodations() {
                             sx={{ mt: 3 }}
                             onClick={() => setFilters(prev => ({ ...prev, search: '', city: '', type: ''}))} // Filtreleri Sıfırla (Basitleştirilmiş)
                         >
-                            Filtreleri Temizle
+                            {t('clearFilters', 'Filtreleri Temizle')}
                         </Button>
 
                     </Paper>
@@ -274,7 +277,7 @@ function Accommodations() {
                 <Grid item xs={12} md={9}>
                     <TextField
                         fullWidth
-                        label="Konaklama Adı Veya Anahtar Kelime Ara"
+                            label={t('searchAccommodation', 'Konaklama Adı Veya Anahtar Kelime Ara')}
                         name="search"
                         value={filters.search}
                         onChange={handleChange}
@@ -288,7 +291,7 @@ function Accommodations() {
 
                     <Box sx={{ mb: 3 }}>
                         <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                            Gösterilen Sonuç: {filteredAccommodations.length} Konaklama Yeri
+                            {t('showingResults', 'Gösterilen Sonuç')}: {filteredAccommodations.length} {t('accommodationPlaces', 'Konaklama Yeri')}
                         </Typography>
                     </Box>
 

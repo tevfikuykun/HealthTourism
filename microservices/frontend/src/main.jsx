@@ -3,16 +3,22 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ThemeProvider } from '@mui/material/styles';
 import { HelmetProvider } from 'react-helmet-async';
+import { I18nextProvider } from 'react-i18next';
 import theme from './theme';
 import App from './App';
 import AppErrorBoundary from './components/ErrorBoundary';
 import ToastContainer from './components/ToastContainer';
 import { initAnalytics } from './utils/analytics';
-import './i18n'; // Initialize i18n
+import { requestNotificationPermission } from './utils/pushNotifications';
+import i18n from './i18n'; // Initialize i18n
 import './index.css';
+import './styles/print.css';
 
 // Initialize analytics
 initAnalytics();
+
+// Request notification permission
+requestNotificationPermission();
 
 // Register service worker for PWA (only if available)
 if ('serviceWorker' in navigator) {
@@ -37,13 +43,15 @@ if ('serviceWorker' in navigator) {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <HelmetProvider>
-      <ThemeProvider theme={theme}>
-        <AppErrorBoundary>
-          <App />
-          <ToastContainer />
-        </AppErrorBoundary>
-      </ThemeProvider>
-    </HelmetProvider>
+    <I18nextProvider i18n={i18n}>
+      <HelmetProvider>
+        <ThemeProvider theme={theme}>
+          <AppErrorBoundary>
+            <App />
+            <ToastContainer />
+          </AppErrorBoundary>
+        </ThemeProvider>
+      </HelmetProvider>
+    </I18nextProvider>
   </React.StrictMode>,
 );

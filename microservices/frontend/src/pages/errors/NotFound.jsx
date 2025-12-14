@@ -3,8 +3,10 @@ import { Container, Box, Typography, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import HomeIcon from '@mui/icons-material/Home';
+import { useTranslation } from 'react-i18next';
 
 export default function NotFound() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return (
@@ -25,10 +27,10 @@ export default function NotFound() {
           404
         </Typography>
         <Typography variant="h4" gutterBottom>
-          Sayfa Bulunamadı
+          {t('pageNotFound', 'Sayfa Bulunamadı')}
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 500 }}>
-          Aradığınız sayfa mevcut değil veya taşınmış olabilir. Lütfen URL'yi kontrol edin veya ana sayfaya dönün.
+          {t('pageNotFoundDescription', 'Aradığınız sayfa mevcut değil veya taşınmış olabilir. Lütfen URL\'yi kontrol edin veya ana sayfaya dönün.')}
         </Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button
@@ -37,10 +39,10 @@ export default function NotFound() {
             startIcon={<HomeIcon />}
             onClick={() => navigate('/')}
           >
-            Ana Sayfaya Dön
+            {t('backToHome', 'Ana Sayfaya Dön')}
           </Button>
           <Button variant="outlined" size="large" onClick={() => navigate(-1)}>
-            Geri Dön
+            {t('goBack', 'Geri Dön')}
           </Button>
         </Box>
       </Box>

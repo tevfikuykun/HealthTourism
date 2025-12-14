@@ -4,6 +4,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useAuth } from '../hooks/useAuth';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 
 /**
  * FavoriteButton Component
@@ -16,13 +17,14 @@ import { toast } from 'react-toastify';
  * @param {function} onToggle - Favori durumu değiştiğinde çağrılacak fonksiyon
  */
 export default function FavoriteButton({ itemId, itemType, isFavorite: initialIsFavorite = false, onToggle }) {
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleToggle = async () => {
     if (!isAuthenticated) {
-      toast.error('Favori eklemek için giriş yapmanız gerekmektedir.');
+      toast.error(t('loginRequiredForFavorites', 'Favori eklemek için giriş yapmanız gerekmektedir.'));
       return;
     }
 
@@ -43,21 +45,21 @@ export default function FavoriteButton({ itemId, itemType, isFavorite: initialIs
         onToggle(newFavoriteState);
       }
 
-      toast.success(newFavoriteState ? 'Favorilere eklendi' : 'Favorilerden çıkarıldı');
+      toast.success(newFavoriteState ? t('addedToFavorites', 'Favorilere eklendi') : t('removedFromFavorites', 'Favorilerden çıkarıldı'));
     } catch (error) {
-      toast.error('İşlem sırasında bir hata oluştu');
+      toast.error(t('errorOccurred', 'İşlem sırasında bir hata oluştu'));
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <Tooltip title={isFavorite ? 'Favorilerden çıkar' : 'Favorilere ekle'}>
+    <Tooltip title={isFavorite ? t('removeFromFavorites', 'Favorilerden çıkar') : t('addToFavorites', 'Favorilere ekle')}>
       <IconButton
         onClick={handleToggle}
         disabled={isLoading}
         color={isFavorite ? 'error' : 'default'}
-        aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+        aria-label={isFavorite ? t('removeFromFavorites', 'Favorilerden çıkar') : t('addToFavorites', 'Favorilere ekle')}
       >
         {isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon />}
       </IconButton>

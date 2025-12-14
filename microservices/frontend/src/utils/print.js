@@ -1,72 +1,41 @@
-/**
- * Print Utilities
- * 
- * Yazdırma işlemleri için yardımcı fonksiyonlar.
- */
+// src/utils/print.js
 
-/**
- * Belirli bir element'i yazdırır.
- * @param {string|HTMLElement} element - Yazdırılacak element veya ID
- */
-export const printElement = (element) => {
-  const printWindow = window.open('', '_blank');
-  const elementToPrint = typeof element === 'string' ? document.getElementById(element) : element;
+export const printPage = () => {
+  window.print();
+};
 
-  if (!elementToPrint) {
-    console.error('Element not found');
+export const printElement = (elementId) => {
+  const element = document.getElementById(elementId);
+  if (!element) {
+    console.error(`Element with id ${elementId} not found`);
     return;
   }
 
+  const printWindow = window.open('', '_blank');
   printWindow.document.write(`
     <html>
       <head>
         <title>Yazdır</title>
         <style>
-          body { font-family: Arial, sans-serif; }
+          body { font-family: Arial, sans-serif; margin: 20px; }
           @media print {
-            @page { margin: 1cm; }
             body { margin: 0; }
+            .no-print { display: none; }
           }
         </style>
       </head>
       <body>
-        ${elementToPrint.innerHTML}
+        ${element.innerHTML}
       </body>
     </html>
   `);
-
   printWindow.document.close();
-  printWindow.focus();
   printWindow.print();
-  printWindow.close();
 };
 
-/**
- * PDF olarak indir (basit versiyon - daha gelişmiş için jsPDF kullanılabilir)
- */
-export const downloadAsPDF = (element, filename = 'document.pdf') => {
-  // TODO: jsPDF entegrasyonu
-  console.log('PDF download not yet implemented. Use printElement for now.');
-  printElement(element);
-};
-
-/**
- * Excel olarak export (basit CSV)
- */
-export const exportToExcel = (data, filename = 'data.xlsx') => {
-  // TODO: xlsx kütüphanesi entegrasyonu
-  if (!data || data.length === 0) return;
-
-  const headers = Object.keys(data[0]);
-  const csvContent = [
-    headers.join(','),
-    ...data.map((row) => headers.map((header) => row[header] || '').join(',')),
-  ].join('\n');
-
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+export const printPDF = async (url) => {
   const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = filename.replace('.xlsx', '.csv');
+  link.href = url;
+  link.download = 'document.pdf';
   link.click();
 };
-

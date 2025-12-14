@@ -1,5 +1,5 @@
 // src/components/Navbar.jsx
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     AppBar, Toolbar, Typography, Button, Box, IconButton,
     Drawer, List, ListItem, ListItemButton, ListItemText,
@@ -11,33 +11,36 @@ import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import InfoIcon from '@mui/icons-material/Info';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import { Link as RouterLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Container, Divider } from '@mui/material';
 
-// Ana Navigasyon Verileri
-const navItems = [
-    { label: 'Hastaneler', path: '/hospitals', icon: LocalHospitalIcon },
-    { label: 'Doktorlar', path: '/doctors', icon: LocalHospitalIcon },
-    { label: 'Konaklama', path: '/accommodations', icon: LocalHospitalIcon },
-    { label: 'Sağlık Paketleri', path: '/packages', icon: LocalHospitalIcon },
-];
+export default function Navbar() {
+  const { t } = useTranslation();
+  
+  // Ana Navigasyon Verileri
+  const navItems = useMemo(() => [
+      { label: t('hospitals', 'Hastaneler'), path: '/hospitals', icon: LocalHospitalIcon },
+      { label: t('doctors', 'Doktorlar'), path: '/doctors', icon: LocalHospitalIcon },
+      { label: t('accommodations', 'Konaklama'), path: '/accommodations', icon: LocalHospitalIcon },
+      { label: t('packages', 'Paketler'), path: '/packages', icon: LocalHospitalIcon },
+  ], [t]);
 
-// Seyahat Alt Menü Verileri
-const travelMenuItems = [
-    { label: 'Uçak Biletleri', path: '/flights' },
-    { label: 'Transfer Hizmetleri', path: '/transfers' },
-    { label: 'Araç Kiralama', path: '/car-rentals' },
-];
+  // Seyahat Alt Menü Verileri
+  const travelMenuItems = useMemo(() => [
+      { label: t('flights', 'Uçak Bileti'), path: '/flights' },
+      { label: t('transfers', 'Transferler'), path: '/transfers' },
+      { label: t('carRentals', 'Araç Kiralama'), path: '/car-rentals' },
+  ], [t]);
 
-// Kurumsal Alt Menü Verileri
-const corporateMenuItems = [
-    { label: 'Hakkımızda', path: '/about' },
-    { label: 'İletişim', path: '/contact' },
-    { label: 'S.S.S.', path: '/faq' },
-];
+  // Kurumsal Alt Menü Verileri
+  const corporateMenuItems = useMemo(() => [
+      { label: t('about', 'Hakkımızda'), path: '/about' },
+      { label: t('contact', 'İletişim'), path: '/contact' },
+      { label: t('faq', 'S.S.S.'), path: '/faq' },
+  ], [t]);
 
-
-function Navbar() {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [travelAnchorEl, setTravelAnchorEl] = useState(null);
     const [corporateAnchorEl, setCorporateAnchorEl] = useState(null);
@@ -59,7 +62,7 @@ function Navbar() {
         >
             <List>
                 <ListItem>
-                    <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 'bold', ml: 1 }}>MENÜ</Typography>
+                    <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 'bold', ml: 1 }}>{t('menu', 'MENÜ')}</Typography>
                 </ListItem>
                 <Divider />
                 {navItems.map((item) => (
@@ -71,7 +74,7 @@ function Navbar() {
                 ))}
                 <Divider sx={{ my: 1 }} />
                 {/* Seyahat ve Kurumsal Linkler (Mobil) */}
-                <ListItemText primary="SEYAHAT HİZMETLERİ" sx={{ ml: 2, fontWeight: 'bold' }} />
+                <ListItemText primary={t('travelServices', 'SEYAHAT HİZMETLERİ')} sx={{ ml: 2, fontWeight: 'bold' }} />
                 {travelMenuItems.map((item) => (
                      <ListItem key={item.label} disablePadding>
                         <ListItemButton component={RouterLink} to={item.path} sx={{ pl: 4 }}>
@@ -80,7 +83,7 @@ function Navbar() {
                     </ListItem>
                 ))}
                 <Divider sx={{ my: 1 }} />
-                <ListItemText primary="KURUMSAL" sx={{ ml: 2, fontWeight: 'bold' }} />
+                <ListItemText primary={t('corporate', 'KURUMSAL')} sx={{ ml: 2, fontWeight: 'bold' }} />
                 {corporateMenuItems.map((item) => (
                      <ListItem key={item.label} disablePadding>
                         <ListItemButton component={RouterLink} to={item.path} sx={{ pl: 4 }}>
@@ -108,7 +111,7 @@ function Navbar() {
                                 display: { xs: 'none', sm: 'block' }
                             }}
                         >
-                            Sağlık Turizmi
+                            {t('healthTourism', 'Sağlık Turizmi')}
                         </Typography>
                     </MuiLink>
 
@@ -154,7 +157,7 @@ function Navbar() {
                                 onClick={handleTravelMenuOpen}
                                 startIcon={<FlightTakeoffIcon />}
                             >
-                                Seyahat
+                                {t('travel', 'Seyahat')}
                             </Button>
                             <Menu
                                 anchorEl={travelAnchorEl}
@@ -180,7 +183,7 @@ function Navbar() {
                                 onClick={handleCorporateMenuOpen}
                                 startIcon={<InfoIcon />}
                             >
-                                Kurumsal
+                                {t('corporate', 'Kurumsal')}
                             </Button>
                             <Menu
                                 anchorEl={corporateAnchorEl}
@@ -210,7 +213,7 @@ function Navbar() {
                         startIcon={<EventNoteIcon />}
                         sx={{ ml: { xs: 0, md: 2 }, py: 1, px: 2, fontWeight: 'bold' }}
                     >
-                        Teklif Al
+                        {t('getFreeQuote', 'Teklif Al')}
                     </Button>
                 </Toolbar>
             </Container>

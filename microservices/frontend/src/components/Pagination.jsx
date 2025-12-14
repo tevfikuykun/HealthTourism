@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Pagination as MuiPagination, Typography } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Pagination Component
@@ -21,6 +22,7 @@ export default function Pagination({
   onPageChange,
   showInfo = true,
 }) {
+  const { t } = useTranslation();
   const handleChange = (event, value) => {
     if (onPageChange) {
       onPageChange(value);
@@ -34,7 +36,7 @@ export default function Pagination({
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3, mb: 2 }}>
       {showInfo && totalItems > 0 && (
         <Typography variant="body2" color="text.secondary">
-          {startItem}-{endItem} / {totalItems} sonuç gösteriliyor
+          {t('showingResults', '{start}-{end} / {total} sonuç gösteriliyor', { start: startItem, end: endItem, total: totalItems })}
         </Typography>
       )}
       <MuiPagination

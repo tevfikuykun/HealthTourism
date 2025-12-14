@@ -11,6 +11,7 @@ import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import SecurityIcon from '@mui/icons-material/Security';
 import StarIcon from '@mui/icons-material/Star';
 import PeopleIcon from '@mui/icons-material/People';
+import { useTranslation } from 'react-i18next';
 
 // --- ÖRNEK VERİLER ---
 const coreValues = [
@@ -28,6 +29,7 @@ const teamMembers = [
 
 // --- BİLEŞEN: AboutUs ---
 function AboutUs() {
+    const { t } = useTranslation();
     const theme = useTheme();
 
     return (
@@ -37,10 +39,10 @@ function AboutUs() {
             <Box textAlign="center" sx={{ mb: 6 }}>
                 <GroupIcon sx={{ fontSize: 60, color: 'primary.main' }} />
                 <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', mt: 1 }}>
-                    Bizi Tanıyın: Sağlığın Güvenilir Adresi
+                    {t('aboutUsTitle', 'Bizi Tanıyın: Sağlığın Güvenilir Adresi')}
                 </Typography>
                 <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 800, mx: 'auto' }}>
-                    Misyonumuz, dünyanın dört bir yanındaki hastalara Türkiye'nin üstün kaliteli sağlık hizmetlerini en konforlu ve güvenilir şekilde ulaştırmaktır.
+                    {t('aboutUsMission', 'Misyonumuz, dünyanın dört bir yanındaki hastalara Türkiye\'nin üstün kaliteli sağlık hizmetlerini en konforlu ve güvenilir şekilde ulaştırmaktır.')}
                 </Typography>
             </Box>
 
@@ -50,9 +52,9 @@ function AboutUs() {
                 <Grid item xs={12} md={4}>
                     <Card sx={{ p: 3, height: '100%', bgcolor: 'secondary.main', color: 'white', boxShadow: theme.shadows[8] }}>
                         <LightbulbIcon sx={{ fontSize: 40, mb: 2 }} />
-                        <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>Vizyonumuz</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>{t('ourVision', 'Vizyonumuz')}</Typography>
                         <Typography variant="body1">
-                            Sağlık turizminde global çapta lider bir köprü olmak, teknoloji ve insan odaklı çözümlerimizle sektör standartlarını belirlemek.
+                            {t('visionDescription', 'Sağlık turizminde global çapta lider bir köprü olmak, teknoloji ve insan odaklı çözümlerimizle sektör standartlarını belirlemek.')}
                         </Typography>
                     </Card>
                 </Grid>
@@ -76,19 +78,19 @@ function AboutUs() {
                 <Grid container spacing={4} textAlign="center">
                     <Grid item xs={6} md={3}>
                         <Typography variant="h3" sx={{ fontWeight: 800, color: 'primary.dark' }}>250+</Typography>
-                        <Typography variant="subtitle1" color="text.secondary">Başarılı Tedavi</Typography>
+                        <Typography variant="subtitle1" color="text.secondary">{t('successfulTreatments', 'Başarılı Tedavi')}</Typography>
                     </Grid>
                     <Grid item xs={6} md={3}>
                         <Typography variant="h3" sx={{ fontWeight: 800, color: 'primary.dark' }}>20+</Typography>
-                        <Typography variant="subtitle1" color="text.secondary">Akredite Ortak Hastane</Typography>
+                        <Typography variant="subtitle1" color="text.secondary">{t('accreditedPartnerHospitals', 'Akredite Ortak Hastane')}</Typography>
                     </Grid>
                     <Grid item xs={6} md={3}>
                         <Typography variant="h3" sx={{ fontWeight: 800, color: 'primary.dark' }}>4.9/5</Typography>
-                        <Typography variant="subtitle1" color="text.secondary">Hasta Memnuniyeti Puanı</Typography>
+                        <Typography variant="subtitle1" color="text.secondary">{t('patientSatisfactionScore', 'Hasta Memnuniyeti Puanı')}</Typography>
                     </Grid>
                     <Grid item xs={6} md={3}>
                         <Typography variant="h3" sx={{ fontWeight: 800, color: 'primary.dark' }}>12+</Typography>
-                        <Typography variant="subtitle1" color="text.secondary">Farklı Hizmet Dili</Typography>
+                        <Typography variant="subtitle1" color="text.secondary">{t('differentServiceLanguages', 'Farklı Hizmet Dili')}</Typography>
                     </Grid>
                 </Grid>
             </Paper>
@@ -96,7 +98,7 @@ function AboutUs() {
             {/* 4. Ekibimiz */}
             <Box sx={{ mb: 6, textAlign: 'center' }}>
                 <Typography variant="h4" sx={{ fontWeight: 700, mb: 4, color: 'text.primary' }}>
-                    Uzman Ekibimiz
+                    {t('ourExpertTeam', 'Uzman Ekibimiz')}
                 </Typography>
                 <Grid container spacing={4} justifyContent="center">
                     {teamMembers.map((member, index) => (
@@ -118,10 +120,10 @@ function AboutUs() {
             {/* 5. CTA (Call to Action) */}
             <Paper sx={{ p: { xs: 3, md: 6 }, bgcolor: 'secondary.light', borderRadius: 2, textAlign: 'center' }}>
                 <Typography variant="h4" sx={{ fontWeight: 700, mb: 2, color: 'secondary.dark' }}>
-                    Sağlık Yolculuğunuza Hemen Başlayın
+                    {t('startYourHealthJourney', 'Sağlık Yolculuğunuza Hemen Başlayın')}
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 3, color: 'text.secondary' }}>
-                    Profesyonel ekibimiz size özel tedavi planınızı hazırlamak için hazır. İlk adımı atın ve ücretsiz danışmanlık hizmetimizden yararlanın.
+                    {t('startJourneyDescription', 'Profesyonel ekibimiz size özel tedavi planınızı hazırlamak için hazır. İlk adımı atın ve ücretsiz danışmanlık hizmetimizden yararlanın.')}
                 </Typography>
                 <Button
                     variant="contained"
@@ -130,7 +132,7 @@ function AboutUs() {
                     startIcon={<StarIcon />}
                     onClick={() => alert('Rezervasyon sayfasına yönlendiriliyor...')}
                 >
-                    Ücretsiz Teklif Alın
+                    {t('getFreeQuote')}
                 </Button>
             </Paper>
 

@@ -4,8 +4,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import HomeIcon from '@mui/icons-material/Home';
+import { useTranslation } from 'react-i18next';
 
 export default function PaymentSuccess() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const paymentId = searchParams.get('paymentId');
@@ -25,14 +27,14 @@ export default function PaymentSuccess() {
         <Paper elevation={3} sx={{ p: 4, width: '100%', textAlign: 'center' }}>
           <CheckCircleIcon sx={{ fontSize: 100, color: 'success.main', mb: 2 }} />
           <Typography variant="h4" gutterBottom>
-            Ödeme Başarılı!
+            {t('paymentSuccessful', 'Ödeme Başarılı!')}
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Ödemeniz başarıyla tamamlandı. {paymentId && `Ödeme ID: ${paymentId}`}
+            {t('paymentCompleted', 'Ödemeniz başarıyla tamamlandı.')} {paymentId && `${t('paymentId', 'Ödeme ID')}: ${paymentId}`}
           </Typography>
           {amount && (
             <Typography variant="h6" color="primary" sx={{ mb: 3 }}>
-              Ödenen Tutar: {parseFloat(amount).toLocaleString('tr-TR')} ₺
+              {t('paidAmount', 'Ödenen Tutar')}: {parseFloat(amount).toLocaleString('tr-TR')} ₺
             </Typography>
           )}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -42,10 +44,10 @@ export default function PaymentSuccess() {
               startIcon={<ReceiptIcon />}
               onClick={() => navigate('/dashboard')}
             >
-              Rezervasyonlarımı Gör
+              {t('viewMyReservations', 'Rezervasyonlarımı Gör')}
             </Button>
             <Button variant="outlined" size="large" startIcon={<HomeIcon />} onClick={() => navigate('/')}>
-              Ana Sayfaya Dön
+              {t('backToHome', 'Ana Sayfaya Dön')}
             </Button>
           </Box>
         </Paper>

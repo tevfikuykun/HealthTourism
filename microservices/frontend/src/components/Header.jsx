@@ -11,35 +11,37 @@ import PersonIcon from '@mui/icons-material/Person';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useTranslation } from '../i18n';
 import { useAuth } from '../hooks/useAuth';
 import NotificationBell from './Notifications/NotificationBell';
 import ThemeToggle from './ThemeToggle';
 import LanguageSwitcher from './LanguageSwitcher';
 
-// Navigasyon Linkleri
-const navItems = [
-    { title: 'Hastaneler', path: '/hospitals' },
-    { title: 'Doktorlar', path: '/doctors' },
-    { title: 'Konaklama', path: '/accommodations' },
-    { title: 'Sağlık Paketleri', path: '/packages' },
-    {
-        title: 'Seyahat Hizmetleri',
-        isDropdown: true,
-        items: [
-            { title: 'Uçak Bileti (Uçuş)', path: '/flights' },
-            { title: 'Özel Transferler', path: '/transfers' },
-            { title: 'Araç Kiralama', path: '/car-rentals' },
-        ]
-    },
-    { title: 'Rezervasyon (Teklif Al)', path: '/reservations' },
-];
-
 function Header() {
+    const { t } = useTranslation();
     const theme = useTheme();
     const navigate = useNavigate();
     const { user, isAuthenticated, logout } = useAuth();
     const [anchorElDropdown, setAnchorElDropdown] = useState(null);
     const [userMenuAnchor, setUserMenuAnchor] = useState(null);
+    
+    // Navigasyon Linkleri - useTranslation ile dinamik olacak
+    const navItems = React.useMemo(() => [
+        { title: t('hospitals', 'Hastaneler'), path: '/hospitals' },
+        { title: t('doctors', 'Doktorlar'), path: '/doctors' },
+        { title: t('accommodations', 'Konaklama'), path: '/accommodations' },
+        { title: t('packages', 'Paketler'), path: '/packages' },
+        {
+            title: t('travelServices', 'Seyahat Hizmetleri'),
+            isDropdown: true,
+            items: [
+                { title: t('flights', 'Uçak Bileti'), path: '/flights' },
+                { title: t('transfers', 'Transferler'), path: '/transfers' },
+                { title: t('carRentals', 'Araç Kiralama'), path: '/car-rentals' },
+            ]
+        },
+        { title: t('reservations', 'Rezervasyonlar'), path: '/reservations' },
+    ], [t]);
 
     const handleOpenDropdown = (event) => { setAnchorElDropdown(event.currentTarget); };
     const handleCloseDropdown = () => { setAnchorElDropdown(null); };
@@ -193,16 +195,16 @@ function Header() {
                                 >
                                     <MenuItem onClick={() => { navigate('/dashboard'); handleUserMenuClose(); }}>
                                         <DashboardIcon sx={{ mr: 1 }} fontSize="small" />
-                                        Dashboard
+                                        {t('dashboard')}
                                     </MenuItem>
                                     <MenuItem onClick={() => { navigate('/favorites'); handleUserMenuClose(); }}>
                                         <PersonIcon sx={{ mr: 1 }} fontSize="small" />
-                                        Favorilerim
+                                        {t('favorites', 'Favorilerim')}
                                     </MenuItem>
                                     <Divider />
                                     <MenuItem onClick={handleLogout}>
                                         <LogoutIcon sx={{ mr: 1 }} fontSize="small" />
-                                        Çıkış Yap
+                                        {t('logout')}
                                     </MenuItem>
                                 </Menu>
                             </>
@@ -220,7 +222,7 @@ function Header() {
                                         }
                                     }}
                                 >
-                                    Giriş Yap
+                                    {t('login', 'Giriş Yap')}
                                 </Button>
                                 <Button
                                     variant="contained"
@@ -234,7 +236,7 @@ function Header() {
                                         }
                                     }}
                                 >
-                                    Kayıt Ol
+                                    {t('register', 'Kayıt Ol')}
                                 </Button>
                             </>
                         )}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Typography, Button } from '@mui/material';
 import InboxIcon from '@mui/icons-material/Inbox';
+import { useTranslation } from 'react-i18next';
 
 /**
  * EmptyState Component
@@ -14,12 +15,16 @@ import InboxIcon from '@mui/icons-material/Inbox';
  * @param {React.ReactNode} icon - Özel ikon (opsiyonel)
  */
 export default function EmptyState({
-  title = 'Veri bulunamadı',
-  description = 'Bu bölümde henüz veri bulunmamaktadır.',
+  title,
+  description,
   actionLabel,
   onAction,
   icon,
 }) {
+  const { t } = useTranslation();
+  
+  const defaultTitle = title || t('noDataFound', 'Veri bulunamadı');
+  const defaultDescription = description || t('noDataDescription', 'Bu bölümde henüz veri bulunmamaktadır.');
   return (
     <Box
       sx={{
@@ -33,10 +38,10 @@ export default function EmptyState({
     >
       {icon || <InboxIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />}
       <Typography variant="h6" gutterBottom>
-        {title}
+        {defaultTitle}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 400 }}>
-        {description}
+        {defaultDescription}
       </Typography>
       {actionLabel && onAction && (
         <Button variant="contained" onClick={onAction}>

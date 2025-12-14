@@ -1,5 +1,5 @@
 // src/components/Footer.jsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
     Box, Typography, Container, Grid, Link,
     Divider, IconButton, useTheme
@@ -12,23 +12,25 @@ import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { Link as RouterLink } from 'react-router-dom';
-
-const companyLinks = [
-    { title: 'Hakkımızda', to: '/about' },
-    { title: 'Neden Biz?', to: '/why-us' },
-    { title: 'Gizlilik Politikası', to: '/privacy' },
-    { title: 'Kullanım Koşulları', to: '/terms' },
-];
-
-const serviceLinks = [
-    { title: 'Hastaneler', to: '/hospitals' },
-    { title: 'Uzman Doktorlar', to: '/doctors' },
-    { title: 'Sağlık Paketleri', to: '/packages' },
-    { title: 'Rezervasyon Talep Et', to: '/reservations' },
-];
+import { useTranslation } from '../i18n';
 
 function Footer() {
+    const { t } = useTranslation();
     const theme = useTheme();
+    
+    const companyLinks = useMemo(() => [
+        { title: t('about', 'Hakkımızda'), to: '/about' },
+        { title: t('whyUs', 'Neden Biz'), to: '/why-us' },
+        { title: t('privacyPolicy', 'Gizlilik Politikası'), to: '/privacy' },
+        { title: t('termsOfService', 'Kullanım Koşulları'), to: '/terms' },
+    ], [t]);
+    
+    const serviceLinks = useMemo(() => [
+        { title: t('hospitals', 'Hastaneler'), to: '/hospitals' },
+        { title: t('expertDoctors', 'Uzman Doktorlar'), to: '/doctors' },
+        { title: t('packages', 'Paketler'), to: '/packages' },
+        { title: t('requestReservation', 'Rezervasyon Talebi'), to: '/reservations' },
+    ], [t]);
 
     return (
         <Box
@@ -73,7 +75,7 @@ function Footer() {
                     {/* Kolon 2: Kurumsal Linkler */}
                     <Grid item xs={6} sm={4} md={2}>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.light }}>
-                            Kurumsal
+                            {t('company', 'Şirket')}
                         </Typography>
                         <Box component="ul" sx={{ listStyle: 'none', p: 0 }}>
                             {companyLinks.map((link) => (
@@ -89,7 +91,7 @@ function Footer() {
                     {/* Kolon 3: Hizmetlerimiz */}
                     <Grid item xs={6} sm={4} md={3}>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.light }}>
-                            Hizmetlerimiz
+                            {t('services', 'Hizmetler')}
                         </Typography>
                         <Box component="ul" sx={{ listStyle: 'none', p: 0 }}>
                             {serviceLinks.map((link) => (
@@ -105,7 +107,7 @@ function Footer() {
                     {/* Kolon 4: Sosyal Medya */}
                     <Grid item xs={12} sm={4} md={3}>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: theme.palette.primary.light }}>
-                            Bizi Takip Edin
+                            {t('followUs', 'Bizi Takip Edin')}
                         </Typography>
                         <Box>
                             <IconButton color="secondary" aria-label="facebook" sx={{ mr: 1 }}>
@@ -130,7 +132,7 @@ function Footer() {
                 {/* Telif Hakkı ve Alt Bar */}
                 <Divider sx={{ mt: 4, mb: 3, bgcolor: theme.palette.grey[700] }} />
                 <Typography variant="body2" align="center" sx={{ opacity: 0.6 }}>
-                    © {new Date().getFullYear()} Health Turizm. Tüm Hakları Saklıdır.
+                    © {new Date().getFullYear()} Health Turizm. {t('allRightsReserved', 'Tüm hakları saklıdır')}.
                 </Typography>
             </Container>
         </Box>

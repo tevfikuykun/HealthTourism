@@ -12,6 +12,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import FaceRetouchingNaturalIcon from '@mui/icons-material/FaceRetouchingNatural';
 import StarIcon from '@mui/icons-material/Star';
+import { useTranslation } from 'react-i18next';
 
 // --- ÖRNEK VERİLER ---
 // Maksimum fiyatı belirlemek için kullanılır
@@ -50,6 +51,7 @@ const packageCategories = ['Diş', 'Estetik', 'Saç', 'Göz', 'Genel Cerrahi'];
 
 // --- BİLEŞEN: PackageCard (Öncekiyle aynı, sadeleştirildi) ---
 const PackageCard = ({ pkg }) => {
+    const { t } = useTranslation();
     const theme = useTheme();
 
     const getIconForCategory = (category) => {
@@ -109,7 +111,7 @@ const PackageCard = ({ pkg }) => {
 
                 <Divider sx={{ my: 1 }} />
 
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>Paket İçeriği:</Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>{t('packageContent', 'Paket İçeriği')}:</Typography>
                 <Box sx={{ height: 90, overflowY: 'hidden' }}>
                     {pkg.services.map((service, index) => (
                         <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
@@ -131,7 +133,7 @@ const PackageCard = ({ pkg }) => {
                     <Typography variant="h5" color="secondary" sx={{ fontWeight: 700 }}>
                         €{pkg.price}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">/ {pkg.duration} Gün</Typography>
+                    <Typography variant="caption" color="text.secondary">/ {pkg.duration} {t('days', 'Gün')}</Typography>
                 </Box>
                 <Button
                     variant="contained"
@@ -139,7 +141,7 @@ const PackageCard = ({ pkg }) => {
                     size="large"
                     onClick={() => alert(`${pkg.name} paketi için teklif alınıyor...`)}
                 >
-                    Teklif Al
+                    {t('getQuote', 'Teklif Al')}
                 </Button>
             </CardActions>
         </Card>
@@ -149,6 +151,7 @@ const PackageCard = ({ pkg }) => {
 
 
 function Packages() {
+    const { t } = useTranslation();
     const theme = useTheme();
     // Filtreler güncellendi: minPrice ve maxPrice birleştirildi
     const [filters, setFilters] = useState({
@@ -191,7 +194,7 @@ function Packages() {
                     Sağlık Paketleri Kataloğu
                 </Typography>
                 <Typography variant="h6" color="text.secondary">
-                    Tedavi, konaklama ve transferi içeren anahtar teslim paketleri inceleyin.
+                    {t('packagesDescription', 'Tedavi, konaklama ve transferi içeren anahtar teslim paketleri inceleyin.')}
                 </Typography>
             </Box>
 
@@ -200,13 +203,13 @@ function Packages() {
                 {/* Sol Kolon: Filtreler */}
                 <Grid item xs={12} md={3}>
                     <Paper sx={{ p: 3, borderRadius: 2, position: 'sticky', top: 100 }}>
-                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>Paketleri Filtrele</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>{t('filterPackages', 'Paketleri Filtrele')}</Typography>
                         <Divider sx={{ mb: 2 }} />
 
                         {/* Arama Kutusu */}
                         <TextField
                             fullWidth
-                            label="Paket Adı Ara"
+                            label={t('searchPackage', 'Paket Adı Ara')}
                             name="search"
                             value={filters.search}
                             onChange={handleChange}
@@ -217,12 +220,12 @@ function Packages() {
 
                         {/* Kategori Filtresi */}
                         <FormControl fullWidth size="small" sx={{ mb: 3 }}>
-                            <InputLabel id="category-label">Tedavi Alanı</InputLabel>
+                            <InputLabel id="category-label">{t('treatmentArea', 'Tedavi Alanı')}</InputLabel>
                             <Select
                                 labelId="category-label"
                                 name="category"
                                 value={filters.category}
-                                label="Tedavi Alanı"
+                                label={t('treatmentArea', 'Tedavi Alanı')}
                                 onChange={handleChange}
                             >
                                 <MenuItem value="">Tümü</MenuItem>
@@ -234,7 +237,7 @@ function Packages() {
 
                         {/* Fiyat Aralığı Slider */}
                         <Typography variant="subtitle1" gutterBottom sx={{ mt: 1 }}>
-                            Fiyat Aralığı (€):
+                            {t('priceRange', 'Fiyat Aralığı')} (€):
                             <Box component="span" sx={{ fontWeight: 'bold', color: theme.palette.primary.main, ml: 1 }}>
                                 €{filters.priceRange[0]} - €{filters.priceRange[1]}
                             </Box>

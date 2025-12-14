@@ -12,8 +12,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authService } from '../services/api';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
+import { useTranslation } from 'react-i18next';
 
 export default function VerifyEmail() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
@@ -24,7 +26,7 @@ export default function VerifyEmail() {
     const verifyEmail = async () => {
       if (!token) {
         setStatus('error');
-        setError('Doğrulama token\'ı bulunamadı');
+        setError(t('verificationTokenNotFound', 'Doğrulama token\'ı bulunamadı'));
         return;
       }
 
@@ -33,7 +35,7 @@ export default function VerifyEmail() {
         setStatus('success');
       } catch (err) {
         setStatus('error');
-        setError(err.response?.data?.message || 'E-posta doğrulanırken bir hata oluştu');
+        setError(err.response?.data?.message || t('emailVerificationError', 'E-posta doğrulanırken bir hata oluştu'));
       }
     };
 
@@ -56,10 +58,10 @@ export default function VerifyEmail() {
             <>
               <CircularProgress sx={{ mb: 2 }} />
               <Typography variant="h5" gutterBottom>
-                E-posta Doğrulanıyor...
+                {t('verifyingEmail', 'E-posta Doğrulanıyor...')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Lütfen bekleyin.
+                {t('pleaseWait', 'Lütfen bekleyin.')}
               </Typography>
             </>
           )}
@@ -68,13 +70,13 @@ export default function VerifyEmail() {
             <>
               <CheckCircleIcon sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
               <Typography variant="h5" gutterBottom>
-                E-posta Başarıyla Doğrulandı!
+                {t('emailVerifiedSuccess', 'E-posta Başarıyla Doğrulandı!')}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Hesabınız aktif edildi. Şimdi giriş yapabilirsiniz.
+                {t('accountActivated', 'Hesabınız aktif edildi. Şimdi giriş yapabilirsiniz.')}
               </Typography>
               <Button variant="contained" onClick={() => navigate('/login')}>
-                Giriş Yap
+                {t('login', 'Giriş Yap')}
               </Button>
             </>
           )}
@@ -83,13 +85,13 @@ export default function VerifyEmail() {
             <>
               <ErrorIcon sx={{ fontSize: 80, color: 'error.main', mb: 2 }} />
               <Typography variant="h5" gutterBottom>
-                Doğrulama Başarısız
+                {t('verificationFailed', 'Doğrulama Başarısız')}
               </Typography>
               <Alert severity="error" sx={{ mb: 2 }}>
                 {error}
               </Alert>
               <Button variant="contained" onClick={() => navigate('/login')}>
-                Giriş Sayfasına Dön
+                {t('backToLoginPage', 'Giriş Sayfasına Dön')}
               </Button>
             </>
           )}

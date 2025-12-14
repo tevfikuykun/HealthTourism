@@ -4,8 +4,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import ErrorIcon from '@mui/icons-material/Error';
 import PaymentIcon from '@mui/icons-material/Payment';
 import HomeIcon from '@mui/icons-material/Home';
+import { useTranslation } from 'react-i18next';
 
 export default function PaymentFailed() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const error = searchParams.get('error');
@@ -24,10 +26,10 @@ export default function PaymentFailed() {
         <Paper elevation={3} sx={{ p: 4, width: '100%', textAlign: 'center' }}>
           <ErrorIcon sx={{ fontSize: 100, color: 'error.main', mb: 2 }} />
           <Typography variant="h4" gutterBottom>
-            Ödeme Başarısız
+            {t('paymentFailed', 'Ödeme Başarısız')}
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Ödemeniz işlenirken bir hata oluştu. Lütfen tekrar deneyin.
+            {t('paymentProcessingError', 'Ödemeniz işlenirken bir hata oluştu. Lütfen tekrar deneyin.')}
           </Typography>
           {error && (
             <Alert severity="error" sx={{ mb: 3 }}>
@@ -41,10 +43,10 @@ export default function PaymentFailed() {
               startIcon={<PaymentIcon />}
               onClick={() => navigate('/payments')}
             >
-              Tekrar Dene
+              {t('tryAgain', 'Tekrar Dene')}
             </Button>
             <Button variant="outlined" size="large" startIcon={<HomeIcon />} onClick={() => navigate('/')}>
-              Ana Sayfaya Dön
+              {t('backToHome', 'Ana Sayfaya Dön')}
             </Button>
           </Box>
         </Paper>

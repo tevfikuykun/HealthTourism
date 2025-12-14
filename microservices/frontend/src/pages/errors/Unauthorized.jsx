@@ -3,8 +3,10 @@ import { Container, Box, Typography, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import LockIcon from '@mui/icons-material/Lock';
 import LoginIcon from '@mui/icons-material/Login';
+import { useTranslation } from 'react-i18next';
 
 export default function Unauthorized() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return (
@@ -25,10 +27,10 @@ export default function Unauthorized() {
           401
         </Typography>
         <Typography variant="h4" gutterBottom>
-          Yetkisiz Erişim
+          {t('unauthorizedAccess', 'Yetkisiz Erişim')}
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 500 }}>
-          Bu sayfayı görüntülemek için giriş yapmanız gerekmektedir. Lütfen giriş yapın veya kayıt olun.
+          {t('unauthorizedDescription', 'Bu sayfayı görüntülemek için giriş yapmanız gerekmektedir. Lütfen giriş yapın veya kayıt olun.')}
         </Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button
@@ -37,14 +39,14 @@ export default function Unauthorized() {
             startIcon={<LoginIcon />}
             onClick={() => navigate('/login')}
           >
-            Giriş Yap
+            {t('login', 'Giriş Yap')}
           </Button>
           <Button
             variant="outlined"
             size="large"
             onClick={() => navigate('/register')}
           >
-            Kayıt Ol
+            {t('register', 'Kayıt Ol')}
           </Button>
         </Box>
       </Box>

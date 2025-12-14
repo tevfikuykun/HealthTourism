@@ -1,0 +1,19 @@
+{
+  "welcome": "مرحبا",
+  "hospitals": "المستشفيات",
+  "doctors": "الأطباء",
+  "accommodations": "الإقامة",
+  "packages": "الباقات",
+  "reservations": "الحجوزات",
+  "login": "تسجيل الدخول",
+  "register": "التسجيل",
+  "logout": "تسجيل الخروج",
+  "profile": "الملف الشخصي",
+  "dashboard": "لوحة التحكم",
+  "search": "بحث",
+  "home": "الرئيسية",
+  "about": "من نحن",
+  "contact": "اتصل بنا",
+  "language": "اللغة",
+  "selectLanguage": "اختر اللغة"
+}

@@ -23,6 +23,8 @@ import LockIcon from '@mui/icons-material/Lock';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import Loading from '../components/Loading';
+import SocialLogin from '../components/SocialLogin/SocialLogin';
+import { useTranslation } from '../i18n';
 
 const loginSchema = yup.object().shape({
   email: yup
@@ -36,6 +38,8 @@ const loginSchema = yup.object().shape({
 });
 
 export default function Login() {
+  // Güvenli useTranslation hook'u kullan (i18n.js'den import edildi)
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
@@ -101,10 +105,10 @@ export default function Login() {
           }}
         >
           <Typography variant="h4" component="h1" gutterBottom align="center">
-            Giriş Yap
+            {t('loginTitle', 'Giriş Yap')}
           </Typography>
           <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
-            Hesabınıza giriş yapın
+            {t('loginSubtitle', 'Hesabınıza giriş yapın')}
           </Typography>
 
           {error && (
@@ -117,7 +121,7 @@ export default function Login() {
             <TextField
               {...register('email')}
               fullWidth
-              label="E-posta"
+              label={t('email', 'E-posta')}
               type="email"
               error={!!errors.email}
               helperText={errors.email?.message}
@@ -134,7 +138,7 @@ export default function Login() {
             <TextField
               {...register('password')}
               fullWidth
-              label="Şifre"
+              label={t('password', 'Şifre')}
               type={showPassword ? 'text' : 'password'}
               error={!!errors.password}
               helperText={errors.password?.message}
@@ -164,7 +168,7 @@ export default function Login() {
                 to="/forgot-password"
                 variant="body2"
               >
-                Şifrenizi mi unuttunuz?
+                {t('forgotPassword', 'Şifrenizi mi unuttunuz?')}
               </Link>
             </Box>
 
@@ -175,15 +179,15 @@ export default function Login() {
               size="large"
               sx={{ mb: 2 }}
             >
-              Giriş Yap
+              {t('login', 'Giriş Yap')}
             </Button>
 
-            <Divider sx={{ my: 2 }}>veya</Divider>
+            <SocialLogin />
 
-            <Typography variant="body2" align="center">
-              Hesabınız yok mu?{' '}
+            <Typography variant="body2" align="center" sx={{ mt: 2 }}>
+              {t('noAccount', 'Hesabınız yok mu?')}{' '}
               <Link component={RouterLink} to="/register">
-                Kayıt Ol
+                {t('register', 'Kayıt Ol')}
               </Link>
             </Typography>
           </Box>

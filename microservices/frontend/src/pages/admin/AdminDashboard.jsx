@@ -32,22 +32,24 @@ import MenuIcon from '@mui/icons-material/Menu';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import AdminStats from '../../components/Statistics/AdminStats';
+import { useTranslation } from 'react-i18next';
 
 const drawerWidth = 240;
 
 export default function AdminDashboard() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [selectedMenu, setSelectedMenu] = useState('dashboard');
   const [anchorEl, setAnchorEl] = useState(null);
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
-    { id: 'users', label: 'Kullanıcılar', icon: <PeopleIcon /> },
-    { id: 'hospitals', label: 'Hastaneler', icon: <LocalHospitalIcon /> },
-    { id: 'reservations', label: 'Rezervasyonlar', icon: <EventNoteIcon /> },
-    { id: 'payments', label: 'Ödemeler', icon: <PaymentIcon /> },
-    { id: 'reports', label: 'Raporlar', icon: <BarChartIcon /> },
-    { id: 'settings', label: 'Ayarlar', icon: <SettingsIcon /> },
+    { id: 'dashboard', label: t('dashboard', 'Dashboard'), icon: <DashboardIcon /> },
+    { id: 'users', label: t('users', 'Kullanıcılar'), icon: <PeopleIcon /> },
+    { id: 'hospitals', label: t('hospitals', 'Hastaneler'), icon: <LocalHospitalIcon /> },
+    { id: 'reservations', label: t('reservations', 'Rezervasyonlar'), icon: <EventNoteIcon /> },
+    { id: 'payments', label: t('payments', 'Ödemeler'), icon: <PaymentIcon /> },
+    { id: 'reports', label: t('reports', 'Raporlar'), icon: <BarChartIcon /> },
+    { id: 'settings', label: t('settings', 'Ayarlar'), icon: <SettingsIcon /> },
   ];
 
   const handleMenuClick = (menuId) => {

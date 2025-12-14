@@ -14,7 +14,13 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useParams } from 'react-router-dom';
+import { doctorService } from '../services/api';
+import { useQuery } from '@tanstack/react-query';
+import LoadingState from '../components/LoadingState/LoadingState';
+import ErrorState from '../components/ErrorState/ErrorState';
+import SEOHead from '../components/SEO/SEOHead';
+import { useTranslation } from 'react-i18next';
 
 // --- ÖRNEK VERİLER ---
 const dummyDoctor = {
@@ -66,14 +72,32 @@ function TabPanel(props) {
 
 // --- BİLEŞEN: DoctorDetail ---
 function DoctorDetail() {
+    const { t } = useTranslation();
+    const { slug } = useParams();
     const theme = useTheme();
     const [tabValue, setTabValue] = useState(0);
 
+    const { data: doctor, isLoading, error } = useQuery({
+        queryKey: ['doctor', slug],
+        queryFn: () => doctorService.getBySlug(slug),
+        enabled: !!slug,
+        placeholderData: dummyDoctor
+    });
+
     const handleTabChange = (event, newValue) => { setTabValue(newValue); };
-    const doctor = dummyDoctor;
+
+    if (isLoading) return <LoadingState />;
+    if (error) return <ErrorState error={error} />;
+    if (!doctor) return <ErrorState error={{ message: 'Doktor bulunamadı' }} />;
 
     return (
-        <Container maxWidth="lg" sx={{ py: 5 }}>
+        <>
+            <SEOHead
+                title={`${doctor.name} - ${t('doctorProfile', 'Doktor Profili')}`}
+                description={doctor.about || `${doctor.name} doktor profili, uzmanlık alanları ve hasta yorumları`}
+                keywords={`${doctor.name}, doktor, ${doctor.specialty}, sağlık turizmi`}
+            />
+            <Container maxWidth="lg" sx={{ py: 5 }}>
 
             <Grid container spacing={4}>
 
@@ -98,7 +122,7 @@ function DoctorDetail() {
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                                     <Rating name="read-only" value={doctor.rating} readOnly precision={0.1} size="medium" />
                                     <Typography variant="body1" color="text.secondary" sx={{ ml: 1, fontWeight: 600 }}>
-                                        {doctor.rating} ({doctor.reviews} Yorum)
+                                        {doctor.rating} ({doctor.reviews} {t('reviews', 'Yorum')})
                                     </Typography>
                                 </Box>
                                 <Chip
@@ -113,10 +137,10 @@ function DoctorDetail() {
                         </Box>
                         <Divider sx={{ my: 3 }} />
                         <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-                            **Uzmanlık Alanı:** {doctor.specialty}
+                            **{t('specialty', 'Uzmanlık Alanı')}:** {doctor.specialty}
                         </Typography>
                         <Typography variant="body1" color="text.secondary">
-                            **Deneyim:** {doctor.experience}
+                            **{t('experience', 'Deneyim')}:** {doctor.experience}
                         </Typography>
                     </Paper>
 
@@ -124,18 +148,18 @@ function DoctorDetail() {
                     <Paper sx={{ borderRadius: 2, boxShadow: theme.shadows[3] }}>
                         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                             <Tabs value={tabValue} onChange={handleTabChange} aria-label="doktor detay sekmeleri" variant="scrollable" scrollButtons="auto">
-                                <Tab label="Hakkında & Özgeçmiş" {...a11yProps(0)} />
-                                <Tab label="Uzmanlıklar & Sertifikalar" {...a11yProps(1)} />
-                                <Tab label="Hasta Yorumları" {...a11yProps(2)} />
+                                <Tab label={t('aboutAndResume', 'Hakkında & Özgeçmiş')} {...a11yProps(0)} />
+                                <Tab label={t('specialtiesAndCertifications', 'Uzmanlıklar & Sertifikalar')} {...a11yProps(1)} />
+                                <Tab label={t('patientReviews', 'Hasta Yorumları')} {...a11yProps(2)} />
                             </Tabs>
                         </Box>
 
                         {/* Sekme 1: Hakkında & Özgeçmiş */}
                         <TabPanel value={tabValue} index={0}>
-                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>Hakkında</Typography>
+                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>{t('about', 'Hakkında')}</Typography>
                             <Typography variant="body1" sx={{ mb: 3 }}>{doctor.about}</Typography>
 
-                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>Eğitim Bilgileri</Typography>
+                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>{t('educationInfo', 'Eğitim Bilgileri')}</Typography>
                             <List>
                                 {doctor.education.map((edu, index) => (
                                     <ListItem key={index}>
@@ -148,7 +172,7 @@ function DoctorDetail() {
 
                         {/* Sekme 2: Uzmanlıklar & Sertifikalar */}
                         <TabPanel value={tabValue} index={1}>
-                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>Uzmanlık Alanları</Typography>
+                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>{t('specialtyAreas', 'Uzmanlık Alanları')}</Typography>
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                                 {doctor.areasOfExpertise.map((area, index) => (
                                     <Chip
@@ -162,7 +186,7 @@ function DoctorDetail() {
                                 ))}
                             </Box>
                             <Divider sx={{ my: 3 }} />
-                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>Sertifikalar</Typography>
+                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>{t('certifications', 'Sertifikalar')}</Typography>
                             <List>
                                 {doctor.certifications.map((cert, index) => (
                                     <ListItem key={index}>
@@ -178,7 +202,7 @@ function DoctorDetail() {
                             <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                                 <Typography variant="h4" sx={{ fontWeight: 700, mr: 1 }}>{doctor.rating}</Typography>
                                 <Rating value={doctor.rating} readOnly precision={0.1} size="large" />
-                                <Typography variant="h6" color="text.secondary" sx={{ ml: 1 }}>({doctor.reviews} Yorum)</Typography>
+                                <Typography variant="h6" color="text.secondary" sx={{ ml: 1 }}>({doctor.reviews} {t('reviews', 'Yorum')})</Typography>
                             </Box>
 
                             {dummyReviews.map((review) => (
@@ -204,10 +228,10 @@ function DoctorDetail() {
                         <Box textAlign="center" sx={{ mb: 3 }}>
                             <EventAvailableIcon sx={{ fontSize: 40, color: 'primary.dark' }} />
                             <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.dark', mt: 1 }}>
-                                Randevu Talep Formu
+                                {t('appointmentRequestForm', 'Randevu Talep Formu')}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                                {doctor.name} ile görüşmek için hemen talep oluşturun.
+                                {t('appointmentRequestDescription', '{name} ile görüşmek için hemen talep oluşturun.', { name: doctor.name })}
                             </Typography>
                         </Box>
 
@@ -235,7 +259,7 @@ function DoctorDetail() {
                             />
                             <TextField
                                 fullWidth
-                                label="Tercih Edilen Randevu Tarihi"
+                                label={t('preferredAppointmentDate', 'Tercih Edilen Randevu Tarihi')}
                                 type="date"
                                 size="small"
                                 sx={{ mb: 2 }}
@@ -267,6 +291,7 @@ function DoctorDetail() {
                 </Grid>
             </Grid>
         </Container>
+        </>
     );
 }
 

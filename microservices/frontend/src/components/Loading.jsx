@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, CircularProgress, Typography, LinearProgress } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Loading Component
@@ -11,10 +12,12 @@ import { Box, CircularProgress, Typography, LinearProgress } from '@mui/material
  * @param {boolean} fullScreen - Tam ekran modu (varsayılan: false)
  */
 export default function Loading({ 
-  message = 'Yükleniyor...', 
+  message, 
   variant = 'circular',
   fullScreen = false 
 }) {
+  const { t } = useTranslation();
+  const defaultMessage = message || t('loading', 'Yükleniyor...');
   const containerStyles = fullScreen
     ? {
         position: 'fixed',
@@ -43,9 +46,9 @@ export default function Loading({
       {variant === 'circular' ? (
         <>
           <CircularProgress size={60} />
-          {message && (
+          {defaultMessage && (
             <Typography variant="body1" sx={{ mt: 2 }}>
-              {message}
+              {defaultMessage}
             </Typography>
           )}
         </>
@@ -54,9 +57,9 @@ export default function Loading({
           <Box sx={{ width: '100%', maxWidth: '400px', mb: 2 }}>
             <LinearProgress />
           </Box>
-          {message && (
+          {defaultMessage && (
             <Typography variant="body2" color="text.secondary">
-              {message}
+              {defaultMessage}
             </Typography>
           )}
         </>

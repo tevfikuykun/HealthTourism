@@ -19,23 +19,25 @@ import LockIcon from '@mui/icons-material/Lock';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import Loading from '../components/Loading';
+import { useTranslation } from 'react-i18next';
 
-const resetPasswordSchema = yup.object().shape({
+const getResetPasswordSchema = (t) => yup.object().shape({
   newPassword: yup
     .string()
-    .min(8, 'Şifre en az 8 karakter olmalıdır')
+    .min(8, t('passwordMinLength', 'Şifre en az 8 karakter olmalıdır', { min: 8 }))
     .matches(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      'Şifre en az bir büyük harf, bir küçük harf ve bir rakam içermelidir'
+      t('passwordRequirements', 'Şifre en az bir büyük harf, bir küçük harf ve bir rakam içermelidir')
     )
-    .required('Şifre gereklidir'),
+    .required(t('passwordRequired', 'Şifre gereklidir')),
   confirmPassword: yup
     .string()
-    .oneOf([yup.ref('newPassword'), null], 'Şifreler eşleşmiyor')
-    .required('Şifre tekrarı gereklidir'),
+    .oneOf([yup.ref('newPassword'), null], t('passwordsMismatch', 'Şifreler eşleşmiyor'))
+    .required(t('confirmPasswordRequired', 'Şifre tekrarı gereklidir')),
 });
 
 export default function ResetPassword() {
+  const { t } = useTranslation();
   const { token } = useParams();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -49,7 +51,7 @@ export default function ResetPassword() {
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: yupResolver(resetPasswordSchema),
+    resolver: yupResolver(getResetPasswordSchema(t)),
   });
 
   const onSubmit = async (data) => {
@@ -65,14 +67,14 @@ export default function ResetPassword() {
         navigate('/login');
       }, 2000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Şifre sıfırlanırken bir hata oluştu');
+      setError(err.response?.data?.message || t('resetPasswordError', 'Şifre sıfırlanırken bir hata oluştu'));
     } finally {
       setIsLoading(false);
     }
   };
 
   if (isLoading) {
-    return <Loading message="Şifre sıfırlanıyor..." fullScreen />;
+    return <Loading message={t('resettingPassword', 'Şifre sıfırlanıyor...')} fullScreen />;
   }
 
   return (
@@ -88,10 +90,10 @@ export default function ResetPassword() {
       >
         <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
           <Typography variant="h4" component="h1" gutterBottom align="center">
-            Yeni Şifre Belirle
+            {t('setNewPassword', 'Yeni Şifre Belirle')}
           </Typography>
           <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
-            Yeni şifrenizi girin.
+            {t('enterNewPassword', 'Yeni şifrenizi girin.')}
           </Typography>
 
           {error && (
@@ -102,7 +104,7 @@ export default function ResetPassword() {
 
           {success && (
             <Alert severity="success" sx={{ mb: 2 }}>
-              Şifreniz başarıyla sıfırlandı! Giriş sayfasına yönlendiriliyorsunuz...
+              {t('passwordResetSuccess', 'Şifreniz başarıyla sıfırlandı! Giriş sayfasına yönlendiriliyorsunuz...')}
             </Alert>
           )}
 
@@ -111,7 +113,7 @@ export default function ResetPassword() {
               <TextField
                 {...register('newPassword')}
                 fullWidth
-                label="Yeni Şifre"
+                label={t('newPassword', 'Yeni Şifre')}
                 type={showPassword ? 'text' : 'password'}
                 error={!!errors.newPassword}
                 helperText={errors.newPassword?.message}
@@ -135,7 +137,7 @@ export default function ResetPassword() {
               <TextField
                 {...register('confirmPassword')}
                 fullWidth
-                label="Şifre Tekrar"
+                label={t('confirmPassword', 'Şifre Tekrar')}
                 type={showConfirmPassword ? 'text' : 'password'}
                 error={!!errors.confirmPassword}
                 helperText={errors.confirmPassword?.message}
@@ -157,7 +159,7 @@ export default function ResetPassword() {
               />
 
               <Button type="submit" fullWidth variant="contained" size="large">
-                Şifreyi Sıfırla
+                {t('resetPassword', 'Şifreyi Sıfırla')}
               </Button>
             </Box>
           )}

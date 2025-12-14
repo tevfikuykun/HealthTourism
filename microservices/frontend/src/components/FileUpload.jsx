@@ -10,6 +10,7 @@ import {
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { fileStorageService } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 /**
  * FileUpload Component
@@ -27,6 +28,7 @@ export default function FileUpload({
   maxSize = 10,
   multiple = false,
 }) {
+  const { t } = useTranslation();
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState({});
   const [isUploading, setIsUploading] = useState(false);
@@ -37,7 +39,7 @@ export default function FileUpload({
     const validFiles = files.filter((file) => {
       const sizeInMB = file.size / (1024 * 1024);
       if (sizeInMB > maxSize) {
-        alert(`Dosya boyutu ${maxSize} MB'dan büyük olamaz: ${file.name}`);
+        alert(t('fileSizeExceeded', 'Dosya boyutu {maxSize} MB'dan büyük olamaz: {fileName}', { maxSize, fileName: file.name }));
         return false;
       }
       return true;
@@ -89,7 +91,7 @@ export default function FileUpload({
       setUploadProgress({});
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Dosya yüklenirken bir hata oluştu');
+      alert(t('fileUploadError', 'Dosya yüklenirken bir hata oluştu'));
     } finally {
       setIsUploading(false);
     }
@@ -113,7 +115,7 @@ export default function FileUpload({
         onClick={() => fileInputRef.current?.click()}
         sx={{ mb: 2 }}
       >
-        Dosya Seç
+        {t('selectFile', 'Dosya Seç')}
       </Button>
 
       {selectedFiles.length > 0 && (
@@ -145,7 +147,7 @@ export default function FileUpload({
             disabled={isUploading}
             sx={{ mt: 2 }}
           >
-            {isUploading ? 'Yükleniyor...' : 'Yükle'}
+            {isUploading ? t('uploading', 'Yükleniyor...') : t('upload', 'Yükle')}
           </Button>
         </Box>
       )}

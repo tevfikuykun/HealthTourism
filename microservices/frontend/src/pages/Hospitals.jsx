@@ -15,6 +15,7 @@ import Pagination from '../components/Pagination';
 import Loading from '../components/Loading';
 import EmptyState from '../components/EmptyState';
 import { Link as RouterLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const specialties = ['Kardiyoloji', 'Estetik', 'Diş Hekimliği', 'Onkoloji', 'Ortopedi', 'Göz Hastalıkları', 'Genel Cerrahi'];
 const cities = ['İstanbul', 'Ankara', 'İzmir', 'Antalya', 'Bursa', 'Muğla', 'Adana'];
@@ -22,6 +23,7 @@ const cities = ['İstanbul', 'Ankara', 'İzmir', 'Antalya', 'Bursa', 'Muğla', '
 
 // --- BİLEŞEN: HospitalCard ---
 const HospitalCard = ({ hospital }) => {
+    const { t } = useTranslation();
     const theme = useTheme();
     return (
         <Card
@@ -64,14 +66,14 @@ const HospitalCard = ({ hospital }) => {
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                     <LocationOnIcon fontSize="small" color="action" sx={{ mr: 0.5 }} />
-                    <Typography variant="body2" color="text.secondary">{hospital.city}, Türkiye</Typography>
+                    <Typography variant="body2" color="text.secondary">{hospital.city}, {t('turkey', 'Türkiye')}</Typography>
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                     <Rating name="read-only" value={hospital.rating} readOnly precision={0.1} size="small" icon={<StarIcon color="warning" />} />
                     <Typography variant="body2" sx={{ ml: 1, fontWeight: 'bold', color: theme.palette.warning.main }}>{hospital.rating}</Typography>
                     <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
-                    <Typography variant="body2" color="text.secondary">{hospital.treatments}+ Tedavi</Typography>
+                    <Typography variant="body2" color="text.secondary">{hospital.treatments}+ {t('treatments', 'Tedavi')}</Typography>
                 </Box>
 
                 <Box sx={{ mt: 1, mb: 2 }}>
@@ -88,7 +90,7 @@ const HospitalCard = ({ hospital }) => {
                     to={`/hospitals/${hospital.slug}`}
                     sx={{ mt: 'auto' }} // Butonun daima en altta olmasını sağlar
                 >
-                    Detaylı İncele
+                    {t('viewDetails', 'Detaylı İncele')}
                 </Button>
             </CardContent>
         </Card>
@@ -98,6 +100,7 @@ const HospitalCard = ({ hospital }) => {
 
 
 function Hospitals() {
+    const { t } = useTranslation();
     const [filters, setFilters] = useState({
         search: '',
         city: '',
@@ -139,10 +142,10 @@ function Hospitals() {
     return (
         <Container maxWidth="lg" sx={{ py: 5 }}>
             <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', mb: 1 }}>
-                Global Standartlarda Hastaneler
+                {t('globalStandards')}
             </Typography>
             <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
-                500'den fazla akredite hastane ve kliniği keşfedin.
+                {t('discoverHospitals')}
             </Typography>
 
             {/* Arama ve Filtreler Alanı */}
@@ -151,7 +154,7 @@ function Hospitals() {
                     <Grid item xs={12} md={6}>
                         <TextField
                             fullWidth
-                            label="Hastane Adı Veya Anahtar Kelime Ara"
+                            label={t('searchHospital')}
                             name="search"
                             value={filters.search}
                             onChange={handleChange}
@@ -163,12 +166,12 @@ function Hospitals() {
                     </Grid>
                     <Grid item xs={12} sm={6} md={3}>
                         <FormControl fullWidth>
-                            <InputLabel id="specialty-label">Uzmanlık Alanı</InputLabel>
+                            <InputLabel id="specialty-label">{t('specialty')}</InputLabel>
                             <Select
                                 labelId="specialty-label"
                                 name="specialty"
                                 value={filters.specialty}
-                                label="Uzmanlık Alanı"
+                                label={t('specialty')}
                                 onChange={handleChange}
                             >
                                 <MenuItem value="">Tümü</MenuItem>
@@ -180,12 +183,12 @@ function Hospitals() {
                     </Grid>
                     <Grid item xs={12} sm={6} md={3}>
                         <FormControl fullWidth>
-                            <InputLabel id="city-label">Şehir</InputLabel>
+                            <InputLabel id="city-label">{t('city')}</InputLabel>
                             <Select
                                 labelId="city-label"
                                 name="city"
                                 value={filters.city}
-                                label="Şehir"
+                                label={t('city')}
                                 onChange={handleChange}
                             >
                                 <MenuItem value="">Tümü</MenuItem>
@@ -199,11 +202,11 @@ function Hospitals() {
             </Paper>
 
             {isLoading ? (
-                <Loading message="Hastaneler yükleniyor..." />
+                <Loading message={t('loadingHospitals')} />
             ) : error ? (
                 <EmptyState
                     title="Hata oluştu"
-                    description="Hastaneler yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin."
+                    description={t('errorLoading')}
                 />
             ) : (
                 <>
@@ -234,7 +237,7 @@ function Hospitals() {
                     ) : (
                         <EmptyState
                             title="Hastane bulunamadı"
-                            description="Aradığınız kriterlere uygun hastane bulunamadı. Lütfen filtreleri değiştirin."
+                            description={t('noResultsDescription')}
                         />
                     )}
                 </>

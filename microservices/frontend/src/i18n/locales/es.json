@@ -1,0 +1,19 @@
+{
+  "welcome": "Bienvenido",
+  "hospitals": "Hospitales",
+  "doctors": "Médicos",
+  "accommodations": "Alojamientos",
+  "packages": "Paquetes",
+  "reservations": "Reservas",
+  "login": "Iniciar sesión",
+  "register": "Registrarse",
+  "logout": "Cerrar sesión",
+  "profile": "Perfil",
+  "dashboard": "Panel de control",
+  "search": "Buscar",
+  "home": "Inicio",
+  "about": "Acerca de",
+  "contact": "Contacto",
+  "language": "Idioma",
+  "selectLanguage": "Seleccionar idioma"
+}

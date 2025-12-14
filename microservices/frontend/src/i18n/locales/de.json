@@ -1,0 +1,19 @@
+{
+  "welcome": "Willkommen",
+  "hospitals": "Krankenhäuser",
+  "doctors": "Ärzte",
+  "accommodations": "Unterkünfte",
+  "packages": "Pakete",
+  "reservations": "Reservierungen",
+  "login": "Anmelden",
+  "register": "Registrieren",
+  "logout": "Abmelden",
+  "profile": "Profil",
+  "dashboard": "Dashboard",
+  "search": "Suchen",
+  "home": "Startseite",
+  "about": "Über uns",
+  "contact": "Kontakt",
+  "language": "Sprache",
+  "selectLanguage": "Sprache auswählen"
+}

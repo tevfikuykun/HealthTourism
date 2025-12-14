@@ -10,6 +10,7 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import SearchIcon from '@mui/icons-material/Search';
+import { useTranslation } from 'react-i18next';
 
 // Simüle Edilmiş Fatura Bilgisi
 const initialPaymentData = {
@@ -21,6 +22,7 @@ const initialPaymentData = {
 };
 
 function Payments() {
+    const { t } = useTranslation();
     const theme = useTheme();
 
     const [queryCode, setQueryCode] = useState('');
@@ -104,7 +106,7 @@ function Payments() {
                 Güvenli Ödeme Merkezi
             </Typography>
             <Typography variant="h6" align="center" color="text.secondary" sx={{ mb: 4 }}>
-                Fatura veya rezervasyon kodunuzu girerek ödemenizi kolayca tamamlayın.
+                {t('paymentDescription', 'Fatura veya rezervasyon kodunuzu girerek ödemenizi kolayca tamamlayın.')}
             </Typography>
 
             <Grid container spacing={4}>
@@ -112,12 +114,12 @@ function Payments() {
                 <Grid item xs={12} md={5}>
                     <Paper sx={{ p: 4, height: '100%', border: `1px solid ${theme.palette.primary.main}` }}>
                         <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, display: 'flex', alignItems: 'center' }}>
-                            <AccountBalanceWalletIcon color="primary" sx={{ mr: 1 }} /> Fatura Sorgula
+                            <AccountBalanceWalletIcon color="primary" sx={{ mr: 1 }} /> {t('queryInvoice', 'Fatura Sorgula')}
                         </Typography>
                         <Box component="form" onSubmit={handleQuery} sx={{ mb: 3 }}>
                             <TextField
                                 fullWidth
-                                label="Fatura / Rezervasyon Kodu"
+                                label={t('invoiceReservationCode', 'Fatura / Rezervasyon Kodu')}
                                 name="queryCode"
                                 value={queryCode}
                                 onChange={(e) => setQueryCode(e.target.value)}
@@ -132,7 +134,7 @@ function Payments() {
                                 startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <SearchIcon />}
                                 disabled={isLoading}
                             >
-                                {isLoading ? 'Sorgulanıyor...' : 'Sorgula'}
+                                {isLoading ? t('querying', 'Sorgulanıyor...') : t('query', 'Sorgula')}
                             </Button>
                         </Box>
 
@@ -140,14 +142,14 @@ function Payments() {
                         {paymentInfo && (
                             <Box sx={{ mt: 3, p: 2, border: `1px solid ${theme.palette.secondary.main}`, borderRadius: 1, backgroundColor: theme.palette.action.hover }}>
                                 <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1, color: theme.palette.secondary.main }}>
-                                    Ödeme Yapılacak Fatura
+                                    {t('invoiceToPay', 'Ödeme Yapılacak Fatura')}
                                 </Typography>
                                 <Divider sx={{ mb: 1 }}/>
                                 <Typography variant="body1">Müşteri: **{paymentInfo.clientName}**</Typography>
                                 <Typography variant="body1">Hizmet: {paymentInfo.service}</Typography>
-                                <Typography variant="body1">Vade Tarihi: {paymentInfo.dueDate}</Typography>
+                                <Typography variant="body1">{t('dueDate')}: {paymentInfo.dueDate}</Typography>
                                 <Typography variant="h5" color="error" sx={{ mt: 1, fontWeight: 'bold' }}>
-                                    Tutar: {paymentInfo.amount.toLocaleString()} ₺
+                                    {t('amount')}: {paymentInfo.amount.toLocaleString()} ₺
                                 </Typography>
                             </Box>
                         )}
@@ -158,12 +160,12 @@ function Payments() {
                 <Grid item xs={12} md={7}>
                     <Paper sx={{ p: 4, height: '100%', border: `1px solid ${paymentInfo ? theme.palette.secondary.main : theme.palette.divider}` }}>
                         <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, display: 'flex', alignItems: 'center' }}>
-                            <CreditCardIcon color="primary" sx={{ mr: 1 }} /> Kart Bilgileri
+                            <CreditCardIcon color="primary" sx={{ mr: 1 }} /> {t('cardInformation', 'Kart Bilgileri')}
                         </Typography>
 
                         {!paymentInfo && (
                              <Alert severity="warning" icon={<VerifiedUserIcon />} sx={{ mb: 3 }}>
-                                Ödeme formunu aktif etmek için lütfen önce geçerli bir fatura kodu sorgulayınız.
+                                {t('activatePaymentForm', 'Ödeme formunu aktif etmek için lütfen önce geçerli bir fatura kodu sorgulayınız.')}
                              </Alert>
                         )}
 
@@ -171,16 +173,16 @@ function Payments() {
                             <Grid container spacing={2}>
                                 {/* Kart Bilgisi Alanları */}
                                 <Grid item xs={12}>
-                                    <TextField fullWidth label="Kart Numarası" name="cardNumber" value={cardDetails.cardNumber} onChange={handleCardChange} inputProps={{ maxLength: 16 }} required disabled={!paymentInfo || isProcessing} />
+                                    <TextField fullWidth label={t('cardNumber', 'Kart Numarası')} name="cardNumber" value={cardDetails.cardNumber} onChange={handleCardChange} inputProps={{ maxLength: 16 }} required disabled={!paymentInfo || isProcessing} />
                                 </Grid>
                                 <Grid item xs={12}>
-                                    <TextField fullWidth label="Kart Üzerindeki Ad Soyad" name="cardHolder" value={cardDetails.cardHolder} onChange={handleCardChange} required disabled={!paymentInfo || isProcessing} />
+                                    <TextField fullWidth label={t('cardHolderName', 'Kart Üzerindeki Ad Soyad')} name="cardHolder" value={cardDetails.cardHolder} onChange={handleCardChange} required disabled={!paymentInfo || isProcessing} />
                                 </Grid>
                                 <Grid item xs={6}>
-                                    <TextField fullWidth label="Son Kullanma Tarihi (AA/YY)" name="expiryDate" value={cardDetails.expiryDate} onChange={handleCardChange} inputProps={{ maxLength: 5 }} required disabled={!paymentInfo || isProcessing} />
+                                    <TextField fullWidth label={t('expiryDate', 'Son Kullanma Tarihi (AA/YY)')} name="expiryDate" value={cardDetails.expiryDate} onChange={handleCardChange} inputProps={{ maxLength: 5 }} required disabled={!paymentInfo || isProcessing} />
                                 </Grid>
                                 <Grid item xs={6}>
-                                    <TextField fullWidth label="CVV Kodu" name="cvv" type="password" value={cardDetails.cvv} onChange={handleCardChange} inputProps={{ maxLength: 3 }} required disabled={!paymentInfo || isProcessing} />
+                                    <TextField fullWidth label={t('cvvCode', 'CVV Kodu')} name="cvv" type="password" value={cardDetails.cvv} onChange={handleCardChange} inputProps={{ maxLength: 3 }} required disabled={!paymentInfo || isProcessing} />
                                 </Grid>
 
                                 {/* Ödeme Butonu */}
@@ -195,14 +197,14 @@ function Payments() {
                                         disabled={!paymentInfo || isProcessing}
                                         sx={{ py: 1.5, mt: 1 }}
                                     >
-                                        {isProcessing ? 'İşleniyor...' : `${paymentInfo ? paymentInfo.amount.toLocaleString() : '0'} ₺ Ödeme Yap`}
+                                        {isProcessing ? t('processing', 'İşleniyor...') : `${paymentInfo ? paymentInfo.amount.toLocaleString() : '0'} ₺ ${t('makePayment', 'Ödeme Yap')}`}
                                     </Button>
                                 </Grid>
 
                                 <Grid item xs={12} sx={{ textAlign: 'center', mt: 2 }}>
                                     <Typography variant="caption" color="text.secondary">
                                         <VerifiedUserIcon fontSize="small" color="success" sx={{ verticalAlign: 'middle', mr: 0.5 }} />
-                                        3D Secure ve SSL ile güvenli ödeme.
+                                        {t('securePaymentNote', '3D Secure ve SSL ile güvenli ödeme.')}
                                     </Typography>
                                 </Grid>
                             </Grid>

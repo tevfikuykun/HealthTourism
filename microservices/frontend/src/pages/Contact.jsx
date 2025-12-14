@@ -15,16 +15,18 @@ import * as yup from 'yup';
 import { contactService } from '../services/api';
 import SendIcon from '@mui/icons-material/Send';
 import Loading from '../components/Loading';
+import { useTranslation } from 'react-i18next';
 
-const contactSchema = yup.object().shape({
-  name: yup.string().required('Ad soyad gereklidir'),
-  email: yup.string().email('Geçerli bir e-posta adresi girin').required('E-posta adresi gereklidir'),
-  phone: yup.string().required('Telefon numarası gereklidir'),
-  subject: yup.string().required('Konu gereklidir'),
-  message: yup.string().required('Mesaj gereklidir').min(10, 'Mesaj en az 10 karakter olmalıdır'),
+const getContactSchema = (t) => yup.object().shape({
+  name: yup.string().required(t('nameRequired', 'Ad soyad gereklidir')),
+  email: yup.string().email(t('validEmail', 'Geçerli bir e-posta adresi girin')).required(t('emailRequired', 'E-posta adresi gereklidir')),
+  phone: yup.string().required(t('phoneRequired', 'Telefon numarası gereklidir')),
+  subject: yup.string().required(t('subjectRequired', 'Konu gereklidir')),
+  message: yup.string().required(t('messageRequired', 'Mesaj gereklidir')).min(10, t('messageMinLength', 'Mesaj en az 10 karakter olmalıdır')),
 });
 
 export default function Contact() {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -35,7 +37,7 @@ export default function Contact() {
     formState: { errors },
     reset,
   } = useForm({
-    resolver: yupResolver(contactSchema),
+    resolver: yupResolver(getContactSchema(t)),
   });
 
   const onSubmit = async (data) => {
@@ -48,23 +50,23 @@ export default function Contact() {
       setSuccess(true);
       reset();
     } catch (err) {
-      setError(err.response?.data?.message || 'Mesaj gönderilirken bir hata oluştu');
+      setError(err.response?.data?.message || t('messageSendError', 'Mesaj gönderilirken bir hata oluştu'));
     } finally {
       setIsLoading(false);
     }
   };
 
   if (isLoading) {
-    return <Loading message="Mesaj gönderiliyor..." />;
+    return <Loading message={t('sendingMessage', 'Mesaj gönderiliyor...')} />;
   }
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Typography variant="h4" align="center" gutterBottom>
-        İletişim
+        {t('contact')}
       </Typography>
       <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 4 }}>
-        Sorularınız, önerileriniz veya şikayetleriniz için bizimle iletişime geçebilirsiniz.
+        {t('contactDescription', 'Sorularınız, önerileriniz veya şikayetleriniz için bizimle iletişime geçebilirsiniz.')}
       </Typography>
 
       <Paper sx={{ p: 4 }}>
@@ -76,7 +78,7 @@ export default function Contact() {
 
         {success && (
           <Alert severity="success" sx={{ mb: 3 }}>
-            Mesajınız başarıyla gönderildi! En kısa sürede size dönüş yapacağız.
+            {t('messageSentSuccess', 'Mesajınız başarıyla gönderildi! En kısa sürede size dönüş yapacağız.')}
           </Alert>
         )}
 
@@ -86,7 +88,7 @@ export default function Contact() {
               <TextField
                 {...register('name')}
                 fullWidth
-                label="Ad Soyad"
+                label={t('fullName', 'Ad Soyad')}
                 error={!!errors.name}
                 helperText={errors.name?.message}
               />
@@ -95,7 +97,7 @@ export default function Contact() {
               <TextField
                 {...register('email')}
                 fullWidth
-                label="E-posta"
+                label={t('email')}
                 type="email"
                 error={!!errors.email}
                 helperText={errors.email?.message}
@@ -105,7 +107,7 @@ export default function Contact() {
               <TextField
                 {...register('phone')}
                 fullWidth
-                label="Telefon"
+                label={t('phone')}
                 error={!!errors.phone}
                 helperText={errors.phone?.message}
               />
@@ -114,7 +116,7 @@ export default function Contact() {
               <TextField
                 {...register('subject')}
                 fullWidth
-                label="Konu"
+                label={t('subject', 'Konu')}
                 error={!!errors.subject}
                 helperText={errors.subject?.message}
               />
@@ -125,14 +127,14 @@ export default function Contact() {
                 fullWidth
                 multiline
                 rows={6}
-                label="Mesajınız"
+                label={t('yourMessage', 'Mesajınız')}
                 error={!!errors.message}
                 helperText={errors.message?.message}
               />
             </Grid>
             <Grid item xs={12}>
               <Button type="submit" variant="contained" size="large" startIcon={<SendIcon />} fullWidth>
-                Gönder
+                {t('send')}
               </Button>
             </Grid>
           </Grid>
@@ -140,13 +142,13 @@ export default function Contact() {
 
         <Box sx={{ mt: 4, pt: 4, borderTop: 1, borderColor: 'divider' }}>
           <Typography variant="h6" gutterBottom>
-            İletişim Bilgileri
+            {t('contactInformation', 'İletişim Bilgileri')}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            E-posta: info@healthtourism.com
+            {t('email')}: info@healthtourism.com
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Telefon: +90 (212) 123 45 67
+            {t('phone')}: +90 (212) 123 45 67
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Adres: İstanbul, Türkiye

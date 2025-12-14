@@ -383,7 +383,239 @@ services:
     environment:
       - STORAGE_TYPE=mem
 
+  # New Services Databases
+  mysql-comparison:
+    image: mysql:8.0
+    container_name: mysql-comparison
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: comparison_db
+    ports:
+      - "3336:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-analytics:
+    image: mysql:8.0
+    container_name: mysql-analytics
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: analytics_db
+    ports:
+      - "3337:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-health-records:
+    image: mysql:8.0
+    container_name: mysql-health-records
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: health_records_db
+    ports:
+      - "3338:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-medication:
+    image: mysql:8.0
+    container_name: mysql-medication
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: medication_db
+    ports:
+      - "3339:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-referral:
+    image: mysql:8.0
+    container_name: mysql-referral
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: referral_db
+    ports:
+      - "3340:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-coupon:
+    image: mysql:8.0
+    container_name: mysql-coupon
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: coupon_db
+    ports:
+      - "3341:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-waiting-list:
+    image: mysql:8.0
+    container_name: mysql-waiting-list
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: waiting_list_db
+    ports:
+      - "3342:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-loyalty:
+    image: mysql:8.0
+    container_name: mysql-loyalty
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: loyalty_db
+    ports:
+      - "3343:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-forum:
+    image: mysql:8.0
+    container_name: mysql-forum
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: forum_db
+    ports:
+      - "3344:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-invoice:
+    image: mysql:8.0
+    container_name: mysql-invoice
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: invoice_db
+    ports:
+      - "3345:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-video-consultation:
+    image: mysql:8.0
+    container_name: mysql-video-consultation
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: video_consultation_db
+    ports:
+      - "3346:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-social-media:
+    image: mysql:8.0
+    container_name: mysql-social-media
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: social_media_db
+    ports:
+      - "3347:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-whatsapp:
+    image: mysql:8.0
+    container_name: mysql-whatsapp
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: whatsapp_db
+    ports:
+      - "3348:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-live-chat:
+    image: mysql:8.0
+    container_name: mysql-live-chat
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: live_chat_db
+    ports:
+      - "3349:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-review:
+    image: mysql:8.0
+    container_name: mysql-review
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: review_db
+    ports:
+      - "3350:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-post-treatment:
+    image: mysql:8.0
+    container_name: mysql-post-treatment
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: post_treatment_db
+    ports:
+      - "3351:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-influencer:
+    image: mysql:8.0
+    container_name: mysql-influencer
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: influencer_db
+    ports:
+      - "3352:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-affiliate:
+    image: mysql:8.0
+    container_name: mysql-affiliate
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: affiliate_db
+    ports:
+      - "3353:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-gamification:
+    image: mysql:8.0
+    container_name: mysql-gamification
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: gamification_db
+    ports:
+      - "3354:3306"
+    networks:
+      - health-tourism-network
+
+  # Main Database for Monolithic Application
+  mysql-main:
+    image: mysql:8.0
+    container_name: mysql-main
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: health_tourism
+    ports:
+      - "3306:3306"
+    networks:
+      - health-tourism-network
+    volumes:
+      - mysql-main-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 networks:
   health-tourism-network:
     driver: bridge
+
+volumes:
+  mysql-main-data:
 

@@ -17,13 +17,15 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import EmailIcon from '@mui/icons-material/Email';
 import LockIcon from '@mui/icons-material/Lock';
 import Loading from '../../components/Loading';
-
-const adminLoginSchema = yup.object().shape({
-  email: yup.string().email('Geçerli bir e-posta adresi girin').required('E-posta adresi gereklidir'),
-  password: yup.string().required('Şifre gereklidir'),
-});
+import { useTranslation } from 'react-i18next';
 
 export default function AdminLogin() {
+  const { t } = useTranslation();
+  
+  const adminLoginSchema = yup.object().shape({
+    email: yup.string().email(t('validEmail', 'Geçerli bir e-posta adresi girin')).required(t('emailRequired', 'E-posta adresi gereklidir')),
+    password: yup.string().required(t('passwordRequired', 'Şifre gereklidir')),
+  });
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -46,14 +48,14 @@ export default function AdminLogin() {
       // localStorage.setItem('adminUser', JSON.stringify(response.data.user));
       navigate('/admin/dashboard');
     } catch (err) {
-      setError('Giriş başarısız. E-posta ve şifrenizi kontrol edin.');
+      setError(t('loginFailed', 'Giriş başarısız. E-posta ve şifrenizi kontrol edin.'));
     } finally {
       setIsLoading(false);
     }
   };
 
   if (isLoading) {
-    return <Loading message="Giriş yapılıyor..." fullScreen />;
+    return <Loading message={t('loggingIn', 'Giriş yapılıyor...')} fullScreen />;
   }
 
   return (
@@ -72,10 +74,10 @@ export default function AdminLogin() {
           <Box sx={{ textAlign: 'center', mb: 3 }}>
             <AdminPanelSettingsIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
             <Typography variant="h4" component="h1" gutterBottom>
-              Admin Panel
+              {t('adminPanel', 'Admin Panel')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Yönetici girişi yapın
+              {t('adminLogin', 'Yönetici girişi yapın')}
             </Typography>
           </Box>
 
@@ -89,7 +91,7 @@ export default function AdminLogin() {
             <TextField
               {...register('email')}
               fullWidth
-              label="E-posta"
+              label={t('email', 'E-posta')}
               type="email"
               error={!!errors.email}
               helperText={errors.email?.message}
@@ -106,7 +108,7 @@ export default function AdminLogin() {
             <TextField
               {...register('password')}
               fullWidth
-              label="Şifre"
+              label={t('password', 'Şifre')}
               type="password"
               error={!!errors.password}
               helperText={errors.password?.message}
@@ -121,7 +123,7 @@ export default function AdminLogin() {
             />
 
             <Button type="submit" fullWidth variant="contained" size="large">
-              Giriş Yap
+              {t('loginButton', 'Giriş Yap')}
             </Button>
           </Box>
         </Paper>

@@ -1,0 +1,19 @@
+{
+  "welcome": "Добро пожаловать",
+  "hospitals": "Больницы",
+  "doctors": "Врачи",
+  "accommodations": "Размещение",
+  "packages": "Пакеты",
+  "reservations": "Бронирования",
+  "login": "Войти",
+  "register": "Зарегистрироваться",
+  "logout": "Выйти",
+  "profile": "Профиль",
+  "dashboard": "Панель управления",
+  "search": "Поиск",
+  "home": "Главная",
+  "about": "О нас",
+  "contact": "Контакты",
+  "language": "Язык",
+  "selectLanguage": "Выберите язык"
+}

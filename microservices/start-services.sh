@@ -48,6 +48,30 @@ cd config-server && mvn spring-boot:run > ../logs/config-server.log 2>&1 & cd ..
 cd admin-service && mvn spring-boot:run > ../logs/admin.log 2>&1 & cd ..
 cd search-service && mvn spring-boot:run > ../logs/search.log 2>&1 & cd ..
 cd integration-service && mvn spring-boot:run > ../logs/integration.log 2>&1 & cd ..
+cd comparison-service && mvn spring-boot:run > ../logs/comparison.log 2>&1 & cd ..
+cd analytics-service && mvn spring-boot:run > ../logs/analytics.log 2>&1 & cd ..
+cd health-records-service && mvn spring-boot:run > ../logs/health-records.log 2>&1 & cd ..
+cd medication-service && mvn spring-boot:run > ../logs/medication.log 2>&1 & cd ..
+cd referral-service && mvn spring-boot:run > ../logs/referral.log 2>&1 & cd ..
+cd coupon-service && mvn spring-boot:run > ../logs/coupon.log 2>&1 & cd ..
+cd installment-service && mvn spring-boot:run > ../logs/installment.log 2>&1 & cd ..
+cd crypto-payment-service && mvn spring-boot:run > ../logs/crypto-payment.log 2>&1 & cd ..
+cd waiting-list-service && mvn spring-boot:run > ../logs/waiting-list.log 2>&1 & cd ..
+cd bulk-reservation-service && mvn spring-boot:run > ../logs/bulk-reservation.log 2>&1 & cd ..
+cd calendar-service && mvn spring-boot:run > ../logs/calendar.log 2>&1 & cd ..
+cd two-factor-service && mvn spring-boot:run > ../logs/two-factor.log 2>&1 & cd ..
+cd biometric-service && mvn spring-boot:run > ../logs/biometric.log 2>&1 & cd ..
+cd security-alerts-service && mvn spring-boot:run > ../logs/security-alerts.log 2>&1 & cd ..
+cd local-guide-service && mvn spring-boot:run > ../logs/local-guide.log 2>&1 & cd ..
+cd weather-service && mvn spring-boot:run > ../logs/weather.log 2>&1 & cd ..
+cd loyalty-service && mvn spring-boot:run > ../logs/loyalty.log 2>&1 & cd ..
+cd ai-recommendation-service && mvn spring-boot:run > ../logs/ai-recommendation.log 2>&1 & cd ..
+cd video-consultation-service && mvn spring-boot:run > ../logs/video-consultation.log 2>&1 & cd ..
+cd forum-service && mvn spring-boot:run > ../logs/forum.log 2>&1 & cd ..
+cd invoice-service && mvn spring-boot:run > ../logs/invoice.log 2>&1 & cd ..
+cd gdpr-service && mvn spring-boot:run > ../logs/gdpr.log 2>&1 & cd ..
+cd currency-service && mvn spring-boot:run > ../logs/currency.log 2>&1 & cd ..
+cd tax-service && mvn spring-boot:run > ../logs/tax.log 2>&1 & cd ..
 
 echo ""
 echo "========================================"
@@ -57,17 +81,10 @@ echo "Eureka Dashboard: http://localhost:8761"
 echo "API Gateway: http://localhost:8080"
 echo "Config Server: http://localhost:8888"
 echo "Frontend: http://localhost:3000"
-echo "Search Service: http://localhost:8031"
-echo "Integration Service: http://localhost:8030"
 echo "RabbitMQ Management: http://localhost:15672 (admin/admin)"
 echo "Redis: localhost:6379"
-echo "Grafana: http://localhost:3001 (admin/admin)"
-echo "Kibana: http://localhost:5601"
-echo "Kafka UI: http://localhost:8081"
-echo "Keycloak: http://localhost:8180 (admin/admin)"
-echo "Vault: http://localhost:8200"
 echo ""
-echo "Total: 33 microservices"
+echo "Total: 58 microservices"
 echo ""
 echo "Database Migration:"
 echo "- PostgreSQL: Core services (user, hospital, doctor, reservation, payment)"
