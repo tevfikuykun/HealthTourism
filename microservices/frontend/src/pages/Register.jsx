@@ -24,6 +24,7 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import Loading from '../components/Loading';
+import { useTranslation } from '../i18n';
 
 const registerSchema = yup.object().shape({
   firstName: yup.string().required('Ad gereklidir'),
@@ -51,6 +52,7 @@ const registerSchema = yup.object().shape({
 });
 
 export default function Register() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
@@ -124,10 +126,10 @@ export default function Register() {
           }}
         >
           <Typography variant="h4" component="h1" gutterBottom align="center">
-            Kayıt Ol
+            {t('registerTitle', 'Kayıt Ol')}
           </Typography>
           <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
-            Yeni hesap oluşturun
+            {t('registerSubtitle', 'Yeni hesap oluşturun')}
           </Typography>
 
           {error && (
@@ -147,7 +149,7 @@ export default function Register() {
               <TextField
                 {...register('firstName')}
                 fullWidth
-                label="Ad"
+                label={t('firstName')}
                 error={!!errors.firstName}
                 helperText={errors.firstName?.message}
                 InputProps={{
@@ -161,7 +163,7 @@ export default function Register() {
               <TextField
                 {...register('lastName')}
                 fullWidth
-                label="Soyad"
+                label={t('lastName', 'Soyad')}
                 error={!!errors.lastName}
                 helperText={errors.lastName?.message}
                 InputProps={{
@@ -177,7 +179,7 @@ export default function Register() {
             <TextField
               {...register('email')}
               fullWidth
-              label="E-posta"
+              label={t('email')}
               type="email"
               error={!!errors.email}
               helperText={errors.email?.message}
@@ -194,7 +196,7 @@ export default function Register() {
             <TextField
               {...register('phone')}
               fullWidth
-              label="Telefon"
+              label={t('phone', 'Telefon')}
               error={!!errors.phone}
               helperText={errors.phone?.message}
               sx={{ mb: 2 }}
@@ -210,7 +212,7 @@ export default function Register() {
             <TextField
               {...register('password')}
               fullWidth
-              label="Şifre"
+              label={t('password')}
               type={showPassword ? 'text' : 'password'}
               error={!!errors.password}
               helperText={errors.password?.message}
@@ -237,7 +239,7 @@ export default function Register() {
             <TextField
               {...register('confirmPassword')}
               fullWidth
-              label="Şifre Tekrar"
+              label={t('confirmPassword', 'Şifre Tekrar')}
               type={showConfirmPassword ? 'text' : 'password'}
               error={!!errors.confirmPassword}
               helperText={errors.confirmPassword?.message}
@@ -268,13 +270,13 @@ export default function Register() {
               size="large"
               sx={{ mb: 2 }}
             >
-              Kayıt Ol
+              {t('register')}
             </Button>
 
             <Typography variant="body2" align="center">
-              Zaten hesabınız var mı?{' '}
+              {t('alreadyHaveAccount', 'Zaten hesabınız var mı?')}{' '}
               <Link component={RouterLink} to="/login">
-                Giriş Yap
+                {t('login', 'Giriş Yap')}
               </Link>
             </Typography>
           </Box>

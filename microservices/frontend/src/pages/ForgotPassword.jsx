@@ -17,15 +17,17 @@ import * as yup from 'yup';
 import { authService } from '../services/api';
 import EmailIcon from '@mui/icons-material/Email';
 import Loading from '../components/Loading';
+import { useTranslation } from 'react-i18next';
 
-const forgotPasswordSchema = yup.object().shape({
+const getForgotPasswordSchema = (t) => yup.object().shape({
   email: yup
     .string()
-    .email('Geçerli bir e-posta adresi girin')
-    .required('E-posta adresi gereklidir'),
+    .email(t('validEmail', 'Geçerli bir e-posta adresi girin'))
+    .required(t('emailRequired', 'E-posta adresi gereklidir')),
 });
 
 export default function ForgotPassword() {
+  const { t } = useTranslation();
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,7 +37,7 @@ export default function ForgotPassword() {
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: yupResolver(forgotPasswordSchema),
+    resolver: yupResolver(getForgotPasswordSchema(t)),
   });
 
   const onSubmit = async (data) => {
@@ -47,14 +49,14 @@ export default function ForgotPassword() {
       await authService.forgotPassword(data.email);
       setSuccess(true);
     } catch (err) {
-      setError(err.response?.data?.message || 'Şifre sıfırlama e-postası gönderilirken bir hata oluştu');
+      setError(err.response?.data?.message || t('forgotPasswordError', 'Şifre sıfırlama e-postası gönderilirken bir hata oluştu'));
     } finally {
       setIsLoading(false);
     }
   };
 
   if (isLoading) {
-    return <Loading message="İşleniyor..." fullScreen />;
+    return <Loading message={t('processing', 'İşleniyor...')} fullScreen />;
   }
 
   return (
@@ -70,10 +72,10 @@ export default function ForgotPassword() {
       >
         <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
           <Typography variant="h4" component="h1" gutterBottom align="center">
-            Şifremi Unuttum
+            {t('forgotPassword', 'Şifremi Unuttum')}
           </Typography>
           <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
-            E-posta adresinizi girin, size şifre sıfırlama linki gönderelim.
+            {t('forgotPasswordDescription', 'E-posta adresinizi girin, size şifre sıfırlama linki gönderelim.')}
           </Typography>
 
           {error && (
@@ -84,7 +86,7 @@ export default function ForgotPassword() {
 
           {success && (
             <Alert severity="success" sx={{ mb: 2 }}>
-              Şifre sıfırlama linki e-posta adresinize gönderildi. Lütfen e-postanızı kontrol edin.
+              {t('resetLinkSent', 'Şifre sıfırlama linki e-posta adresinize gönderildi. Lütfen e-postanızı kontrol edin.')}
             </Alert>
           )}
 
@@ -93,7 +95,7 @@ export default function ForgotPassword() {
               <TextField
                 {...register('email')}
                 fullWidth
-                label="E-posta"
+                label={t('email', 'E-posta')}
                 type="email"
                 error={!!errors.email}
                 helperText={errors.email?.message}
@@ -108,12 +110,12 @@ export default function ForgotPassword() {
               />
 
               <Button type="submit" fullWidth variant="contained" size="large" sx={{ mb: 2 }}>
-                Şifre Sıfırlama Linki Gönder
+                {t('sendResetLink', 'Şifre Sıfırlama Linki Gönder')}
               </Button>
 
               <Typography variant="body2" align="center">
                 <Link component={RouterLink} to="/login">
-                  Giriş sayfasına dön
+                  {t('backToLogin', 'Giriş sayfasına dön')}
                 </Link>
               </Typography>
             </Box>
@@ -122,7 +124,7 @@ export default function ForgotPassword() {
           {success && (
             <Box sx={{ textAlign: 'center' }}>
               <Button component={RouterLink} to="/login" variant="contained" sx={{ mt: 2 }}>
-                Giriş Sayfasına Dön
+                {t('backToLoginPage', 'Giriş Sayfasına Dön')}
               </Button>
             </Box>
           )}

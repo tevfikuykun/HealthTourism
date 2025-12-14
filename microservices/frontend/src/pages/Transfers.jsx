@@ -13,6 +13,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PeopleIcon from '@mui/icons-material/People';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import { useTranslation } from 'react-i18next';
 
 // --- ÖRNEK VERİLER ---
 const cityOptions = ['İstanbul (IST/SAW)', 'Ankara (ESB)', 'İzmir (ADB)', 'Antalya (AYT)'];
@@ -40,6 +41,7 @@ const getVehicleIcon = (type) => {
 
 // --- BİLEŞEN: TransferForm ---
 const TransferForm = () => {
+    const { t } = useTranslation();
     const theme = useTheme();
     const [formData, setFormData] = useState({
         transferType: 'oneWay',
@@ -93,14 +95,14 @@ const TransferForm = () => {
                     <Grid item xs={12}>
                         <Box sx={{ display: 'flex', gap: 2, mb: 1, flexDirection: { xs: 'column', sm: 'row' } }}>
                             <FormControl component="fieldset">
-                                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>Transfer Tipi</Typography>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>{t('transferType', 'Transfer Tipi')}</Typography>
                                 <RadioGroup
                                     row
                                     name="transferType"
                                     value={formData.transferType}
                                     onChange={handleChange}
                                 >
-                                    <FormControlLabel value="oneWay" control={<Radio size="small" />} label="Tek Yön" />
+                                    <FormControlLabel value="oneWay" control={<Radio size="small" />} label={t('oneWay', 'Tek Yön')} />
                                     <FormControlLabel value="roundTrip" control={<Radio size="small" />} label="Gidiş-Dönüş" />
                                 </RadioGroup>
                             </FormControl>
@@ -112,8 +114,8 @@ const TransferForm = () => {
                                     value={formData.direction}
                                     onChange={handleChange}
                                 >
-                                    <FormControlLabel value="airportToHotel" control={<Radio size="small" />} label={<Box sx={{ display: 'flex', alignItems: 'center' }}><FlightTakeoffIcon fontSize="small" sx={{ mr: 0.5 }} /> Havaalanı - Otel</Box>} />
-                                    <FormControlLabel value="hotelToHospital" control={<Radio size="small" />} label={<Box sx={{ display: 'flex', alignItems: 'center' }}><LocalHospitalIcon fontSize="small" sx={{ mr: 0.5 }} /> Otel - Hastane</Box>} />
+                                    <FormControlLabel value="airportToHotel" control={<Radio size="small" />} label={<Box sx={{ display: 'flex', alignItems: 'center' }}><FlightTakeoffIcon fontSize="small" sx={{ mr: 0.5 }} /> {t('airportToHotel', 'Havaalanı - Otel')}</Box>} />
+                                    <FormControlLabel value="hotelToHospital" control={<Radio size="small" />} label={<Box sx={{ display: 'flex', alignItems: 'center' }}><LocalHospitalIcon fontSize="small" sx={{ mr: 0.5 }} /> {t('hotelToHospital', 'Otel - Hastane')}</Box>} />
                                 </RadioGroup>
                             </FormControl>
                         </Box>
@@ -123,12 +125,12 @@ const TransferForm = () => {
                     {/* 2. Şehir ve Tarih/Saat */}
                     <Grid item xs={12} sm={6}>
                         <FormControl fullWidth size="small">
-                            <InputLabel id="city-label">Transfer Şehri ve Havaalanı</InputLabel>
+                            <InputLabel id="city-label">{t('transferCityAirport', 'Transfer Şehri ve Havaalanı')}</InputLabel>
                             <Select
                                 labelId="city-label"
                                 name="city"
                                 value={formData.city}
-                                label="Transfer Şehri ve Havaalanı"
+                                label={t('transferCityAirport', 'Transfer Şehri ve Havaalanı')}
                                 onChange={handleChange}
                                 required
                             >
@@ -143,7 +145,7 @@ const TransferForm = () => {
                         <TextField
                             fullWidth
                             name="date"
-                            label="Tarih"
+                            label={t('date')}
                             type="date"
                             size="small"
                             value={formData.date}
@@ -159,7 +161,7 @@ const TransferForm = () => {
                         <TextField
                             fullWidth
                             name="time"
-                            label="Saat"
+                            label={t('time')}
                             type="time"
                             size="small"
                             value={formData.time}
@@ -190,7 +192,7 @@ const TransferForm = () => {
                         <TextField
                             fullWidth
                             name="passengers"
-                            label="Yolcu Sayısı"
+                            label={t('passengerCount', 'Yolcu Sayısı')}
                             type="number"
                             size="small"
                             value={formData.passengers}
@@ -205,7 +207,7 @@ const TransferForm = () => {
 
                     {/* 4. Araç Tipi Seçimi */}
                     <Grid item xs={12}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1, mt: 1 }}>Araç Tipi Seçimi</Typography>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1, mt: 1 }}>{t('vehicleTypeSelection', 'Araç Tipi Seçimi')}</Typography>
                         <RadioGroup
                             row
                             name="vehicle"
@@ -290,6 +292,7 @@ const TransferForm = () => {
 
 
 function Transfers() {
+    const { t } = useTranslation();
     return (
         <Container maxWidth="lg" sx={{ py: 5 }}>
             <Box textAlign="center" sx={{ mb: 5 }}>

@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main, develop ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -18,40 +18,62 @@ jobs:
       with:
         java-version: '25'
         distribution: 'temurin'
-        cache: maven
-    
+        
+    - name: Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        
     - name: Build with Maven
       run: |
         cd microservices
         mvn clean install -DskipTests
-    
-    - name: Run Tests
+        
+    - name: Run tests
       run: |
         cd microservices
         mvn test
-    
-    - name: Build Docker Images
+        
+    - name: Build Docker images
       run: |
-        docker-compose -f docker-compose-advanced.yml build
-    
-    - name: Run Integration Tests
+        cd microservices
+        docker-compose build
+        
+    - name: Push to Docker Hub
+      if: github.ref == 'refs/heads/main'
       run: |
-        docker-compose -f docker-compose-advanced.yml up -d
-        sleep 30
-        # Add integration tests here
-        docker-compose -f docker-compose-advanced.yml down
+        echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+        docker push healthtourism/eureka-server:latest
+        docker push healthtourism/api-gateway:latest
 
-  deploy:
-    needs: build
+  frontend:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     
     steps:
     - uses: actions/checkout@v3
     
-    - name: Deploy to Production
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
       run: |
-        echo "Deploy to production environment"
-        # Add deployment steps here
-
-
+        cd microservices/frontend
+        npm ci
+        
+    - name: Run tests
+      run: |
+        cd microservices/frontend
+        npm test
+        
+    - name: Build
+      run: |
+        cd microservices/frontend
+        npm run build
+        
+    - name: Deploy to production
+      if: github.ref == 'refs/heads/main'
+      run: |
+        echo "Deploy to production server"

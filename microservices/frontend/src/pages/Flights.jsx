@@ -13,6 +13,7 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import PersonIcon from '@mui/icons-material/Person';
 import LuggageIcon from '@mui/icons-material/Luggage';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import { useTranslation } from 'react-i18next';
 
 // --- ÖRNEK VERİLER ---
 const airportOptions = [
@@ -28,6 +29,7 @@ const travelClasses = ['Ekonomi', 'Business'];
 
 // --- BİLEŞEN: FlightSearchForm ---
 const FlightSearchForm = () => {
+    const { t } = useTranslation();
     const theme = useTheme();
     const [formData, setFormData] = useState({
         tripType: 'roundTrip',
@@ -88,7 +90,7 @@ const FlightSearchForm = () => {
                                 value={formData.tripType}
                                 onChange={handleChange}
                             >
-                                <FormControlLabel value="roundTrip" control={<Radio size="small" />} label="Gidiş-Dönüş" />
+                                <FormControlLabel value="roundTrip" control={<Radio size="small" />} label={t('roundTrip', 'Gidiş-Dönüş')} />
                                 <FormControlLabel value="oneWay" control={<Radio size="small" />} label="Tek Yön" />
                             </RadioGroup>
                         </FormControl>
@@ -145,7 +147,7 @@ const FlightSearchForm = () => {
                         <TextField
                             fullWidth
                             name="departureDate"
-                            label="Gidiş Tarihi"
+                            label={t('departureDate', 'Gidiş Tarihi')}
                             type="date"
                             size="small"
                             value={formData.departureDate}
@@ -162,7 +164,7 @@ const FlightSearchForm = () => {
                             <TextField
                                 fullWidth
                                 name="returnDate"
-                                label="Dönüş Tarihi"
+                                label={t('returnDate', 'Dönüş Tarihi')}
                                 type="date"
                                 size="small"
                                 value={formData.returnDate}
@@ -207,12 +209,12 @@ const FlightSearchForm = () => {
                     </Grid>
                     <Grid item xs={12} sm={6}>
                         <FormControl fullWidth size="small">
-                            <InputLabel id="class-label">Seyahat Sınıfı</InputLabel>
+                            <InputLabel id="class-label">{t('travelClass', 'Seyahat Sınıfı')}</InputLabel>
                             <Select
                                 labelId="class-label"
                                 name="travelClass"
                                 value={formData.travelClass}
-                                label="Seyahat Sınıfı"
+                                label={t('travelClass', 'Seyahat Sınıfı')}
                                 onChange={handleChange}
                                 required
                                 startAdornment={<InputAdornment position="start"><LuggageIcon fontSize="small" /></InputAdornment>}
@@ -235,7 +237,7 @@ const FlightSearchForm = () => {
                             sx={{ py: 1.5, fontWeight: 'bold' }}
                             disabled={isSearching}
                         >
-                            {isSearching ? 'Uçuş Aranıyor...' : 'Uçuş Ara'}
+                            {isSearching ? t('searchingFlights', 'Uçuş Aranıyor...') : t('searchFlights', 'Uçuş Ara')}
                         </Button>
                     </Grid>
                 </Grid>
@@ -247,6 +249,7 @@ const FlightSearchForm = () => {
 
 
 function Flights() {
+    const { t } = useTranslation();
     const theme = useTheme();
 
     return (

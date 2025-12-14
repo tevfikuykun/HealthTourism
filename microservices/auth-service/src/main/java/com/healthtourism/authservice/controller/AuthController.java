@@ -3,7 +3,9 @@ package com.healthtourism.authservice.controller;
 import com.healthtourism.authservice.dto.AuthResponse;
 import com.healthtourism.authservice.dto.LoginRequest;
 import com.healthtourism.authservice.dto.RegisterRequest;
+import com.healthtourism.authservice.dto.SocialLoginRequest;
 import com.healthtourism.authservice.service.AuthService;
+import com.healthtourism.authservice.service.SocialAuthService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,9 @@ public class AuthController {
     
     @Autowired
     private AuthService authService;
+    
+    @Autowired
+    private SocialAuthService socialAuthService;
     
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -93,6 +98,35 @@ public class AuthController {
             return ResponseEntity.ok("Password reset successfully");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    @PostMapping("/social/login")
+    public ResponseEntity<AuthResponse> socialLogin(@Valid @RequestBody SocialLoginRequest request) {
+        try {
+            AuthResponse response;
+            if ("google".equalsIgnoreCase(request.getProvider())) {
+                response = socialAuthService.authenticateWithGoogle(
+                    request.getId(),
+                    request.getEmail(),
+                    request.getFirstName(),
+                    request.getLastName(),
+                    request.getProfilePicture()
+                );
+            } else if ("facebook".equalsIgnoreCase(request.getProvider())) {
+                response = socialAuthService.authenticateWithFacebook(
+                    request.getId(),
+                    request.getEmail(),
+                    request.getFirstName(),
+                    request.getLastName(),
+                    request.getProfilePicture()
+                );
+            } else {
+                return ResponseEntity.badRequest().build();
+            }
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 

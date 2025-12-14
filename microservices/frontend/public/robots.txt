@@ -2,6 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /api/
+Disallow: /dashboard/
 
 Sitemap: https://healthtourism.com/sitemap.xml
-

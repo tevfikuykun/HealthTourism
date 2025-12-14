@@ -4,6 +4,14 @@ import { Box, Button, Typography, Container } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 function ErrorFallback({ error, resetErrorBoundary }) {
+  // i18n'den tamamen bağımsız - hardcoded strings kullan
+  const messages = {
+    somethingWentWrong: 'Bir şeyler yanlış gitti',
+    unexpectedError: 'Beklenmeyen bir hata oluştu',
+    tryAgain: 'Tekrar Dene',
+    goToHomepage: 'Ana Sayfaya Dön'
+  };
+  
   return (
     <Container maxWidth="md">
       <Box
@@ -19,17 +27,17 @@ function ErrorFallback({ error, resetErrorBoundary }) {
       >
         <ErrorOutlineIcon sx={{ fontSize: 80, color: 'error.main', mb: 2 }} />
         <Typography variant="h4" gutterBottom>
-          Something went wrong
+          {messages.somethingWentWrong}
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-          {error?.message || 'An unexpected error occurred'}
+          {error?.message || messages.unexpectedError}
         </Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button variant="contained" onClick={resetErrorBoundary}>
-            Try again
+            {messages.tryAgain}
           </Button>
           <Button variant="outlined" onClick={() => window.location.href = '/'}>
-            Go to homepage
+            {messages.goToHomepage}
           </Button>
         </Box>
       </Box>

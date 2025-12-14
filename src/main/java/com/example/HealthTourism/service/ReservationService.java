@@ -74,7 +74,7 @@ public class ReservationService {
         }
         
         // Toplam fiyatı hesapla
-        BigDecimal totalPrice = doctor.getConsultationFee();
+        BigDecimal totalPrice = BigDecimal.valueOf(doctor.getConsultationFee());
         if (accommodation != null) {
             totalPrice = totalPrice.add(accommodation.getPricePerNight().multiply(BigDecimal.valueOf(nights)));
         }

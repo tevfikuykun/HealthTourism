@@ -11,6 +11,7 @@ import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import FlightIcon from '@mui/icons-material/Flight';
 import PaymentIcon from '@mui/icons-material/Payment';
 import SecurityIcon from '@mui/icons-material/Security';
+import { useTranslation } from 'react-i18next';
 
 // --- ÖRNEK VERİLER ---
 const faqData = [
@@ -46,7 +47,7 @@ const faqData = [
 
 
 // --- BİLEŞEN: FAQAccordion ---
-const FAQAccordion = ({ data }) => {
+const FAQAccordion = ({ data, t }) => {
     const [expanded, setExpanded] = useState(false);
 
     const handleChange = (panel) => (event, isExpanded) => {
@@ -86,6 +87,7 @@ const FAQAccordion = ({ data }) => {
 
 // --- BİLEŞEN: FAQ.jsx ---
 function FAQ() {
+    const { t } = useTranslation();
     const theme = useTheme();
 
     return (
@@ -93,10 +95,10 @@ function FAQ() {
             <Box textAlign="center" sx={{ mb: 5 }}>
                 <HelpOutlineIcon sx={{ fontSize: 60, color: 'primary.main' }} />
                 <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', mt: 1 }}>
-                    Sıkça Sorulan Sorular (SSS)
+                    {t('faq')} (SSS)
                 </Typography>
                 <Typography variant="h6" color="text.secondary">
-                    Sağlık turizmi sürecinizle ilgili en çok merak edilen konuları burada bulabilirsiniz.
+                    {t('faqDescription', 'Sağlık turizmi sürecinizle ilgili en çok merak edilen konuları burada bulabilirsiniz.')}
                 </Typography>
             </Box>
 
@@ -110,7 +112,7 @@ function FAQ() {
                             </Typography>
                         </Box>
                         <Divider sx={{ mb: 2 }} />
-                        <FAQAccordion data={categoryData} />
+                        <FAQAccordion data={categoryData} t={t} />
                     </Grid>
                 ))}
             </Grid>
@@ -118,10 +120,10 @@ function FAQ() {
             {/* CTA - Eğer sorunuz yanıtlanmadıysa */}
             <Paper sx={{ p: { xs: 3, md: 5 }, bgcolor: theme.palette.primary.light, borderRadius: 2, mt: 6, textAlign: 'center' }}>
                 <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: 'primary.dark' }}>
-                    Sorunuza Yanıt Bulamadınız mı?
+                    {t('didntFindAnswer', 'Sorunuza Yanıt Bulamadınız mı?')}
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 3, color: 'text.secondary' }}>
-                    Uzman danışman ekibimiz size özel destek sağlamak için 7/24 hazır.
+                    {t('supportAvailable', 'Uzman danışman ekibimiz size özel destek sağlamak için 7/24 hazır.')}
                 </Typography>
                 <Button
                     variant="contained"
@@ -129,7 +131,7 @@ function FAQ() {
                     size="large"
                     onClick={() => alert('İletişim sayfasına yönlendiriliyor...')}
                 >
-                    Canlı Destek Hattına Bağlan
+                    {t('connectLiveSupport', 'Canlı Destek Hattına Bağlan')}
                 </Button>
             </Paper>
 

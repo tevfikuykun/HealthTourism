@@ -50,6 +50,11 @@ public class User {
     private LocalDateTime lastLogin;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    
+    // Social Media Integration
+    private String googleId;
+    private String facebookId;
+    private String profilePicture;
 
     @PrePersist
     protected void onCreate() {

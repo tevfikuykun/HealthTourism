@@ -40,6 +40,30 @@ start "Config Server" cmd /k "cd config-server && mvn spring-boot:run"
 start "Admin Service" cmd /k "cd admin-service && mvn spring-boot:run"
 start "Search Service" cmd /k "cd search-service && mvn spring-boot:run"
 start "Integration Service" cmd /k "cd integration-service && mvn spring-boot:run"
+start "Comparison Service" cmd /k "cd comparison-service && mvn spring-boot:run"
+start "Analytics Service" cmd /k "cd analytics-service && mvn spring-boot:run"
+start "Health Records Service" cmd /k "cd health-records-service && mvn spring-boot:run"
+start "Medication Service" cmd /k "cd medication-service && mvn spring-boot:run"
+start "Referral Service" cmd /k "cd referral-service && mvn spring-boot:run"
+start "Coupon Service" cmd /k "cd coupon-service && mvn spring-boot:run"
+start "Installment Service" cmd /k "cd installment-service && mvn spring-boot:run"
+start "Crypto Payment Service" cmd /k "cd crypto-payment-service && mvn spring-boot:run"
+start "Waiting List Service" cmd /k "cd waiting-list-service && mvn spring-boot:run"
+start "Bulk Reservation Service" cmd /k "cd bulk-reservation-service && mvn spring-boot:run"
+start "Calendar Service" cmd /k "cd calendar-service && mvn spring-boot:run"
+start "Two Factor Service" cmd /k "cd two-factor-service && mvn spring-boot:run"
+start "Biometric Service" cmd /k "cd biometric-service && mvn spring-boot:run"
+start "Security Alerts Service" cmd /k "cd security-alerts-service && mvn spring-boot:run"
+start "Local Guide Service" cmd /k "cd local-guide-service && mvn spring-boot:run"
+start "Weather Service" cmd /k "cd weather-service && mvn spring-boot:run"
+start "Loyalty Service" cmd /k "cd loyalty-service && mvn spring-boot:run"
+start "AI Recommendation Service" cmd /k "cd ai-recommendation-service && mvn spring-boot:run"
+start "Video Consultation Service" cmd /k "cd video-consultation-service && mvn spring-boot:run"
+start "Forum Service" cmd /k "cd forum-service && mvn spring-boot:run"
+start "Invoice Service" cmd /k "cd invoice-service && mvn spring-boot:run"
+start "GDPR Service" cmd /k "cd gdpr-service && mvn spring-boot:run"
+start "Currency Service" cmd /k "cd currency-service && mvn spring-boot:run"
+start "Tax Service" cmd /k "cd tax-service && mvn spring-boot:run"
 
 echo.
 echo ========================================
@@ -49,17 +73,10 @@ echo Eureka Dashboard: http://localhost:8761
 echo API Gateway: http://localhost:8080
 echo Config Server: http://localhost:8888
 echo Frontend: http://localhost:3000
-echo Search Service: http://localhost:8031
-echo Integration Service: http://localhost:8030
 echo RabbitMQ Management: http://localhost:15672 (admin/admin)
 echo Redis: localhost:6379
-echo Grafana: http://localhost:3001 (admin/admin)
-echo Kibana: http://localhost:5601
-echo Kafka UI: http://localhost:8081
-echo Keycloak: http://localhost:8180 (admin/admin)
-echo Vault: http://localhost:8200
 echo.
-echo Total: 33 microservices
+echo Total: 58 microservices
 echo.
 echo Database Migration:
 echo - PostgreSQL: Core services (user, hospital, doctor, reservation, payment)

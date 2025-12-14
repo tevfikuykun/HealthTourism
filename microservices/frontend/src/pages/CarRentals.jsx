@@ -11,6 +11,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import EventIcon from '@mui/icons-material/Event';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import { useTranslation } from 'react-i18next';
 
 // --- ÖRNEK VERİLER ---
 const rentalLocations = [
@@ -22,6 +23,7 @@ const rentalLocations = [
 
 // --- BİLEŞEN: CarRentalForm ---
 const CarRentalForm = () => {
+    const { t } = useTranslation();
     const theme = useTheme();
     const [formData, setFormData] = useState({
         pickUpLocation: '',
@@ -60,7 +62,7 @@ const CarRentalForm = () => {
     return (
         <Paper sx={{ p: { xs: 3, md: 5 }, borderRadius: 2, boxShadow: theme.shadows[5] }}>
             <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, color: theme.palette.primary.dark }}>
-                Araç Kiralama Arama
+                {t('carRentalSearch', 'Araç Kiralama Arama')}
             </Typography>
 
             <form onSubmit={handleSearch}>
@@ -69,16 +71,16 @@ const CarRentalForm = () => {
                     {/* 1. Alış Yeri */}
                     <Grid item xs={12} sm={6}>
                         <FormControl fullWidth size="small" required>
-                            <InputLabel id="pickup-label">Alış Yeri</InputLabel>
+                            <InputLabel id="pickup-label">{t('pickUpLocation', 'Alış Yeri')}</InputLabel>
                             <Select
                                 labelId="pickup-label"
                                 name="pickUpLocation"
                                 value={formData.pickUpLocation}
-                                label="Alış Yeri"
+                                label={t('pickUpLocation', 'Alış Yeri')}
                                 onChange={handleChange}
                                 startAdornment={<InputAdornment position="start"><LocationOnIcon fontSize="small" /></InputAdornment>}
                             >
-                                <MenuItem value="">Seçiniz</MenuItem>
+                                <MenuItem value="">{t('select', 'Seçiniz')}</MenuItem>
                                 {rentalLocations.map(loc => (
                                     <MenuItem key={loc} value={loc}>{loc}</MenuItem>
                                 ))}
@@ -97,21 +99,21 @@ const CarRentalForm = () => {
                                     color="primary"
                                 />
                             }
-                            label="Bırakış Yeri, Alış Yeri ile Aynı"
+                            label={t('sameDropOffLocation', 'Bırakış Yeri, Alış Yeri ile Aynı')}
                             sx={{ mb: 1 }}
                         />
                         {!formData.isSameDropOff && (
                             <FormControl fullWidth size="small" required>
-                                <InputLabel id="dropoff-label">Bırakış Yeri</InputLabel>
+                                <InputLabel id="dropoff-label">{t('dropOffLocation', 'Bırakış Yeri')}</InputLabel>
                                 <Select
                                     labelId="dropoff-label"
                                     name="dropOffLocation"
                                     value={formData.dropOffLocation}
-                                    label="Bırakış Yeri"
+                                    label={t('dropOffLocation', 'Bırakış Yeri')}
                                     onChange={handleChange}
                                     startAdornment={<InputAdornment position="start"><LocationOnIcon fontSize="small" /></InputAdornment>}
                                 >
-                                    <MenuItem value="">Seçiniz</MenuItem>
+                                    <MenuItem value="">{t('select', 'Seçiniz')}</MenuItem>
                                     {rentalLocations.map(loc => (
                                         <MenuItem key={loc} value={loc}>{loc}</MenuItem>
                                     ))}
@@ -122,9 +124,9 @@ const CarRentalForm = () => {
                             <TextField
                                 fullWidth
                                 disabled
-                                label="Bırakış Yeri"
+                                label={t('dropOffLocation', 'Bırakış Yeri')}
                                 size="small"
-                                value="Alış Yeri ile Aynı"
+                                value={t('sameAsPickUp', 'Alış Yeri ile Aynı')}
                                 InputProps={{
                                     startAdornment: <InputAdornment position="start"><LocationOnIcon fontSize="small" /></InputAdornment>,
                                 }}
@@ -139,7 +141,7 @@ const CarRentalForm = () => {
                         <TextField
                             fullWidth
                             name="pickUpDate"
-                            label="Alış Tarihi"
+                            label={t('pickupDate', 'Alış Tarihi')}
                             type="date"
                             size="small"
                             value={formData.pickUpDate}
@@ -155,7 +157,7 @@ const CarRentalForm = () => {
                         <TextField
                             fullWidth
                             name="pickUpTime"
-                            label="Alış Saati"
+                            label={t('pickupTime', 'Alış Saati')}
                             type="time"
                             size="small"
                             value={formData.pickUpTime}
@@ -173,7 +175,7 @@ const CarRentalForm = () => {
                         <TextField
                             fullWidth
                             name="dropOffDate"
-                            label="Bırakış Tarihi"
+                            label={t('dropoffDate', 'Bırakış Tarihi')}
                             type="date"
                             size="small"
                             value={formData.dropOffDate}
@@ -189,7 +191,7 @@ const CarRentalForm = () => {
                         <TextField
                             fullWidth
                             name="dropOffTime"
-                            label="Bırakış Saati"
+                            label={t('dropoffTime', 'Bırakış Saati')}
                             type="time"
                             size="small"
                             value={formData.dropOffTime}
@@ -206,7 +208,7 @@ const CarRentalForm = () => {
                     <Grid item xs={12}>
                         <TextField
                             name="driverAge"
-                            label="Sürücü Yaşı"
+                            label={t('driverAge', 'Sürücü Yaşı')}
                             type="number"
                             size="small"
                             value={formData.driverAge}
@@ -216,7 +218,7 @@ const CarRentalForm = () => {
                             required
                         />
                         <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                            Bazı araç grupları için yaş sınırı 21 veya 25 olabilir.
+                            {t('ageLimitNote', 'Bazı araç grupları için yaş sınırı 21 veya 25 olabilir.')}
                         </Typography>
                     </Grid>
 
@@ -231,7 +233,7 @@ const CarRentalForm = () => {
                             sx={{ py: 1.5, fontWeight: 'bold', mt: 2 }}
                             disabled={isSearching}
                         >
-                            {isSearching ? 'Araçlar Aranıyor...' : 'Araç Ara ve Fiyat Al'}
+                            {isSearching ? t('searchingCars', 'Araçlar Aranıyor...') : t('searchCarsGetPrice', 'Araç Ara ve Fiyat Al')}
                         </Button>
                     </Grid>
                 </Grid>
@@ -243,6 +245,7 @@ const CarRentalForm = () => {
 
 
 function CarRentals() {
+    const { t } = useTranslation();
     const theme = useTheme();
 
     return (
@@ -250,10 +253,10 @@ function CarRentals() {
             <Box textAlign="center" sx={{ mb: 5 }}>
                 <DirectionsCarFilledIcon sx={{ fontSize: 60, color: 'primary.main' }} />
                 <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', mt: 1 }}>
-                    Havalimanı ve Şehir İçi Araç Kiralama
+                    {t('airportAndCityCarRental', 'Havalimanı ve Şehir İçi Araç Kiralama')}
                 </Typography>
                 <Typography variant="h6" color="text.secondary">
-                    Tedavi süreniz boyunca özgürce seyahat edin. Geniş araç filosu seçenekleri.
+                    {t('carRentalDescription', 'Tedavi süreniz boyunca özgürce seyahat edin. Geniş araç filosu seçenekleri.')}
                 </Typography>
             </Box>
 
@@ -265,28 +268,28 @@ function CarRentals() {
                 <Grid item xs={12} lg={4}>
                     <Card sx={{ p: 3, bgcolor: theme.palette.mode === 'dark' ? 'grey.800' : 'background.paper', borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
                         <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: 'primary.main' }}>
-                            Neden Bizimle Kiralamalısınız?
+                            {t('whyRentWithUs', 'Neden Bizimle Kiralamalısınız?')}
                         </Typography>
                         <Box sx={{ mb: 1 }}>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>★ Sigorta Avantajları</Typography>
-                            <Typography variant="body2" color="text.secondary">Kapsamlı kaza ve sağlık sigortası seçenekleri.</Typography>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>★ {t('insuranceAdvantages', 'Sigorta Avantajları')}</Typography>
+                            <Typography variant="body2" color="text.secondary">{t('insuranceAdvantagesDesc', 'Kapsamlı kaza ve sağlık sigortası seçenekleri.')}</Typography>
                         </Box>
                         <Box sx={{ mb: 1 }}>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>★ Hastane Teslimat</Typography>
-                            <Typography variant="body2" color="text.secondary">Aracı hastane veya otelinize teslim alma imkanı.</Typography>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>★ {t('hospitalDelivery', 'Hastane Teslimat')}</Typography>
+                            <Typography variant="body2" color="text.secondary">{t('hospitalDeliveryDesc', 'Aracı hastane veya otelinize teslim alma imkanı.')}</Typography>
                         </Box>
                         <Box>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>★ Kolay İptal</Typography>
-                            <Typography variant="body2" color="text.secondary">Esnek iptal seçenekleriyle tedavinize odaklanın.</Typography>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>★ {t('easyCancellation', 'Kolay İptal')}</Typography>
+                            <Typography variant="body2" color="text.secondary">{t('easyCancellationDesc', 'Esnek iptal seçenekleriyle tedavinize odaklanın.')}</Typography>
                         </Box>
                         <Divider sx={{ my: 2 }} />
                          <Button
                             variant="contained"
                             color="primary"
                             fullWidth
-                            onClick={() => alert('Canlı destek üzerinden araç kiralama bilgisi alabilirsiniz.')}
+                            onClick={() => alert(t('carRentalSupportAlert', 'Canlı destek üzerinden araç kiralama bilgisi alabilirsiniz.'))}
                         >
-                            Uzman Desteği Al
+                            {t('getExpertSupport', 'Uzman Desteği Al')}
                         </Button>
                     </Card>
                 </Grid>

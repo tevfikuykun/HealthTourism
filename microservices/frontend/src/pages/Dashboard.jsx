@@ -33,6 +33,7 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import EditIcon from '@mui/icons-material/Edit';
 import SettingsIcon from '@mui/icons-material/Settings';
 import UserStats from '../components/Statistics/UserStats';
+import { useTranslation } from 'react-i18next';
 
 function TabPanel({ children, value, index }) {
   return (
@@ -43,6 +44,7 @@ function TabPanel({ children, value, index }) {
 }
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState(0);
 
@@ -73,7 +75,7 @@ export default function Dashboard() {
   }
 
   if (profileLoading || reservationsLoading || paymentsLoading) {
-    return <Loading message="Profil bilgileri yükleniyor..." />;
+    return <Loading message={t('loadingProfile')} />;
   }
 
   const handleTabChange = (event, newValue) => {
@@ -84,10 +86,10 @@ export default function Dashboard() {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" gutterBottom>
-          Hoş Geldiniz, {profile?.data?.firstName || user?.firstName || 'Kullanıcı'}!
+          {t('welcomeUser', 'Hoş Geldiniz, {name}!', { name: profile?.data?.firstName || user?.firstName || t('user', 'Kullanıcı') })}
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Hesap bilgilerinizi ve rezervasyonlarınızı buradan yönetebilirsiniz.
+          {t('manageAccount')}
         </Typography>
       </Box>
 
@@ -117,10 +119,10 @@ export default function Dashboard() {
                   sx={{ mb: 1 }}
                   onClick={() => setActiveTab(4)}
                 >
-                  Profili Düzenle
+                  {t('editProfile')}
                 </Button>
                 <Button fullWidth variant="outlined" startIcon={<SettingsIcon />}>
-                  Ayarlar
+                  {t('settings')}
                 </Button>
               </Box>
             </CardContent>
@@ -130,21 +132,21 @@ export default function Dashboard() {
           <Card sx={{ mt: 2 }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Özet
+                {t('summary', 'Özet')}
               </Typography>
               <Box sx={{ mt: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                  <Typography variant="body2">Toplam Rezervasyon</Typography>
+                  <Typography variant="body2">{t('totalReservations', 'Toplam Rezervasyon')}</Typography>
                   <Typography variant="h6">{reservations?.data?.length || 0}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                  <Typography variant="body2">Toplam Ödeme</Typography>
+                  <Typography variant="body2">{t('totalPayments', 'Toplam Ödeme')}</Typography>
                   <Typography variant="h6">
                     {payments?.data?.reduce((sum, p) => sum + (p.amount || 0), 0).toLocaleString('tr-TR') || 0} ₺
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body2">Aktif Rezervasyon</Typography>
+                  <Typography variant="body2">{t('activeReservations', 'Aktif Rezervasyon')}</Typography>
                   <Typography variant="h6">
                     {reservations?.data?.filter((r) => r.status === 'CONFIRMED' || r.status === 'PENDING')?.length || 0}
                   </Typography>
@@ -158,24 +160,24 @@ export default function Dashboard() {
         <Grid item xs={12} md={9}>
           <Paper>
             <Tabs value={activeTab} onChange={handleTabChange} variant="scrollable" scrollButtons="auto">
-              <Tab icon={<DashboardIcon />} label="Genel Bakış" />
-              <Tab icon={<CalendarTodayIcon />} label="Rezervasyonlarım" />
-              <Tab icon={<PaymentIcon />} label="Ödemelerim" />
-              <Tab icon={<FavoriteIcon />} label="Favorilerim" />
-              <Tab icon={<PersonIcon />} label="Profil Bilgileri" />
-              <Tab icon={<NotificationsIcon />} label="Bildirimler" />
+              <Tab icon={<DashboardIcon />} label={t('overview', 'Genel Bakış')} />
+              <Tab icon={<CalendarTodayIcon />} label={t('myReservations')} />
+              <Tab icon={<PaymentIcon />} label={t('myPayments')} />
+              <Tab icon={<FavoriteIcon />} label={t('myFavorites')} />
+              <Tab icon={<PersonIcon />} label={t('profileInfo', 'Profil Bilgileri')} />
+              <Tab icon={<NotificationsIcon />} label={t('myNotifications')} />
             </Tabs>
 
             <TabPanel value={activeTab} index={0}>
               <Typography variant="h6" gutterBottom>
-                Genel Bakış
+                {t('overview', 'Genel Bakış')}
               </Typography>
               <UserStats userId={user?.id} />
 
               {/* Son Rezervasyonlar */}
               <Box sx={{ mt: 3 }}>
                 <Typography variant="h6" gutterBottom>
-                  Son Rezervasyonlar
+                  {t('recentReservations', 'Son Rezervasyonlar')}
                 </Typography>
                 <List>
                   {reservations?.data?.slice(0, 5).map((reservation) => (
@@ -255,7 +257,7 @@ export default function Dashboard() {
 
             <TabPanel value={activeTab} index={2}>
               <Typography variant="h6" gutterBottom>
-                Ödemelerim
+                {t('myPayments')}
               </Typography>
               <List>
                 {payments?.data?.map((payment) => (
@@ -288,7 +290,7 @@ export default function Dashboard() {
 
             <TabPanel value={activeTab} index={3}>
               <Typography variant="h6" gutterBottom>
-                Favorilerim
+                {t('myFavorites')}
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 Favori özelliği yakında eklenecektir.

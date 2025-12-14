@@ -7,6 +7,7 @@ import {
   DialogActions,
   Button,
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 /**
  * ConfirmDialog Component
@@ -25,11 +26,16 @@ export default function ConfirmDialog({
   open,
   onClose,
   onConfirm,
-  title = 'Onay',
-  message = 'Bu işlemi yapmak istediğinizden emin misiniz?',
-  confirmText = 'Onayla',
-  cancelText = 'İptal',
+  title,
+  message,
+  confirmText,
+  cancelText,
 }) {
+  const { t } = useTranslation();
+  const defaultTitle = title || t('confirm', 'Onay');
+  const defaultMessage = message || t('confirmAction', 'Bu işlemi yapmak istediğinizden emin misiniz?');
+  const defaultConfirmText = confirmText || t('confirm', 'Onayla');
+  const defaultCancelText = cancelText || t('cancel', 'İptal');
   const handleConfirm = () => {
     onConfirm();
     onClose();
@@ -37,14 +43,14 @@ export default function ConfirmDialog({
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{title}</DialogTitle>
+      <DialogTitle>{defaultTitle}</DialogTitle>
       <DialogContent>
-        <DialogContentText>{message}</DialogContentText>
+        <DialogContentText>{defaultMessage}</DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>{cancelText}</Button>
+        <Button onClick={onClose}>{defaultCancelText}</Button>
         <Button onClick={handleConfirm} variant="contained" autoFocus>
-          {confirmText}
+          {defaultConfirmText}
         </Button>
       </DialogActions>
     </Dialog>

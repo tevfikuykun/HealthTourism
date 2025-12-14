@@ -2,6 +2,7 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Box, CircularProgress, Typography } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 /**
  * ProtectedRoute Component
@@ -13,6 +14,7 @@ import { Box, CircularProgress, Typography } from '@mui/material';
  * @param {string[]} allowedRoles - İzin verilen roller (opsiyonel)
  */
 export default function ProtectedRoute({ children, allowedRoles = [] }) {
+  const { t } = useTranslation();
   const { user, isLoading, isAuthenticated } = useAuth();
   const location = useLocation();
 
@@ -30,7 +32,7 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
       >
         <CircularProgress size={60} />
         <Typography variant="body1" sx={{ mt: 2 }}>
-          Yükleniyor...
+          {t('loading', 'Yükleniyor...')}
         </Typography>
       </Box>
     );
@@ -65,10 +67,10 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
           }}
         >
           <Typography variant="h5" color="error" gutterBottom>
-            Yetki Hatası
+            {t('authorizationError', 'Yetki Hatası')}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Bu sayfaya erişim yetkiniz bulunmamaktadır.
+            {t('noAccessPermission', 'Bu sayfaya erişim yetkiniz bulunmamaktadır.')}
           </Typography>
         </Box>
       );

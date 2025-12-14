@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import WarningIcon from '@mui/icons-material/Warning';
 import HomeIcon from '@mui/icons-material/Home';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import { useTranslation } from 'react-i18next';
 
 export default function ServerError() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return (
@@ -26,10 +28,10 @@ export default function ServerError() {
           500
         </Typography>
         <Typography variant="h4" gutterBottom>
-          Sunucu Hatası
+          {t('serverError', 'Sunucu Hatası')}
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 500 }}>
-          Üzgünüz, bir şeyler ters gitti. Lütfen daha sonra tekrar deneyin. Sorun devam ederse, lütfen bizimle iletişime geçin.
+          {t('serverErrorDescription', 'Üzgünüz, bir şeyler ters gitti. Lütfen daha sonra tekrar deneyin. Sorun devam ederse, lütfen bizimle iletişime geçin.')}
         </Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button
@@ -38,7 +40,7 @@ export default function ServerError() {
             startIcon={<HomeIcon />}
             onClick={() => navigate('/')}
           >
-            Ana Sayfaya Dön
+            {t('backToHome', 'Ana Sayfaya Dön')}
           </Button>
           <Button
             variant="outlined"
@@ -46,7 +48,7 @@ export default function ServerError() {
             startIcon={<RefreshIcon />}
             onClick={() => window.location.reload()}
           >
-            Sayfayı Yenile
+            {t('refreshPage', 'Sayfayı Yenile')}
           </Button>
         </Box>
       </Box>

@@ -18,8 +18,10 @@ import ProtectedRoute from '../components/ProtectedRoute';
 import Loading from '../components/Loading';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { useTranslation } from 'react-i18next';
 
 export default function Notifications() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const { data: notifications, isLoading } = useQuery({
@@ -42,7 +44,7 @@ export default function Notifications() {
   });
 
   if (isLoading) {
-    return <Loading message="Bildirimler yükleniyor..." />;
+    return <Loading message={t('loadingNotifications', 'Bildirimler yükleniyor...')} />;
   }
 
   const unreadCount = notifications?.data?.filter((n) => !n.isRead)?.length || 0;
@@ -51,14 +53,14 @@ export default function Notifications() {
     <ProtectedRoute>
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4">Bildirimlerim</Typography>
+          <Typography variant="h4">{t('myNotifications')}</Typography>
           {unreadCount > 0 && (
             <Button
               variant="outlined"
               startIcon={<CheckCircleIcon />}
               onClick={() => markAllAsReadMutation.mutate()}
             >
-              Tümünü Okundu İşaretle
+              {t('markAllAsRead', 'Tümünü Okundu İşaretle')}
             </Button>
           )}
         </Box>
@@ -67,7 +69,7 @@ export default function Notifications() {
           <Card>
             <CardContent>
               <Typography variant="body1" color="text.secondary" align="center" sx={{ py: 4 }}>
-                Bildirim bulunmamaktadır.
+                {t('noNotifications', 'Bildirim bulunmamaktadır.')}
               </Typography>
             </CardContent>
           </Card>
@@ -80,7 +82,7 @@ export default function Notifications() {
                     <Box sx={{ flex: 1 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                         <Typography variant="h6">{notification.title}</Typography>
-                        {!notification.isRead && <Chip label="Yeni" color="primary" size="small" />}
+                        {!notification.isRead && <Chip label={t('new', 'Yeni')} color="primary" size="small" />}
                       </Box>
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                         {notification.message}

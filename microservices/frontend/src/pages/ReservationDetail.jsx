@@ -25,6 +25,7 @@ import Loading from '../components/Loading';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PrintIcon from '@mui/icons-material/Print';
 import CancelIcon from '@mui/icons-material/Cancel';
+import { useTranslation } from 'react-i18next';
 
 const statusSteps = {
   PENDING: 0,
@@ -35,6 +36,7 @@ const statusSteps = {
 };
 
 export default function ReservationDetail() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -45,7 +47,7 @@ export default function ReservationDetail() {
   });
 
   if (isLoading) {
-    return <Loading message="Rezervasyon detayları yükleniyor..." />;
+    return <Loading message={t('loadingReservationDetails', 'Rezervasyon detayları yükleniyor...')} />;
   }
 
   const reservationData = reservation?.data;
@@ -53,7 +55,7 @@ export default function ReservationDetail() {
   if (!reservationData) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Typography variant="h6">Rezervasyon bulunamadı</Typography>
+        <Typography variant="h6">{t('reservationNotFound', 'Rezervasyon bulunamadı')}</Typography>
       </Container>
     );
   }
@@ -72,7 +74,7 @@ export default function ReservationDetail() {
   };
 
   const handleCancel = async () => {
-    if (window.confirm('Bu rezervasyonu iptal etmek istediğinizden emin misiniz?')) {
+    if (window.confirm(t('confirmCancelReservation', 'Bu rezervasyonu iptal etmek istediğinizden emin misiniz?'))) {
       try {
         await reservationService.cancel(id);
         navigate('/dashboard');
@@ -91,15 +93,15 @@ export default function ReservationDetail() {
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)}>
-            Geri Dön
+            {t('back', 'Geri')}
           </Button>
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Button startIcon={<PrintIcon />} variant="outlined" onClick={handlePrint}>
-              Yazdır
+              {t('print', 'Yazdır')}
             </Button>
             {reservationData.status !== 'CANCELLED' && reservationData.status !== 'COMPLETED' && (
               <Button startIcon={<CancelIcon />} variant="outlined" color="error" onClick={handleCancel}>
-                İptal Et
+                {t('cancel', 'İptal Et')}
               </Button>
             )}
           </Box>
@@ -109,10 +111,10 @@ export default function ReservationDetail() {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
             <Box>
               <Typography variant="h4" gutterBottom>
-                Rezervasyon Detayları
+                {t('reservationDetails', 'Rezervasyon Detayları')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Rezervasyon ID: #{reservationData.id}
+                {t('reservationId', 'Rezervasyon ID')}: #{reservationData.id}
               </Typography>
             </Box>
             <Chip label={reservationData.status} color={getStatusColor(reservationData.status)} size="large" />
@@ -125,24 +127,24 @@ export default function ReservationDetail() {
               <Card sx={{ mb: 3 }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
-                    Rezervasyon Bilgileri
+                    {t('reservationInformation', 'Rezervasyon Bilgileri')}
                   </Typography>
                   <List>
                     <ListItem>
                       <ListItemText
-                        primary="Hizmet Tipi"
+                        primary={t('serviceType', 'Hizmet Tipi')}
                         secondary={reservationData.serviceType || '-'}
                       />
                     </ListItem>
                     <ListItem>
                       <ListItemText
-                        primary="Oluşturulma Tarihi"
+                        primary={t('createdDate', 'Oluşturulma Tarihi')}
                         secondary={new Date(reservationData.createdAt).toLocaleString('tr-TR')}
                       />
                     </ListItem>
                     <ListItem>
                       <ListItemText
-                        primary="Rezervasyon Tarihi"
+                        primary={t('reservationDate', 'Rezervasyon Tarihi')}
                         secondary={
                           reservationData.reservationDate
                             ? new Date(reservationData.reservationDate).toLocaleDateString('tr-TR')
@@ -163,7 +165,7 @@ export default function ReservationDetail() {
                 <Card>
                   <CardContent>
                     <Typography variant="h6" gutterBottom>
-                      Rezervasyon Durumu
+                      {t('reservationStatus', 'Rezervasyon Durumu')}
                     </Typography>
                     <Stepper activeStep={statusSteps[reservationData.status] || 0} alternativeLabel>
                       <Step>
@@ -193,14 +195,14 @@ export default function ReservationDetail() {
                   <List>
                     <ListItem>
                       <ListItemText
-                        primary="Toplam Tutar"
+                        primary={t('totalAmount')}
                         secondary={`${(reservationData.totalAmount || 0).toLocaleString('tr-TR')} ₺`}
                       />
                     </ListItem>
                     <ListItem>
                       <ListItemText
-                        primary="Ödeme Durumu"
-                        secondary={reservationData.paymentStatus || 'Beklemede'}
+                        primary={t('paymentStatus', 'Ödeme Durumu')}
+                        secondary={reservationData.paymentStatus || t('pending', 'Beklemede')}
                       />
                     </ListItem>
                   </List>

@@ -1,4 +1,6 @@
+/*
 package com.example.HealthTourism.config;
+
 
 import com.example.HealthTourism.entity.*;
 import com.example.HealthTourism.repository.*;
@@ -438,3 +440,4 @@ public class DataInitializer implements CommandLineRunner {
     }
 }
 
+*/

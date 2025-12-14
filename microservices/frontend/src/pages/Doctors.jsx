@@ -10,6 +10,7 @@ import StarIcon from '@mui/icons-material/Star';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import SchoolIcon from '@mui/icons-material/School';
 import { Link as RouterLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 // --- ÖRNEK VERİLER ---
 const dummyDoctors = [
@@ -26,6 +27,7 @@ const cities = ['İstanbul', 'Ankara', 'İzmir', 'Antalya', 'Bursa'];
 
 // --- BİLEŞEN: DoctorCard ---
 const DoctorCard = ({ doctor }) => {
+    const { t } = useTranslation();
     const theme = useTheme();
     return (
         <Card
@@ -60,7 +62,7 @@ const DoctorCard = ({ doctor }) => {
                     <Typography variant="body2" sx={{ mr: 2, fontWeight: 'bold' }}>{doctor.rating} / 5</Typography>
 
                     <SchoolIcon fontSize="small" color="action" sx={{ mr: 0.5 }} />
-                    <Typography variant="body2" color="text.secondary">{doctor.experience}+ Yıl Deneyim</Typography>
+                    <Typography variant="body2" color="text.secondary">{doctor.experience}+ {t('years')} {t('experience')}</Typography>
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -75,7 +77,7 @@ const DoctorCard = ({ doctor }) => {
                     component={RouterLink}
                     to={`/doctors/${doctor.slug}`}
                 >
-                    Profili Görüntüle
+                    {t('viewProfile')}
                 </Button>
             </CardContent>
         </Card>
@@ -85,6 +87,7 @@ const DoctorCard = ({ doctor }) => {
 
 
 function Doctors() {
+    const { t } = useTranslation();
     const [filters, setFilters] = useState({
         search: '',
         city: '',
@@ -107,10 +110,10 @@ function Doctors() {
     return (
         <Container maxWidth="lg" sx={{ py: 5 }}>
             <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', mb: 1 }}>
-                Uzman Doktorlarımız
+                {t('expertDoctors')}
             </Typography>
             <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
-                Alanında en az 10 yıl deneyimli, global çapta tanınan hekimler.
+                {t('expertDoctorsDescription', 'Alanında en az 10 yıl deneyimli, global çapta tanınan hekimler.')}
             </Typography>
 
             {/* Arama ve Filtreler Alanı */}
@@ -119,7 +122,7 @@ function Doctors() {
                     <Grid item xs={12} md={5}>
                         <TextField
                             fullWidth
-                            label="Doktor Adı Veya Uzmanlık Alanı Ara"
+                            label={t('searchDoctor', 'Doktor Adı Veya Uzmanlık Alanı Ara')}
                             name="search"
                             value={filters.search}
                             onChange={handleChange}
@@ -131,12 +134,12 @@ function Doctors() {
                     </Grid>
                     <Grid item xs={12} sm={6} md={3}>
                         <FormControl fullWidth>
-                            <InputLabel id="specialty-label">Uzmanlık Alanı</InputLabel>
+                            <InputLabel id="specialty-label">{t('specialty')}</InputLabel>
                             <Select
                                 labelId="specialty-label"
                                 name="specialty"
                                 value={filters.specialty}
-                                label="Uzmanlık Alanı"
+                                label={t('specialty')}
                                 onChange={handleChange}
                             >
                                 <MenuItem value="">Tümü</MenuItem>
@@ -148,12 +151,12 @@ function Doctors() {
                     </Grid>
                     <Grid item xs={12} sm={6} md={2}>
                         <FormControl fullWidth>
-                            <InputLabel id="city-label">Şehir</InputLabel>
+                            <InputLabel id="city-label">{t('city')}</InputLabel>
                             <Select
                                 labelId="city-label"
                                 name="city"
                                 value={filters.city}
-                                label="Şehir"
+                                label={t('city')}
                                 onChange={handleChange}
                             >
                                 <MenuItem value="">Tümü</MenuItem>

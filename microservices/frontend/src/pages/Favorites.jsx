@@ -16,8 +16,10 @@ import ProtectedRoute from '../components/ProtectedRoute';
 import Loading from '../components/Loading';
 import FavoriteButton from '../components/FavoriteButton';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useTranslation } from 'react-i18next';
 
 export default function Favorites() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = React.useState(0);
 
   // TODO: Favorites API entegrasyonu
@@ -30,7 +32,7 @@ export default function Favorites() {
   });
 
   if (isLoading) {
-    return <Loading message="Favoriler yükleniyor..." />;
+    return <Loading message={t('loadingFavorites', 'Favoriler yükleniyor...')} />;
   }
 
   const handleTabChange = (event, newValue) => {
@@ -41,22 +43,22 @@ export default function Favorites() {
     <ProtectedRoute>
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Typography variant="h4" gutterBottom>
-          Favorilerim
+          {t('favorites')}
         </Typography>
 
         <Tabs value={activeTab} onChange={handleTabChange} sx={{ mb: 3 }}>
-          <Tab label="Hastaneler" />
-          <Tab label="Doktorlar" />
-          <Tab label="Paketler" />
+          <Tab label={t('hospitals')} />
+          <Tab label={t('doctors')} />
+          <Tab label={t('packages')} />
         </Tabs>
 
         {favorites?.data?.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 8 }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
-              Henüz favoriniz bulunmamaktadır.
+              {t('noFavoritesYet', 'Henüz favoriniz bulunmamaktadır.')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Beğendiğiniz hastane, doktor veya paketleri favorilerinize ekleyebilirsiniz.
+              {t('addToFavoritesDescription', 'Beğendiğiniz hastane, doktor veya paketleri favorilerinize ekleyebilirsiniz.')}
             </Typography>
           </Box>
         ) : (

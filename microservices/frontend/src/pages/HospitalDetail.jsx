@@ -13,7 +13,13 @@ import SecurityIcon from '@mui/icons-material/Security';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import LanguageIcon from '@mui/icons-material/Language';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useParams } from 'react-router-dom';
+import { hospitalService } from '../services/api';
+import { useQuery } from '@tanstack/react-query';
+import LoadingState from '../components/LoadingState/LoadingState';
+import ErrorState from '../components/ErrorState/ErrorState';
+import SEOHead from '../components/SEO/SEOHead';
+import { useTranslation } from 'react-i18next';
 
 // --- ÖRNEK VERİLER ---
 const dummyHospital = {
@@ -70,17 +76,34 @@ function TabPanel(props) {
 
 // --- BİLEŞEN: HospitalDetail ---
 function HospitalDetail() {
+    const { t } = useTranslation();
+    const { slug } = useParams();
     const theme = useTheme();
     const [tabValue, setTabValue] = useState(0);
+
+    const { data: hospital, isLoading, error } = useQuery({
+        queryKey: ['hospital', slug],
+        queryFn: () => hospitalService.getBySlug(slug),
+        enabled: !!slug,
+        placeholderData: dummyHospital
+    });
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);
     };
 
-    const hospital = dummyHospital;
+    if (isLoading) return <LoadingState />;
+    if (error) return <ErrorState error={error} />;
+    if (!hospital) return <ErrorState error={{ message: 'Hastane bulunamadı' }} />;
 
     return (
-        <Container maxWidth="lg" sx={{ py: 5 }}>
+        <>
+            <SEOHead
+                title={`${hospital.name} - ${t('hospitalDetails', 'Hastane Detayları')}`}
+                description={hospital.description || `${hospital.name} hastane detayları, akreditasyonlar ve uzmanlık alanları`}
+                keywords={`${hospital.name}, hastane, ${hospital.city}, sağlık turizmi`}
+            />
+            <Container maxWidth="lg" sx={{ py: 5 }}>
 
             {/* 1. Üst Başlık ve Galeri */}
             <Paper sx={{ mb: 4, borderRadius: 2, overflow: 'hidden', boxShadow: theme.shadows[6] }}>
@@ -107,7 +130,7 @@ function HospitalDetail() {
                         </Typography>
                         <Chip
                             icon={<PeopleIcon />}
-                            label={`${hospital.reviews} Yorum`}
+                            label={`${hospital.reviews} ${t('reviews', 'Yorum')}`}
                             variant="outlined"
                         />
                         <Chip
@@ -128,7 +151,7 @@ function HospitalDetail() {
                         size="large"
                         startIcon={<LocalHospitalIcon />}
                     >
-                        Bu Hastane İçin Teklif Al
+                        {t('getQuoteForHospital', 'Bu Hastane İçin Teklif Al')}
                     </Button>
                 </Box>
             </Paper>
@@ -141,15 +164,15 @@ function HospitalDetail() {
                     <Paper sx={{ borderRadius: 2, boxShadow: theme.shadows[3] }}>
                         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                             <Tabs value={tabValue} onChange={handleTabChange} aria-label="hastane detay sekmeleri" variant="scrollable" scrollButtons="auto">
-                                <Tab label="Akreditasyon ve Uzmanlıklar" {...a11yProps(0)} />
-                                <Tab label="Galeri ve Olanaklar" {...a11yProps(1)} />
-                                <Tab label="İlgili Doktorlar" {...a11yProps(2)} />
+                                <Tab label={t('accreditationsAndSpecialties', 'Akreditasyon ve Uzmanlıklar')} {...a11yProps(0)} />
+                                <Tab label={t('galleryAndAmenities', 'Galeri ve Olanaklar')} {...a11yProps(1)} />
+                                <Tab label={t('relatedDoctors', 'İlgili Doktorlar')} {...a11yProps(2)} />
                             </Tabs>
                         </Box>
 
                         {/* Sekme 1: Akreditasyon ve Uzmanlıklar */}
                         <TabPanel value={tabValue} index={0}>
-                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>Akreditasyonlar</Typography>
+                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>{t('accreditations', 'Akreditasyonlar')}</Typography>
                             <List>
                                 {hospital.accreditations.map((acc, index) => (
                                     <ListItem key={index}>
@@ -161,7 +184,7 @@ function HospitalDetail() {
                                 ))}
                             </List>
                             <Divider sx={{ my: 3 }} />
-                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>Uzmanlık Alanları</Typography>
+                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>{t('specialtyAreas', 'Uzmanlık Alanları')}</Typography>
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                                 {hospital.specialties.map((spec, index) => (
                                     <Chip
@@ -177,7 +200,7 @@ function HospitalDetail() {
 
                         {/* Sekme 2: Galeri ve Olanaklar */}
                         <TabPanel value={tabValue} index={1}>
-                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>Hastane Olanakları</Typography>
+                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>{t('hospitalAmenities', 'Hastane Olanakları')}</Typography>
                             <Grid container spacing={2}>
                                 {hospital.amenities.map((amenity, index) => (
                                     <Grid item xs={6} sm={4} key={index}>
@@ -191,7 +214,7 @@ function HospitalDetail() {
                                 ))}
                             </Grid>
                             <Divider sx={{ my: 3 }} />
-                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>Hastane İçi Görüntüler</Typography>
+                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>{t('hospitalInteriorImages', 'Hastane İçi Görüntüler')}</Typography>
                             <Grid container spacing={2}>
                                 {hospital.gallery.slice(1).map((imgUrl, index) => (
                                     <Grid item xs={12} sm={6} key={index}>
@@ -209,7 +232,7 @@ function HospitalDetail() {
 
                         {/* Sekme 3: İlgili Doktorlar */}
                         <TabPanel value={tabValue} index={2}>
-                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>Bu Merkezdeki Uzmanlar</Typography>
+                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>{t('specialistsAtThisCenter', 'Bu Merkezdeki Uzmanlar')}</Typography>
                             <List>
                                 {dummyDoctors.map((doctor) => (
                                     <Paper key={doctor.id} sx={{ mb: 2, p: 2, display: 'flex', alignItems: 'center', gap: 2, transition: '0.2s', '&:hover': { bgcolor: 'grey.50' } }}>
@@ -277,12 +300,13 @@ function HospitalDetail() {
                     {/* Harita Yer Tutucu */}
                     <Paper sx={{ height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'grey.200', borderRadius: 2 }}>
                         <Typography variant="subtitle1" color="text.secondary">
-                            Google Haritası Yer Tutucusu
+                            {t('googleMapPlaceholder', 'Google Haritası Yer Tutucusu')}
                         </Typography>
                     </Paper>
                 </Grid>
             </Grid>
         </Container>
+        </>
     );
 }
 
