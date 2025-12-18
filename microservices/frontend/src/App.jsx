@@ -99,6 +99,9 @@ const LazyTerms = lazy(() => import('./pages/Terms.jsx'));
 const LazyAccommodationDetail = lazy(() => import('./pages/AccommodationDetail.jsx'));
 const LazyPackageDetail = lazy(() => import('./pages/PackageDetail.jsx'));
 const LazyCulturalGuide = lazy(() => import('./pages/CulturalGuide.jsx'));
+const LazyQuotes = lazy(() => import('./pages/Quotes.jsx'));
+const LazyLeads = lazy(() => import('./pages/Leads.jsx'));
+const LazySuperApp = lazy(() => import('./pages/SuperApp.jsx'));
 
 const queryClient = new QueryClient(); // React Query Client
 
@@ -114,6 +117,7 @@ const routeMap = {
     '/reservations': LazyReservations,
     '/payments': LazyPayments,
     '/about': LazyAboutUs,
+    '/super-app': LazySuperApp, // AI Health Companion Super-App
 };
 
 // PlaceholderPage artık kullanılmıyor, tüm sayfalar tamamlandı
@@ -234,6 +238,11 @@ function AppContent() {
                                     <Route path="/dashboard" element={renderSuspense(LazyDashboard)} />
                                     <Route path="/favorites" element={renderSuspense(LazyFavorites)} />
                                     <Route path="/notifications" element={renderSuspense(LazyNotificationsPage)} />
+                                    <Route path="/quotes" element={renderSuspense(LazyQuotes)} />
+                                    <Route path="/admin/leads" element={renderSuspense(LazyLeads)} />
+                                    
+                                    {/* Super-App: AI Health Companion Centered */}
+                                    <Route path="/super-app" element={renderSuspense(LazySuperApp)} />
                                     
                                     {/* New Features */}
                                     <Route path="/video-consultation" element={renderSuspense(LazyVideoConsultation)} />

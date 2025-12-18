@@ -42,5 +42,9 @@ public class Hospital {
     private Integer totalReviews;
     @Column(nullable = false)
     private Boolean isActive;
+    @Column(length = 500)
+    private String imageUrl; // URL to hospital image stored in file-storage-service
+    @Column(length = 500)
+    private String thumbnailUrl; // URL to thumbnail image
 }
 

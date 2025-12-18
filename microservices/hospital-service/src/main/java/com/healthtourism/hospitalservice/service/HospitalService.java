@@ -8,6 +8,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,7 +35,7 @@ public class HospitalService {
     
     @Cacheable(value = "hospitals", key = "#city")
     public List<HospitalDTO> getHospitalsByCity(String city) {
-        return hospitalRepository.findByCity(city)
+        return hospitalRepository.findByCityAndIsActiveTrue(city)
             .stream()
             .map(this::convertToDTO)
             .collect(Collectors.toList());
@@ -76,7 +77,54 @@ public class HospitalService {
             .collect(Collectors.toList());
     }
     
-    private HospitalDTO convertToDTO(Hospital hospital) {
+    @CacheEvict(value = "hospitals", key = "#id")
+    public HospitalDTO uploadHospitalImage(Long id, org.springframework.web.multipart.MultipartFile file) {
+        Hospital hospital = hospitalRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Hastane bulunamadı: " + id));
+        
+        // Call file-storage-service to upload image
+        try {
+            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.setContentType(org.springframework.http.MediaType.MULTIPART_FORM_DATA);
+            
+            org.springframework.util.LinkedMultiValueMap<String, Object> body = new org.springframework.util.LinkedMultiValueMap<>();
+            byte[] fileBytes = file.getBytes();
+            org.springframework.core.io.ByteArrayResource resource = new org.springframework.core.io.ByteArrayResource(fileBytes) {
+                @Override
+                public String getFilename() {
+                    return file.getOriginalFilename();
+                }
+            };
+            body.add("file", resource);
+            
+            org.springframework.http.HttpEntity<org.springframework.util.LinkedMultiValueMap<String, Object>> requestEntity = 
+                new org.springframework.http.HttpEntity<>(body, headers);
+            
+            org.springframework.http.ResponseEntity<java.util.Map> response = 
+                restTemplate.postForEntity(
+                    "http://localhost:8027/api/files/upload/image/hospital/" + id,
+                    requestEntity,
+                    java.util.Map.class
+                );
+            
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                java.util.Map<String, Object> fileMetadata = response.getBody();
+                Long fileId = Long.valueOf(fileMetadata.get("id").toString());
+                hospital.setImageUrl("http://localhost:8027/api/files/" + fileId);
+                hospital.setThumbnailUrl("http://localhost:8027/api/files/" + fileId + "/thumbnail");
+                hospital = hospitalRepository.save(hospital);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Image upload failed: " + e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException("Image upload failed: " + e.getMessage());
+        }
+        
+        return convertToDTO(hospital);
+    }
+    
+    public HospitalDTO convertToDTO(Hospital hospital) {
         HospitalDTO dto = new HospitalDTO();
         dto.setId(hospital.getId());
         dto.setName(hospital.getName());

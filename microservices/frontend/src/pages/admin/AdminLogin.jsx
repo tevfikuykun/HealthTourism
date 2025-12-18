@@ -42,13 +42,18 @@ export default function AdminLogin() {
     try {
       setIsLoading(true);
       setError('');
-      // TODO: Admin login API entegrasyonu
-      // const response = await adminService.login(data);
-      // localStorage.setItem('adminToken', response.data.token);
-      // localStorage.setItem('adminUser', JSON.stringify(response.data.user));
-      navigate('/admin/dashboard');
+      
+      const response = await adminService.login(data);
+      
+      if (response.data) {
+        localStorage.setItem('adminToken', response.data.token || response.data.accessToken);
+        localStorage.setItem('adminUser', JSON.stringify(response.data.user || response.data));
+        navigate('/admin/dashboard');
+      } else {
+        setError(t('loginFailed', 'Giriş başarısız. E-posta ve şifrenizi kontrol edin.'));
+      }
     } catch (err) {
-      setError(t('loginFailed', 'Giriş başarısız. E-posta ve şifrenizi kontrol edin.'));
+      setError(err.response?.data?.message || t('loginFailed', 'Giriş başarısız. E-posta ve şifrenizi kontrol edin.'));
     } finally {
       setIsLoading(false);
     }

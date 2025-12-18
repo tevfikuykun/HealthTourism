@@ -11,23 +11,45 @@ import {
   Tabs,
   Tab,
 } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ProtectedRoute from '../components/ProtectedRoute';
 import Loading from '../components/Loading';
 import FavoriteButton from '../components/FavoriteButton';
+import { favoriteService } from '../services/api';
+import { useAuth } from '../hooks/useAuth';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 
 export default function Favorites() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = React.useState(0);
 
-  // TODO: Favorites API entegrasyonu
+  const itemTypes = ['hospital', 'doctor', 'package'];
+  const currentItemType = itemTypes[activeTab] || 'hospital';
+
   const { data: favorites, isLoading } = useQuery({
-    queryKey: ['favorites'],
+    queryKey: ['favorites', user?.id, currentItemType],
     queryFn: async () => {
-      // return await favoriteService.getAll();
-      return { data: [] };
+      if (!user?.id) return { data: [] };
+      const response = await favoriteService.getByType(user.id, currentItemType);
+      return { data: response.data || [] };
+    },
+    enabled: !!user?.id,
+  });
+
+  const removeFavoriteMutation = useMutation({
+    mutationFn: ({ itemId, itemType }) => {
+      return favoriteService.remove(user.id, itemType, itemId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['favorites']);
+      toast.success(t('removedFromFavorites', 'Favorilerden çıkarıldı'));
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || t('errorOccurred', 'İşlem sırasında bir hata oluştu'));
     },
   });
 
@@ -71,10 +93,15 @@ export default function Favorites() {
                   )}
                   <CardContent>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <Typography variant="h6">{item.name}</Typography>
+                      <Typography variant="h6">{item.name || item.title || `Item ${item.itemId}`}</Typography>
                       <Box>
-                        <FavoriteButton itemId={item.id} itemType={item.type} isFavorite={true} />
-                        <IconButton color="error" size="small">
+                        <FavoriteButton itemId={item.itemId || item.id} itemType={item.itemType || item.type} isFavorite={true} />
+                        <IconButton 
+                          color="error" 
+                          size="small"
+                          onClick={() => handleRemove(item.itemId || item.id, item.itemType || item.type)}
+                          disabled={removeFavoriteMutation.isPending}
+                        >
                           <DeleteIcon />
                         </IconButton>
                       </Box>

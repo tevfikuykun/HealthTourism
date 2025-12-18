@@ -2,6 +2,7 @@ package com.healthtourism.hospitalservice.repository;
 
 import com.healthtourism.hospitalservice.entity.Hospital;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface HospitalRepository extends JpaRepository<Hospital, Long> {
+public interface HospitalRepository extends JpaRepository<Hospital, Long>, JpaSpecificationExecutor<Hospital> {
     List<Hospital> findByCityAndIsActiveTrue(String city);
     List<Hospital> findByDistrictAndIsActiveTrue(String district);
     @Query("SELECT h FROM Hospital h WHERE h.isActive = true ORDER BY h.rating DESC")

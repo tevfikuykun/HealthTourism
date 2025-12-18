@@ -4,7 +4,6 @@ import com.healthtourism.userservice.dto.UserDTO;
 import com.healthtourism.userservice.entity.User;
 import com.healthtourism.userservice.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,7 +19,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("User Service Unit Tests")
 class UserServiceTest {
 
     @Mock
@@ -29,28 +27,28 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
-    private User user;
+    private User testUser;
 
     @BeforeEach
     void setUp() {
-        user = new User();
-        user.setId(1L);
-        user.setEmail("test@example.com");
-        user.setFirstName("Test");
-        user.setLastName("User");
-        user.setPhone("1234567890");
-        user.setCountry("Turkey");
-        user.setRole("USER");
-        user.setIsActive(true);
+        testUser = new User();
+        testUser.setId(1L);
+        testUser.setEmail("test@example.com");
+        testUser.setFirstName("Test");
+        testUser.setLastName("User");
+        testUser.setIsActive(true);
     }
 
     @Test
-    @DisplayName("Should get all users")
     void testGetAllUsers() {
-        when(userRepository.findAll()).thenReturn(Arrays.asList(user));
+        // Given
+        List<User> users = Arrays.asList(testUser);
+        when(userRepository.findAll()).thenReturn(users);
 
+        // When
         List<UserDTO> result = userService.getAllUsers();
 
+        // Then
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals("test@example.com", result.get(0).getEmail());
@@ -58,12 +56,14 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Should get user by id")
-    void testGetUserById() {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+    void testGetUserById_Success() {
+        // Given
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
 
+        // When
         UserDTO result = userService.getUserById(1L);
 
+        // Then
         assertNotNull(result);
         assertEquals(1L, result.getId());
         assertEquals("test@example.com", result.getEmail());
@@ -71,29 +71,27 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw exception when user not found")
-    void testGetUserByIdNotFound() {
-        when(userRepository.findById(999L)).thenReturn(Optional.empty());
+    void testGetUserById_NotFound() {
+        // Given
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> 
-            userService.getUserById(999L));
+        // When & Then
+        assertThrows(RuntimeException.class, () -> userService.getUserById(1L));
+        verify(userRepository, times(1)).findById(1L);
     }
 
     @Test
-    @DisplayName("Should create user successfully")
     void testCreateUser() {
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-            User u = invocation.getArgument(0);
-            u.setId(1L);
-            return u;
-        });
+        // Given
+        when(userRepository.save(any(User.class))).thenReturn(testUser);
 
-        UserDTO result = userService.createUser(user);
+        // When
+        UserDTO result = userService.createUser(testUser);
 
+        // Then
         assertNotNull(result);
-        assertEquals(user.getEmail(), result.getEmail());
+        assertEquals("test@example.com", result.getEmail());
         assertTrue(result.getIsActive());
         verify(userRepository, times(1)).save(any(User.class));
     }
 }
-

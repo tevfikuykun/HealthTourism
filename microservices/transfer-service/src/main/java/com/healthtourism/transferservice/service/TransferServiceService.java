@@ -30,7 +30,7 @@ public class TransferServiceService {
     
     public TransferServiceDTO getTransferById(Long id) {
         TransferService transfer = transferServiceRepository.findByIdAndIsAvailableTrue(id)
-                .orElseThrow(() -> new RuntimeException("Transfer hizmeti bulunamadı"));
+                .orElseThrow(() -> new com.healthtourism.transferservice.exception.ResourceNotFoundException("Transfer hizmeti bulunamadı: " + id));
         return convertToDTO(transfer);
     }
     

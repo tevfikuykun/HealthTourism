@@ -10,12 +10,20 @@ import AppErrorBoundary from './components/ErrorBoundary';
 import ToastContainer from './components/ToastContainer';
 import { initAnalytics } from './utils/analytics';
 import { requestNotificationPermission } from './utils/pushNotifications';
+import { initSentry } from './utils/sentry';
+import { initCurrency } from './utils/currency';
 import i18n from './i18n'; // Initialize i18n
 import './index.css';
 import './styles/print.css';
 
+// Initialize Sentry for error tracking (must be first)
+initSentry();
+
 // Initialize analytics
 initAnalytics();
+
+// Initialize currency service
+initCurrency();
 
 // Request notification permission
 requestNotificationPermission();

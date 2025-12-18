@@ -30,7 +30,7 @@ public class CarRentalService {
     
     public CarRentalDTO getCarRentalById(Long id) {
         CarRental carRental = carRentalRepository.findByIdAndIsAvailableTrue(id)
-                .orElseThrow(() -> new RuntimeException("Araç kiralama bulunamadı"));
+                .orElseThrow(() -> new com.healthtourism.carrentalservice.exception.ResourceNotFoundException("Araç kiralama bulunamadı: " + id));
         return convertToDTO(carRental);
     }
     

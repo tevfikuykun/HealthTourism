@@ -1,8 +1,13 @@
 package com.healthtourism.reservationservice.service;
+
 import com.healthtourism.reservationservice.dto.ReservationDTO;
 import com.healthtourism.reservationservice.dto.ReservationRequestDTO;
 import com.healthtourism.reservationservice.entity.Reservation;
+import com.healthtourism.reservationservice.exception.InsufficientCapacityException;
+import com.healthtourism.reservationservice.exception.ResourceNotFoundException;
 import com.healthtourism.reservationservice.repository.ReservationRepository;
+import com.healthtourism.reservationservice.service.PriceCalculationService;
+import com.healthtourism.reservationservice.util.ReservationNumberGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,7 +15,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,22 +28,53 @@ public class ReservationService {
     @Autowired
     private EventStoreService eventStoreService;
     
+    @Autowired
+    private ReservationNumberGenerator reservationNumberGenerator;
+    
+    @Autowired
+    private PriceCalculationService priceCalculationService;
+    
     @Transactional
     public ReservationDTO createReservation(ReservationRequestDTO request) {
+        // Validate appointment date is not in the past
+        if (request.getAppointmentDate().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Appointment date cannot be in the past");
+        }
+        
+        // Check for appointment conflicts
         LocalDateTime appointmentEnd = request.getAppointmentDate().plusHours(1);
         List<Reservation> conflicting = reservationRepository.findConflictingReservations(
                 request.getDoctorId(), request.getAppointmentDate(), appointmentEnd);
         if (!conflicting.isEmpty()) {
-            throw new RuntimeException("Bu saatte başka bir randevu var");
+            throw new InsufficientCapacityException(
+                "Bu saatte başka bir randevu var. Lütfen farklı bir saat seçin.");
         }
         
+        // Calculate number of nights
         long nights = ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate());
         if (nights <= 0) {
-            throw new RuntimeException("Geçersiz konaklama tarihleri");
+            throw new IllegalArgumentException("Geçersiz konaklama tarihleri. Check-out tarihi check-in tarihinden sonra olmalıdır.");
         }
         
+        // Validate check-in date is not before appointment date
+        if (request.getCheckInDate().isBefore(request.getAppointmentDate().toLocalDate().atStartOfDay())) {
+            throw new IllegalArgumentException("Check-in tarihi randevu tarihinden önce olamaz.");
+        }
+        
+        // Generate unique reservation number
+        String reservationNumber = reservationNumberGenerator.generateReservationNumber();
+        
+        // Calculate total price using PriceCalculationService
+        BigDecimal totalPrice = priceCalculationService.calculateTotalPrice(
+            request.getDoctorId(),
+            request.getAccommodationId(),
+            (int) nights,
+            request.getTransferId()
+        );
+        
+        // Create reservation entity
         Reservation reservation = new Reservation();
-        reservation.setReservationNumber(UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        reservation.setReservationNumber(reservationNumber);
         reservation.setUserId(request.getUserId());
         reservation.setHospitalId(request.getHospitalId());
         reservation.setDoctorId(request.getDoctorId());
@@ -48,7 +83,7 @@ public class ReservationService {
         reservation.setCheckInDate(request.getCheckInDate());
         reservation.setCheckOutDate(request.getCheckOutDate());
         reservation.setNumberOfNights((int) nights);
-        reservation.setTotalPrice(BigDecimal.valueOf(1000.0)); // Simülasyon - gerçekte hesaplanacak
+        reservation.setTotalPrice(totalPrice);
         reservation.setStatus("PENDING");
         reservation.setNotes(request.getNotes());
         reservation.setCreatedAt(LocalDateTime.now());
@@ -90,14 +125,20 @@ public class ReservationService {
     
     public ReservationDTO getReservationByNumber(String reservationNumber) {
         Reservation reservation = reservationRepository.findByReservationNumber(reservationNumber)
-                .orElseThrow(() -> new RuntimeException("Rezervasyon bulunamadı"));
+                .orElseThrow(() -> new ResourceNotFoundException("Rezervasyon bulunamadı: " + reservationNumber));
+        return convertToDTO(reservation);
+    }
+    
+    public ReservationDTO getReservationById(Long id) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Rezervasyon bulunamadı: " + id));
         return convertToDTO(reservation);
     }
     
     @Transactional
     public ReservationDTO updateReservationStatus(Long id, String status) {
         Reservation reservation = reservationRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Rezervasyon bulunamadı"));
+            .orElseThrow(() -> new ResourceNotFoundException("Rezervasyon bulunamadı: " + id));
         reservation.setStatus(status);
         Reservation saved = reservationRepository.save(reservation);
         

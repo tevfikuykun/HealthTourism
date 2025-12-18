@@ -1,0 +1,20 @@
+# Bootstrap Configuration for Config Server Integration
+# Bu dosyayı kopyalayıp bootstrap.properties olarak kaydedin
+# Config Server kullanmak istiyorsanız bu yapılandırmayı aktif edin
+
+# Config Server Connection
+spring.cloud.config.uri=http://localhost:8888
+spring.cloud.config.name=reservation-service
+spring.cloud.config.profile=default
+
+# Eureka Configuration (Config Server'ı bulmak için)
+eureka.client.service-url.defaultZone=http://localhost:8761/eureka/
+
+# Fail Fast - Config Server bulunamazsa uygulama başlamasın
+spring.cloud.config.fail-fast=true
+
+# Retry Configuration
+spring.cloud.config.retry.initial-interval=1000
+spring.cloud.config.retry.max-attempts=6
+spring.cloud.config.retry.max-interval=2000
+spring.cloud.config.retry.multiplier=1.1

@@ -4,12 +4,15 @@ import com.healthtourism.paymentservice.dto.PaymentDTO;
 import com.healthtourism.paymentservice.dto.PaymentRequestDTO;
 import com.healthtourism.paymentservice.entity.Payment;
 import com.healthtourism.paymentservice.repository.PaymentRepository;
+import com.stripe.model.PaymentIntent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -25,9 +28,11 @@ public class PaymentService {
     @Autowired
     private EventStoreService eventStoreService;
     
+    @Autowired(required = false)
+    private StripePaymentService stripePaymentService;
+    
     @Transactional
     public PaymentDTO processPayment(PaymentRequestDTO request) {
-        // Ödeme işlemi simülasyonu (Gerçek uygulamada Stripe/PayPal entegrasyonu olacak)
         Payment payment = new Payment();
         payment.setPaymentNumber(UUID.randomUUID().toString().substring(0, 12).toUpperCase());
         payment.setUserId(request.getUserId());
@@ -36,10 +41,42 @@ public class PaymentService {
         payment.setAmount(request.getAmount());
         payment.setCurrency(request.getCurrency() != null ? request.getCurrency() : "TRY");
         payment.setPaymentMethod(request.getPaymentMethod());
-        payment.setStatus("COMPLETED"); // Simülasyon - gerçekte ödeme gateway'den gelecek
-        payment.setPaymentDate(LocalDateTime.now());
         payment.setCreatedAt(LocalDateTime.now());
-        payment.setTransactionId("TXN-" + UUID.randomUUID().toString().substring(0, 16).toUpperCase());
+        
+        String status = "PENDING";
+        String transactionId = null;
+        
+        // Process payment with Stripe if available
+        if (stripePaymentService != null && "CREDIT_CARD".equals(request.getPaymentMethod())) {
+            try {
+                Map<String, String> metadata = new HashMap<>();
+                metadata.put("userId", String.valueOf(request.getUserId()));
+                metadata.put("reservationId", String.valueOf(request.getReservationId()));
+                metadata.put("reservationType", request.getReservationType());
+                
+                PaymentIntent paymentIntent = stripePaymentService.createPaymentIntent(
+                    request.getAmount(),
+                    payment.getCurrency(),
+                    request.getCardNumber(), // In real app, this would be payment method ID
+                    metadata
+                );
+                
+                transactionId = paymentIntent.getId();
+                status = mapStripeStatus(paymentIntent.getStatus());
+                
+            } catch (Exception e) {
+                status = "FAILED";
+                payment.setNotes("Payment processing failed: " + e.getMessage());
+            }
+        } else {
+            // Fallback to simulation
+            status = "COMPLETED";
+            transactionId = "TXN-" + UUID.randomUUID().toString().substring(0, 16).toUpperCase();
+        }
+        
+        payment.setStatus(status);
+        payment.setTransactionId(transactionId);
+        payment.setPaymentDate(LocalDateTime.now());
         
         Payment saved = paymentRepository.save(payment);
         
@@ -121,6 +158,21 @@ public class PaymentService {
         kafkaEventService.publishPaymentRefunded(saved.getId());
         
         return convertToDTO(saved);
+    }
+    
+    private String mapStripeStatus(String stripeStatus) {
+        switch (stripeStatus) {
+            case "succeeded":
+                return "COMPLETED";
+            case "requires_payment_method":
+            case "requires_confirmation":
+            case "requires_action":
+                return "PENDING";
+            case "canceled":
+                return "CANCELLED";
+            default:
+                return "FAILED";
+        }
     }
     
     private PaymentDTO convertToDTO(Payment payment) {

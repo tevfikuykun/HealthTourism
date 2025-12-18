@@ -20,5 +20,7 @@ public class DoctorDTO {
     private Double consultationFee;
     private Boolean isAvailable;
     private Long hospitalId;
+    private String imageUrl;
+    private String thumbnailUrl;
 }
 

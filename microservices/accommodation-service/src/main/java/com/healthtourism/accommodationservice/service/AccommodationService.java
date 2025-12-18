@@ -30,7 +30,7 @@ public class AccommodationService {
     
     public AccommodationDTO getAccommodationById(Long id) {
         Accommodation accommodation = accommodationRepository.findByIdAndIsActiveTrue(id)
-                .orElseThrow(() -> new RuntimeException("Konaklama bulunamadı"));
+                .orElseThrow(() -> new com.healthtourism.accommodationservice.exception.ResourceNotFoundException("Konaklama bulunamadı: " + id));
         return convertToDTO(accommodation);
     }
     
