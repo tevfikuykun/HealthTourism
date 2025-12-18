@@ -1,0 +1,121 @@
+version: '3.8'
+
+services:
+  # Databases
+  postgres-core:
+    image: postgres:15
+    container_name: healthtourism-postgres-core
+    environment:
+      POSTGRES_DB: healthtourism_core
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-core-data:/var/lib/postgresql/data
+    networks:
+      - healthtourism-network
+
+  mysql-notification:
+    image: mysql:8.0
+    container_name: healthtourism-mysql-notification
+    environment:
+      MYSQL_DATABASE: notification_db
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3317:3306"
+    volumes:
+      - mysql-notification-data:/var/lib/mysql
+    networks:
+      - healthtourism-network
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: healthtourism-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - healthtourism-network
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: healthtourism-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - healthtourism-network
+
+  # Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: healthtourism-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - healthtourism-network
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: healthtourism-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - healthtourism-network
+
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: healthtourism-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - healthtourism-network
+
+  # Kibana (for Elasticsearch visualization)
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: healthtourism-kibana
+    depends_on:
+      - elasticsearch
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    networks:
+      - healthtourism-network
+
+volumes:
+  postgres-core-data:
+  mysql-notification-data:
+  redis-data:
+  rabbitmq-data:
+  elasticsearch-data:
+
+networks:
+  healthtourism-network:
+    driver: bridge

@@ -8,17 +8,23 @@ import {
   Avatar,
   Fab,
   Slide,
+  CircularProgress,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
 import ChatIcon from '@mui/icons-material/Chat';
 import { useAuth } from '../../hooks/useAuth';
+import { chatService } from '../../services/api';
+import { toast } from 'react-toastify';
 
 export default function ChatWidget() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
+  const [conversationId, setConversationId] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -29,30 +35,108 @@ export default function ChatWidget() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!inputMessage.trim()) return;
+  // Load conversation when widget opens
+  useEffect(() => {
+    if (isOpen && isAuthenticated && user?.id && !conversationId) {
+      loadConversation();
+    }
+  }, [isOpen, isAuthenticated, user?.id]);
 
-    const newMessage = {
+  const loadConversation = async () => {
+    try {
+      setIsLoading(true);
+      const conversations = await chatService.getConversations(user.id);
+      if (conversations.data && conversations.data.length > 0) {
+        const conv = conversations.data[0];
+        setConversationId(conv.id);
+        const messagesData = await chatService.getMessages(conv.id);
+        if (messagesData.data) {
+          setMessages(messagesData.data.map(msg => ({
+            id: msg.id,
+            text: msg.content || msg.message,
+            sender: msg.senderType === 'USER' ? 'user' : 'bot',
+            timestamp: new Date(msg.createdAt || msg.timestamp),
+          })));
+        }
+      }
+    } catch (error) {
+      console.error('Error loading conversation:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSend = async () => {
+    if (!inputMessage.trim() || !isAuthenticated || !user?.id) return;
+
+    const messageText = inputMessage.trim();
+    setInputMessage('');
+    setIsSending(true);
+
+    const tempMessage = {
       id: Date.now(),
-      text: inputMessage,
+      text: messageText,
       sender: 'user',
       timestamp: new Date(),
     };
 
-    setMessages([...messages, newMessage]);
-    setInputMessage('');
+    setMessages((prev) => [...prev, tempMessage]);
 
-    // TODO: Chat API entegrasyonu
-    // Simüle edilmiş bot yanıtı
-    setTimeout(() => {
-      const botMessage = {
-        id: Date.now() + 1,
-        text: 'Mesajınız alındı. En kısa sürede size dönüş yapacağız.',
-        sender: 'bot',
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, botMessage]);
-    }, 1000);
+    try {
+      let convId = conversationId;
+      
+      // Create conversation if it doesn't exist
+      if (!convId) {
+        const convResponse = await chatService.createConversation({
+          userId: user.id,
+          type: 'SUPPORT',
+        });
+        convId = convResponse.data.id;
+        setConversationId(convId);
+      }
+
+      // Send message
+      const response = await chatService.sendMessage({
+        conversationId: convId,
+        content: messageText,
+        senderType: 'USER',
+      });
+
+      // Get bot response (simulated or real)
+      setTimeout(async () => {
+        try {
+          const botResponse = await chatService.sendMessage({
+            conversationId: convId,
+            content: 'Mesajınız alındı. En kısa sürede size dönüş yapacağız.',
+            senderType: 'BOT',
+          });
+
+          const botMessage = {
+            id: Date.now() + 1,
+            text: botResponse.data?.content || 'Mesajınız alındı. En kısa sürede size dönüş yapacağız.',
+            sender: 'bot',
+            timestamp: new Date(),
+          };
+          setMessages((prev) => [...prev, botMessage]);
+        } catch (error) {
+          console.error('Error getting bot response:', error);
+          // Fallback bot message
+          const botMessage = {
+            id: Date.now() + 1,
+            text: 'Mesajınız alındı. En kısa sürede size dönüş yapacağız.',
+            sender: 'bot',
+            timestamp: new Date(),
+          };
+          setMessages((prev) => [...prev, botMessage]);
+        }
+      }, 1000);
+    } catch (error) {
+      toast.error('Mesaj gönderilirken bir hata oluştu');
+      // Remove temp message on error
+      setMessages((prev) => prev.filter(msg => msg.id !== tempMessage.id));
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleKeyPress = (e) => {
@@ -150,8 +234,8 @@ export default function ChatWidget() {
                 onKeyPress={handleKeyPress}
                 disabled={!isAuthenticated}
               />
-              <IconButton color="primary" onClick={handleSend} disabled={!inputMessage.trim() || !isAuthenticated}>
-                <SendIcon />
+              <IconButton color="primary" onClick={handleSend} disabled={!inputMessage.trim() || !isAuthenticated || isSending}>
+                {isSending ? <CircularProgress size={20} /> : <SendIcon />}
               </IconButton>
             </Box>
             {!isAuthenticated && (

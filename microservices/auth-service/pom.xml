@@ -160,6 +160,12 @@
             <version>2.3.0</version>
         </dependency>
         
+        <!-- OAuth2 Client for Social Login -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
+        
         <!-- Actuator for Health Checks -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

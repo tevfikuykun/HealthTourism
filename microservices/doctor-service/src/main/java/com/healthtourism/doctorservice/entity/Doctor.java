@@ -38,5 +38,9 @@ public class Doctor {
     private Boolean isAvailable;
     @Column(nullable = false)
     private Long hospitalId;
+    @Column(length = 500)
+    private String imageUrl; // URL to doctor image stored in file-storage-service
+    @Column(length = 500)
+    private String thumbnailUrl; // URL to thumbnail image
 }
 

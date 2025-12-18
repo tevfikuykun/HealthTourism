@@ -1,0 +1,98 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # API Gateway
+  - job_name: 'api-gateway'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8080']
+        labels:
+          service: 'api-gateway'
+
+  # Core Services
+  - job_name: 'reservation-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8009']
+        labels:
+          service: 'reservation-service'
+
+  - job_name: 'hospital-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8002']
+        labels:
+          service: 'hospital-service'
+
+  - job_name: 'doctor-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8003']
+        labels:
+          service: 'doctor-service'
+
+  # Advanced Services
+  - job_name: 'cost-predictor-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8033']
+        labels:
+          service: 'cost-predictor-service'
+
+  - job_name: 'patient-risk-scoring-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8036']
+        labels:
+          service: 'patient-risk-scoring-service'
+
+  - job_name: 'health-wallet-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8037']
+        labels:
+          service: 'health-wallet-service'
+
+  - job_name: 'ai-health-companion-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8035']
+        labels:
+          service: 'ai-health-companion-service'
+
+  - job_name: 'iot-monitoring-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8032']
+        labels:
+          service: 'iot-monitoring-service'
+
+  - job_name: 'blockchain-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8030']
+        labels:
+          service: 'blockchain-service'
+
+  - job_name: 'gamification-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8017']
+        labels:
+          service: 'gamification-service'
+
+  - job_name: 'privacy-compliance-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8038']
+        labels:
+          service: 'privacy-compliance-service'
+
+  - job_name: 'chaos-engineering-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8039']
+        labels:
+          service: 'chaos-engineering-service'

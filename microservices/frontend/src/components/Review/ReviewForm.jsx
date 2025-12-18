@@ -12,6 +12,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAuth } from '../../hooks/useAuth';
+import { reviewService } from '../../services/api';
 import Loading from '../Loading';
 
 const reviewSchema = yup.object().shape({
@@ -50,13 +51,12 @@ export default function ReviewForm({ serviceId, serviceType, onSubmit: onSubmitC
       setError('');
       setSuccess(false);
 
-      // TODO: Review API entegrasyonu
-      // await reviewService.create({
-      //   serviceId,
-      //   serviceType,
-      //   rating,
-      //   comment: data.comment,
-      // });
+      await reviewService.create({
+        entityType: serviceType,
+        entityId: serviceId,
+        rating: rating,
+        comment: data.comment,
+      });
 
       setSuccess(true);
       reset();

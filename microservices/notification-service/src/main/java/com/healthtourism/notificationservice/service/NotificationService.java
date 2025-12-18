@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -23,6 +24,12 @@ public class NotificationService {
     
     @Autowired(required = false)
     private JavaMailSender mailSender;
+    
+    @Autowired(required = false)
+    private EmailTemplateService emailTemplateService;
+    
+    @Autowired(required = false)
+    private SMSService smsService;
     
     @Transactional
     public NotificationDTO sendNotification(NotificationRequestDTO request) {
@@ -119,6 +126,19 @@ public class NotificationService {
         request.setMessage("Ödemeniz başarısız oldu. Sebep: " + event.get("reason"));
         request.setRecipient("user-" + userId + "@example.com");
         sendNotification(request);
+    }
+    
+    private String getTemplateName(String category) {
+        switch (category) {
+            case "RESERVATION":
+                return "reservation-confirmation";
+            case "PAYMENT":
+                return "payment-confirmation";
+            case "SYSTEM":
+                return "system-notification";
+            default:
+                return "default";
+        }
     }
     
     private NotificationDTO convertToDTO(Notification notification) {

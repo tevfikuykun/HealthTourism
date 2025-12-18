@@ -61,6 +61,7 @@ export default function FileUpload({
 
     setIsUploading(true);
     const progress = {};
+    const uploadedFiles = [];
 
     try {
       for (let i = 0; i < selectedFiles.length; i++) {
@@ -68,22 +69,27 @@ export default function FileUpload({
         const formData = new FormData();
         formData.append('file', file);
 
-        // TODO: File upload API entegrasyonu
-        // const response = await fileStorageService.upload(formData, {
-        //   onUploadProgress: (progressEvent) => {
-        //     const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-        //     progress[file.name] = percentCompleted;
-        //     setUploadProgress({ ...progress });
-        //   },
-        // });
+        const response = await fileStorageService.upload(formData, {
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            progress[file.name] = percentCompleted;
+            setUploadProgress({ ...progress });
+          },
+        });
 
-        // Simüle edilmiş upload
-        await new Promise((resolve) => setTimeout(resolve, 1000));
         progress[file.name] = 100;
         setUploadProgress({ ...progress });
 
-        if (onUpload) {
-          // onUpload(response.data);
+        if (response.data) {
+          uploadedFiles.push(response.data);
+        }
+      }
+
+      if (onUpload) {
+        if (multiple) {
+          onUpload(uploadedFiles);
+        } else {
+          onUpload(uploadedFiles[0]);
         }
       }
 
@@ -91,7 +97,7 @@ export default function FileUpload({
       setUploadProgress({});
     } catch (error) {
       console.error('Upload error:', error);
-      alert(t('fileUploadError', 'Dosya yüklenirken bir hata oluştu'));
+      alert(error.response?.data?.message || t('fileUploadError', 'Dosya yüklenirken bir hata oluştu'));
     } finally {
       setIsUploading(false);
     }

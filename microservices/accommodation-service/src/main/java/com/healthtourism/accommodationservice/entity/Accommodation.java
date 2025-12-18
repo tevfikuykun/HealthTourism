@@ -37,5 +37,7 @@ public class Accommodation {
     @Column(nullable = false) private Boolean hasBreakfast;
     @Column(nullable = false) private Boolean isActive;
     @Column(nullable = false) private Long hospitalId;
+    @Column(length = 500) private String imageUrl; // URL to accommodation image
+    @Column(length = 500) private String thumbnailUrl; // URL to thumbnail image
 }
 

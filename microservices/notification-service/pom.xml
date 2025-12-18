@@ -69,6 +69,11 @@
             <artifactId>sendgrid-java</artifactId>
             <version>4.10.1</version>
         </dependency>
+        <!-- Thymeleaf for Email Templates -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
     </dependencies>
     
     <dependencyManagement>

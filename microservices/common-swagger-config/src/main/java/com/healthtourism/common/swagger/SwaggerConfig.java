@@ -11,29 +11,36 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
+/**
+ * Common Swagger/OpenAPI Configuration
+ * Can be used by all microservices
+ */
 @Configuration
 public class SwaggerConfig {
 
-    @Value("${swagger.server.url:http://localhost:8080}")
-    private String serverUrl;
+    @Value("${server.port:8080}")
+    private String serverPort;
+
+    @Value("${spring.application.name:service}")
+    private String applicationName;
 
     @Bean
-    public OpenAPI healthTourismOpenAPI() {
+    public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Health Tourism API")
-                        .description("Comprehensive Health Tourism Platform API Documentation")
+                        .title("Health Tourism API - " + applicationName)
                         .version("1.0.0")
+                        .description("API Documentation for Health Tourism " + applicationName)
                         .contact(new Contact()
-                                .name("Health Tourism Support")
-                                .email("support@healthtourism.com"))
+                                .name("Health Tourism Team")
+                                .email("api@healthtourism.com")
+                                .url("https://www.healthtourism.com"))
                         .license(new License()
                                 .name("Apache 2.0")
                                 .url("https://www.apache.org/licenses/LICENSE-2.0.html")))
                 .servers(List.of(
-                        new Server().url(serverUrl).description("API Gateway Server"),
-                        new Server().url("http://localhost:8080").description("Local Development Server")
+                        new Server().url("http://localhost:" + serverPort).description("Local Server"),
+                        new Server().url("https://api.healthtourism.com").description("Production Server")
                 ));
     }
 }
-

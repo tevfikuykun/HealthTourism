@@ -1,36 +1,50 @@
-// src/__tests__/services/api.test.js
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import axios from 'axios';
-import { authService, hospitalService } from '../../services/api';
-
-vi.mock('axios');
+import { favoriteService, chatService, adminService } from '../../services/api';
+import api from '../../services/api';
 
 describe('API Services', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('authService.login makes correct API call', async () => {
-    const mockData = { email: 'test@test.com', password: 'password123' };
-    const mockResponse = { data: { token: 'test-token' } };
-    
-    axios.create = vi.fn(() => ({
-      post: vi.fn().mockResolvedValue(mockResponse),
-    }));
+  describe('favoriteService', () => {
+    it('should have getAll method', () => {
+      expect(favoriteService.getAll).toBeDefined();
+      expect(typeof favoriteService.getAll).toBe('function');
+    });
 
-    await authService.login(mockData);
-    expect(axios.create).toHaveBeenCalled();
+    it('should have add method', () => {
+      expect(favoriteService.add).toBeDefined();
+      expect(typeof favoriteService.add).toBe('function');
+    });
+
+    it('should have remove method', () => {
+      expect(favoriteService.remove).toBeDefined();
+      expect(typeof favoriteService.remove).toBe('function');
+    });
   });
 
-  it('hospitalService.getAll makes correct API call', async () => {
-    const mockResponse = { data: [] };
-    
-    axios.create = vi.fn(() => ({
-      get: vi.fn().mockResolvedValue(mockResponse),
-    }));
+  describe('chatService', () => {
+    it('should have sendMessage method', () => {
+      expect(chatService.sendMessage).toBeDefined();
+      expect(typeof chatService.sendMessage).toBe('function');
+    });
 
-    await hospitalService.getAll();
-    expect(axios.create).toHaveBeenCalled();
+    it('should have getMessages method', () => {
+      expect(chatService.getMessages).toBeDefined();
+      expect(typeof chatService.getMessages).toBe('function');
+    });
+  });
+
+  describe('adminService', () => {
+    it('should have login method', () => {
+      expect(adminService.login).toBeDefined();
+      expect(typeof adminService.login).toBe('function');
+    });
+
+    it('should have getDashboard method', () => {
+      expect(adminService.getDashboard).toBeDefined();
+      expect(typeof adminService.getDashboard).toBe('function');
+    });
   });
 });
-

@@ -1,0 +1,94 @@
+{
+  "dashboard": {
+    "title": "Health Tourism - System Pulse Dashboard",
+    "tags": ["health-tourism", "microservices", "monitoring"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "title": "API Gateway Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_server_requests_seconds_count{uri=~\"/api/.*\"}[5m])",
+            "legendFormat": "{{uri}}"
+          }
+        ]
+      },
+      {
+        "title": "Circuit Breaker Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "resilience4j_circuitbreaker_state{name=~\".*\"}",
+            "legendFormat": "{{name}}"
+          }
+        ]
+      },
+      {
+        "title": "RAG Service Success Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_server_requests_seconds_count{service=\"ai-health-companion-service\",status=\"200\"}[5m]) / rate(http_server_requests_seconds_count{service=\"ai-health-companion-service\"}[5m]) * 100",
+            "legendFormat": "Success Rate %"
+          }
+        ]
+      },
+      {
+        "title": "Blockchain Burn Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(health_token_burn_total[5m])",
+            "legendFormat": "Tokens Burned/sec"
+          }
+        ]
+      },
+      {
+        "title": "IoT Alerts",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "iot_alert_count_total",
+            "legendFormat": "{{alert_type}}"
+          }
+        ]
+      },
+      {
+        "title": "Service Response Time (P95)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket[5m]))",
+            "legendFormat": "{{service}}"
+          }
+        ]
+      },
+      {
+        "title": "Active Users",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(active_users_total)",
+            "legendFormat": "Total Active Users"
+          }
+        ]
+      },
+      {
+        "title": "Fail-Safe Mode Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "fail_safe_mode_active",
+            "legendFormat": "Fail-Safe Active"
+          }
+        ]
+      }
+    ],
+    "refresh": "10s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    }
+  }
+}

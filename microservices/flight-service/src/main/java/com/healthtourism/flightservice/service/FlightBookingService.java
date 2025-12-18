@@ -36,7 +36,7 @@ public class FlightBookingService {
     
     public FlightBookingDTO getFlightById(Long id) {
         FlightBooking flight = flightBookingRepository.findByIdAndIsAvailableTrue(id)
-                .orElseThrow(() -> new RuntimeException("Uçuş bulunamadı"));
+                .orElseThrow(() -> new com.healthtourism.flightservice.exception.ResourceNotFoundException("Uçuş bulunamadı: " + id));
         return convertToDTO(flight);
     }
     

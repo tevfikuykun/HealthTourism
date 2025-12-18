@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationService } from '../services/api';
+import { useAuth } from '../hooks/useAuth';
 import ProtectedRoute from '../components/ProtectedRoute';
 import Loading from '../components/Loading';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -22,11 +23,13 @@ import { useTranslation } from 'react-i18next';
 
 export default function Notifications() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: notifications, isLoading } = useQuery({
-    queryKey: ['notifications'],
-    queryFn: () => notificationService.getByUser(null), // TODO: User ID
+    queryKey: ['notifications', user?.id],
+    queryFn: () => notificationService.getByUser(user?.id),
+    enabled: !!user?.id,
   });
 
   const markAsReadMutation = useMutation({
@@ -37,7 +40,7 @@ export default function Notifications() {
   });
 
   const markAllAsReadMutation = useMutation({
-    mutationFn: () => notificationService.markAllAsRead(null), // TODO: User ID
+    mutationFn: () => notificationService.markAllAsRead(user?.id),
     onSuccess: () => {
       queryClient.invalidateQueries(['notifications']);
     },

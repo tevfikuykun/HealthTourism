@@ -4,8 +4,8 @@ import { toast } from 'react-toastify';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
-// Create axios instance with default config
-const api = axios.create({
+// 1. DÜZELTME: 'api' değişkeninin başına 'export' eklendi (currency.js hatası için)
+export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
@@ -13,7 +13,7 @@ const api = axios.create({
   timeout: 30000,
 });
 
-// Request interceptor - Add auth token
+// Request interceptor - Auth token ekleme
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -27,7 +27,7 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor - Handle errors globally
+// Response interceptor - Global hata yönetimi
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -47,7 +47,8 @@ api.interceptors.response.use(
   }
 );
 
-// API Services
+// --- API SERVICES ---
+
 export const authService = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
@@ -81,21 +82,55 @@ export const hospitalService = {
 export const doctorService = {
   getAll: (params) => api.get('/doctors', { params }),
   getById: (id) => api.get(`/doctors/${id}`),
-  getBySlug: (slug) => api.get(`/doctors/slug/${slug}`),
   getByHospital: (hospitalId) => api.get(`/doctors/hospital/${hospitalId}`),
-  search: (query) => api.get('/doctors/search', { params: { q: query } }),
+  getBySpecialization: (specialization) => api.get(`/doctors/specialization/${specialization}`),
+  getTopRatedByHospital: (hospitalId) => api.get(`/doctors/hospital/${hospitalId}/top-rated`),
+  create: (doctor) => api.post('/doctors', doctor),
+  uploadImage: (id, formData) => api.post(`/doctors/${id}/upload-image`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+};
+
+// 2. DÜZELTME: VideoConsultation.jsx hatası için eksik servis eklendi
+export const videoConsultationService = {
+  getAll: () => api.get('/video-consultations'),
+  getById: (id) => api.get(`/video-consultations/${id}`),
+  create: (data) => api.post('/video-consultations', data),
+  updateStatus: (id, status) => api.put(`/video-consultations/${id}/status`, null, { params: { status } }),
+  getByUser: (userId) => api.get(`/video-consultations/user/${userId}`),
+  getByDoctor: (doctorId) => api.get(`/video-consultations/doctor/${doctorId}`),
+  generateRoom: (id) => api.post(`/video-consultations/${id}/generate-room`),
 };
 
 export const accommodationService = {
   getAll: (params) => api.get('/accommodations', { params }),
   getById: (id) => api.get(`/accommodations/${id}`),
-  getBySlug: (slug) => api.get(`/accommodations/slug/${slug}`),
-  search: (query) => api.get('/accommodations/search', { params: { q: query } }),
+  getByHospital: (hospitalId) => api.get(`/accommodations/hospital/${hospitalId}`),
+  getNearHospital: (hospitalId) => api.get(`/accommodations/hospital/${hospitalId}/near`),
+  getByPrice: (maxPrice) => api.get('/accommodations/price', { params: { maxPrice } }),
+  create: (accommodation) => api.post('/accommodations', accommodation),
 };
 
 export const flightService = {
-  search: (params) => api.post('/flights/search', params),
+  getAll: () => api.get('/flights'),
+  search: (departureCity, arrivalCity) => api.get('/flights/search', { params: { departureCity, arrivalCity } }),
+  getByClass: (flightClass) => api.get(`/flights/class/${flightClass}`),
+  getByPrice: (maxPrice) => api.get('/flights/price', { params: { maxPrice } }),
   getById: (id) => api.get(`/flights/${id}`),
+};
+
+export const carRentalService = {
+  getAll: () => api.get('/car-rentals'),
+  getByType: (carType) => api.get(`/car-rentals/type/${carType}`),
+  getByPrice: (maxPrice) => api.get('/car-rentals/price', { params: { maxPrice } }),
+  getById: (id) => api.get(`/car-rentals/${id}`),
+};
+
+export const transferService = {
+  getAll: () => api.get('/transfers'),
+  getByType: (serviceType) => api.get(`/transfers/type/${serviceType}`),
+  getByPrice: (maxPrice) => api.get('/transfers/price', { params: { maxPrice } }),
+  getById: (id) => api.get(`/transfers/${id}`),
 };
 
 export const packageService = {
@@ -119,16 +154,18 @@ export const reservationService = {
   cancel: (id) => api.delete(`/reservations/${id}`),
 };
 
-export const notificationService = {
-  send: (notification) => api.post('/notifications', notification),
-  getByUser: (userId) => api.get(`/notifications/user/${userId}`),
-  markAsRead: (id) => api.put(`/notifications/${id}/read`),
-  markAllAsRead: (userId) => api.put(`/notifications/user/${userId}/read-all`),
+export const quoteService = {
+  create: (quote) => api.post('/quotes', quote),
+  getById: (id) => api.get(`/quotes/${id}`),
+  getByUser: (userId) => api.get(`/quotes/user/${userId}`),
+  accept: (id) => api.post(`/quotes/${id}/accept`),
+  reject: (id, reason) => api.post(`/quotes/${id}/reject`, { reason }),
 };
 
-export const contactService = {
-  send: (contact) => api.post('/contact', contact),
-  getAll: () => api.get('/contact'),
+export const crmService = {
+  createLead: (lead) => api.post('/crm/leads', lead),
+  getLeads: () => api.get('/crm/leads'),
+  updateStatus: (id, status) => api.put(`/crm/leads/${id}/status`, { status }),
 };
 
 export const fileStorageService = {
@@ -137,10 +174,71 @@ export const fileStorageService = {
   delete: (id) => api.delete(`/files/${id}`),
 };
 
-// New Feature Services
-export const comparisonService = {
-  compare: (items, type) => api.post('/comparison/compare', { items, type }),
-  getComparison: (type) => api.get(`/comparison/${type}`),
+export const currencyService = {
+  getRates: (baseCurrency = 'TRY') => api.get(`/currency/rates/${baseCurrency}`),
+  convert: (amount, from, to) => api.get('/currency/convert', { params: { amount, from, to } }),
+};
+
+export const auditService = {
+  getLogs: (params) => api.get('/audit/logs', { params }),
+  getStats: () => api.get('/audit/stats'),
+};
+
+export const blockchainService = {
+  verify: (hash) => api.get(`/blockchain/verify/${hash}`),
+  getRecords: () => api.get('/blockchain/records'),
+};
+
+export const notificationService = {
+  getAll: (params) => api.get('/notifications', { params }),
+  getById: (id) => api.get(`/notifications/${id}`),
+  getByUser: (userId) => api.get(`/notifications/user/${userId || 'me'}`),
+  markAsRead: (id) => api.put(`/notifications/${id}/read`),
+  markAllAsRead: (userId) => api.put(`/notifications/user/${userId || 'me'}/read-all`),
+  delete: (id) => api.delete(`/notifications/${id}`),
+  create: (notification) => api.post('/notifications', notification),
+};
+
+export const chatService = {
+  getConversations: (userId) => api.get(`/chat/conversations/user/${userId}`),
+  getMessages: (conversationId) => api.get(`/chat/conversations/${conversationId}/messages`),
+  createConversation: (data) => api.post('/chat/conversations', data),
+  sendMessage: (data) => api.post('/chat/messages', data),
+  markAsRead: (messageId) => api.put(`/chat/messages/${messageId}/read`),
+  deleteConversation: (conversationId) => api.delete(`/chat/conversations/${conversationId}`),
+};
+
+export const favoriteService = {
+  getAll: (userId) => api.get(`/favorites/user/${userId}`),
+  getByType: (userId, itemType) => api.get(`/favorites/user/${userId}/type/${itemType}`),
+  add: (userId, itemType, itemId) => api.post('/favorites', { userId, itemType, itemId }),
+  remove: (userId, itemType, itemId) => api.delete(`/favorites/user/${userId}/type/${itemType}/item/${itemId}`),
+  isFavorite: (userId, itemType, itemId) => api.get(`/favorites/user/${userId}/type/${itemType}/item/${itemId}/check`),
+  check: (userId, itemType, itemId) => api.get(`/favorites/user/${userId}/type/${itemType}/item/${itemId}/check`),
+};
+
+export const reviewService = {
+  getAll: (params) => api.get('/reviews', { params }),
+  getById: (id) => api.get(`/reviews/${id}`),
+  getByService: (serviceId, serviceType) => api.get(`/reviews/service/${serviceType}/${serviceId}`),
+  create: (review) => api.post('/reviews', review),
+  update: (id, review) => api.put(`/reviews/${id}`, review),
+  delete: (id) => api.delete(`/reviews/${id}`),
+};
+
+export const contactService = {
+  send: (data) => api.post('/contact', data),
+  getAll: (params) => api.get('/contact', { params }),
+  getById: (id) => api.get(`/contact/${id}`),
+};
+
+export const healthRecordsService = {
+  getAll: () => api.get('/health-records'),
+  getById: (id) => api.get(`/health-records/${id}`),
+  getByUser: (userId) => api.get(`/health-records/user/${userId}`),
+  create: (record) => api.post('/health-records', record),
+  update: (id, record) => api.put(`/health-records/${id}`, record),
+  delete: (id) => api.delete(`/health-records/${id}`),
 };
 
 export const analyticsService = {
@@ -148,72 +246,112 @@ export const analyticsService = {
   getUsers: (params) => api.get('/analytics/users', { params }),
   getReservations: (params) => api.get('/analytics/reservations', { params }),
   getServices: (params) => api.get('/analytics/services', { params }),
+  getDashboard: () => api.get('/analytics/dashboard'),
 };
 
-export const healthRecordsService = {
-  getAll: () => api.get('/health-records'),
-  getById: (id) => api.get(`/health-records/${id}`),
-  create: (record) => api.post('/health-records', record),
-  update: (id, record) => api.put(`/health-records/${id}`, record),
-  delete: (id) => api.delete(`/health-records/${id}`),
+export const adminService = {
+  getUsers: (params) => api.get('/admin/users', { params }),
+  getUserById: (id) => api.get(`/admin/users/${id}`),
+  updateUser: (id, user) => api.put(`/admin/users/${id}`, user),
+  deleteUser: (id) => api.delete(`/admin/users/${id}`),
+  getStats: () => api.get('/admin/stats'),
+  getReports: (params) => api.get('/admin/reports', { params }),
 };
 
-export const reviewService = {
-  create: (review) => api.post('/reviews', review),
-  update: (id, review) => api.put(`/reviews/${id}`, review),
-  getByEntity: (entityType, entityId) => api.get(`/reviews/entity/${entityType}/${entityId}`),
-  addDoctorResponse: (id, response) => api.post(`/reviews/${id}/response`, { response }),
-  markHelpful: (id, helpful) => api.post(`/reviews/${id}/helpful`, { helpful }),
-  verify: (id) => api.post(`/reviews/${id}/verify`),
+// Smart Insurance Service (Blockchain-backed)
+export const smartInsuranceService = {
+  createPolicy: (policyData) => api.post('/insurance/smart/policy', policyData),
+  getPoliciesByUser: (userId) => api.get(`/insurance/smart/policy/user/${userId}`),
+  getPolicyByReservation: (reservationId) => api.get(`/insurance/smart/policy/reservation/${reservationId}`),
+  verifyPolicy: (policyId) => api.post(`/insurance/smart/policy/${policyId}/verify`),
+  claimInsurance: (policyId, claimData) => api.post(`/insurance/smart/policy/${policyId}/claim`, claimData),
 };
 
-export const postTreatmentService = {
-  createCarePackage: (packageData) => api.post('/post-treatment', packageData),
-  getByUser: (userId) => api.get(`/post-treatment/user/${userId}`),
-  updateTaskStatus: (id, taskIndex, isCompleted) => api.put(`/post-treatment/${id}/task/${taskIndex}`, { isCompleted }),
-  scheduleFollowUp: (id, date) => api.post(`/post-treatment/${id}/follow-up`, { date }),
+// Virtual Tour Service (AR/VR)
+export const virtualTourService = {
+  getAll: () => api.get('/virtual-tours'),
+  getByType: (tourType) => api.get(`/virtual-tours/type/${tourType}`),
+  getByEntity: (entityId, tourType) => api.get(`/virtual-tours/entity/${entityId}`, { params: { tourType } }),
+  getById: (id) => api.get(`/virtual-tours/${id}`),
+  getTourByEntity: (entityId, tourType) => api.get(`/virtual-tours/entity/${entityId}/tour`, { params: { tourType } }),
+  create: (tour) => api.post('/virtual-tours', tour),
+  update: (id, tour) => api.put(`/virtual-tours/${id}`, tour),
+  rate: (id, rating) => api.post(`/virtual-tours/${id}/rate`, { rating }),
+  getTopRated: (limit = 10) => api.get('/virtual-tours/top-rated', { params: { limit } }),
 };
 
-export const influencerService = {
-  register: (influencer) => api.post('/influencers/register', influencer),
-  approve: (id) => api.post(`/influencers/${id}/approve`),
-  createCampaign: (campaign) => api.post('/influencers/campaigns', campaign),
-  getCampaigns: (influencerId) => api.get(`/influencers/campaigns/${influencerId}`),
-  updatePerformance: (id, clicks, conversions) => api.put(`/influencers/campaigns/${id}/performance`, { clicks, conversions }),
-  calculateCommission: (id) => api.get(`/influencers/campaigns/${id}/commission`),
+// IoT Monitoring Service (Post-Op Monitoring)
+export const iotMonitoringService = {
+  recordData: (data) => api.post('/iot-monitoring/data', data),
+  getByUser: (userId) => api.get(`/iot-monitoring/user/${userId}`),
+  getRecentByUser: (userId, hours = 24) => api.get(`/iot-monitoring/user/${userId}/recent`, { params: { hours } }),
+  getLatestByUser: (userId) => api.get(`/iot-monitoring/user/${userId}/latest`),
+  getByReservation: (reservationId) => api.get(`/iot-monitoring/reservation/${reservationId}`),
+  getByDoctor: (doctorId) => api.get(`/iot-monitoring/doctor/${doctorId}`),
+  getAlerts: (alertStatus) => api.get(`/iot-monitoring/alerts/${alertStatus}`),
 };
 
-export const affiliateService = {
-  register: (userId) => api.post('/affiliate/register', { userId }),
-  getByCode: (code) => api.get(`/affiliate/code/${code}`),
-  trackClick: (referralCode, userId) => api.post('/affiliate/track/click', { referralCode, userId }),
-  trackConversion: (referralId, reservationId, amount) => api.post('/affiliate/track/conversion', { referralId, reservationId, amount }),
-  getReferrals: (affiliateId) => api.get(`/affiliate/referrals/${affiliateId}`),
+// Cost Predictor Service (AI-Powered Medical Cost Prediction)
+export const costPredictorService = {
+  predictCost: (predictionData) => api.post('/cost-predictor/predict', predictionData),
+  getByUser: (userId) => api.get(`/cost-predictor/user/${userId}`),
+  getById: (id) => api.get(`/cost-predictor/${id}`),
 };
 
-export const gamificationService = {
-  addPoints: (userId, points, reason) => api.post('/gamification/points/add', { userId, points, reason }),
-  awardBadge: (userId, badgeId) => api.post('/gamification/badges/award', { userId, badgeId }),
-  getAllBadges: () => api.get('/gamification/badges'),
-  getUserBadges: (userId) => api.get(`/gamification/badges/user/${userId}`),
-  getLeaderboard: (limit) => api.get('/gamification/leaderboard', { params: { limit } }),
-  createChallenge: (challenge) => api.post('/gamification/challenges', challenge),
-  getActiveChallenges: () => api.get('/gamification/challenges/active'),
+// Health Tokens Service (Gamified Rehabilitation)
+export const healthTokenService = {
+  awardRehabilitation: (tokenData) => api.post('/gamification/health-tokens/rehabilitation', tokenData),
+  awardMedicationCompliance: (tokenData) => api.post('/gamification/health-tokens/medication-compliance', tokenData),
+  awardHealthyLifestyle: (tokenData) => api.post('/gamification/health-tokens/healthy-lifestyle', tokenData),
+  redeem: (tokenId, redemptionData) => api.post(`/gamification/health-tokens/${tokenId}/redeem`, redemptionData),
+  getBalance: (userId) => api.get(`/gamification/health-tokens/user/${userId}/balance`),
+  getByUser: (userId) => api.get(`/gamification/health-tokens/user/${userId}`),
 };
 
-export const searchService = {
-  search: (query, params) => api.get('/search', { params: { q: query, ...params } }),
-  getHistory: () => api.get('/search/history'),
-  saveSearch: (search) => api.post('/search/save', search),
+// Live Translation Service (Cultural & Language Concierge)
+export const liveTranslationService = {
+  startSession: (sessionData) => api.post('/translation/live/session/start', sessionData),
+  translateSpeech: (sessionId, audioData) => api.post(`/translation/live/session/${sessionId}/translate`, audioData),
+  translateText: (textData) => api.post('/translation/live/translate-text', textData),
+  endSession: (sessionId) => api.post(`/translation/live/session/${sessionId}/end`),
+  getByConsultation: (consultationId) => api.get(`/translation/live/session/consultation/${consultationId}`),
+  getByUser: (userId) => api.get(`/translation/live/session/user/${userId}`),
 };
 
-export const currencyService = {
-  getRates: () => api.get('/currency/rates'),
-  convert: (from, to, amount) => api.post('/currency/convert', { from, to, amount }),
+// Legal Ledger Service (Blockchain Time-stamped Documents)
+export const legalLedgerService = {
+  createDocument: (documentData) => api.post('/legal-ledger/document', documentData),
+  signDocument: (documentId, signatureData) => api.post(`/legal-ledger/document/${documentId}/sign`, signatureData),
+  verifyDocument: (documentId) => api.post(`/legal-ledger/document/${documentId}/verify`),
+  getByUser: (userId) => api.get(`/legal-ledger/document/user/${userId}`),
+  getByReservation: (reservationId) => api.get(`/legal-ledger/document/reservation/${reservationId}`),
+  getById: (id) => api.get(`/legal-ledger/document/${id}`),
 };
 
-export const taxService = {
-  calculate: (amount, taxRate, includeTax) => api.post('/tax/calculate', { amount, taxRate, includeTax }),
+// AI Health Companion Service (7/24 Digital Nurse)
+export const aiHealthCompanionService = {
+  askQuestion: (questionData) => api.post('/ai-health-companion/ask', questionData),
+  getByUser: (userId) => api.get(`/ai-health-companion/user/${userId}`),
+  getByReservation: (reservationId) => api.get(`/ai-health-companion/reservation/${reservationId}`),
+  getById: (id) => api.get(`/ai-health-companion/${id}`),
 };
 
+// Patient Risk Scoring Service (AI-Driven Recovery Score)
+export const patientRiskScoringService = {
+  calculateScore: (requestData) => api.post('/patient-risk-scoring/calculate', requestData),
+  getLatestScore: (userId, reservationId) => api.get(`/patient-risk-scoring/user/${userId}/reservation/${reservationId}`),
+  getScoreHistory: (userId, reservationId) => api.get(`/patient-risk-scoring/user/${userId}/reservation/${reservationId}/history`),
+  getScoresRequiringAlert: () => api.get('/patient-risk-scoring/alerts'),
+};
+
+// Health Wallet Service (Unified Health Wallet with QR Code)
+export const healthWalletService = {
+  createOrUpdate: (requestData) => api.post('/health-wallet/create', requestData),
+  getByUserId: (userId) => api.get(`/health-wallet/user/${userId}`),
+  getByWalletId: (walletId) => api.get(`/health-wallet/wallet/${walletId}`),
+  accessByQR: (qrCodeHash) => api.get(`/health-wallet/qr/${qrCodeHash}`),
+  getCompleteData: (userId) => api.get(`/health-wallet/user/${userId}/complete`),
+};
+
+// Default export (Opsiyonel, geriye dönük uyumluluk için)
 export default api;

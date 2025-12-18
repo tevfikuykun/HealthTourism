@@ -32,7 +32,11 @@ export default function NotificationBell() {
   });
 
   const markAllAsReadMutation = useMutation({
-    mutationFn: () => notificationService.markAllAsRead(null), // TODO: User ID
+    mutationFn: () => {
+      const userStr = localStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+      return notificationService.markAllAsRead(user?.id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['notifications']);
     },

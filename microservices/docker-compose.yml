@@ -593,6 +593,178 @@ services:
     networks:
       - health-tourism-network
 
+  # New Game Changer Services Databases
+  mysql-virtual-tour:
+    image: mysql:8.0
+    container_name: mysql-virtual-tour
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: virtual_tour_db
+    ports:
+      - "3341:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-iot-monitoring:
+    image: mysql:8.0
+    container_name: mysql-iot-monitoring
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: iot_monitoring_db
+    ports:
+      - "3342:3306"
+    networks:
+      - health-tourism-network
+
+  # New Advanced Features Databases
+  mysql-cost-predictor:
+    image: mysql:8.0
+    container_name: mysql-cost-predictor
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: cost_predictor_db
+    ports:
+      - "3343:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-legal-ledger:
+    image: mysql:8.0
+    container_name: mysql-legal-ledger
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: legal_ledger_db
+    ports:
+      - "3344:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-ai-health-companion:
+    image: mysql:8.0
+    container_name: mysql-ai-health-companion
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ai_health_companion_db
+    ports:
+      - "3345:3306"
+    networks:
+      - health-tourism-network
+
+  # Patient Risk Scoring & Health Wallet Databases
+  mysql-patient-risk-scoring:
+    image: mysql:8.0
+    container_name: mysql-patient-risk-scoring
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: patient_risk_scoring_db
+    ports:
+      - "3346:3306"
+    networks:
+      - health-tourism-network
+    # Resource limits for IoT data processing
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  mysql-health-wallet:
+    image: mysql:8.0
+    container_name: mysql-health-wallet
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: health_wallet_db
+    ports:
+      - "3347:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-privacy-compliance:
+    image: mysql:8.0
+    container_name: mysql-privacy-compliance
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: privacy_compliance_db
+    ports:
+      - "3348:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-security-audit:
+    image: mysql:8.0
+    container_name: mysql-security-audit
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: security_audit_db
+    ports:
+      - "3349:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-secret-management:
+    image: mysql:8.0
+    container_name: mysql-secret-management
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: secret_management_db
+    ports:
+      - "3350:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-multi-tenancy:
+    image: mysql:8.0
+    container_name: mysql-multi-tenancy
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: multi_tenancy_db
+    ports:
+      - "3351:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-fhir-adapter:
+    image: mysql:8.0
+    container_name: mysql-fhir-adapter
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: fhir_adapter_db
+    ports:
+      - "3352:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-audit-report:
+    image: mysql:8.0
+    container_name: mysql-audit-report
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: audit_report_db
+    ports:
+      - "3353:3306"
+    networks:
+      - health-tourism-network
+
+  mysql-api-key-manager:
+    image: mysql:8.0
+    container_name: mysql-api-key-manager
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: api_key_manager_db
+    ports:
+      - "3354:3306"
+    networks:
+      - health-tourism-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - health-tourism-network
+
   # Main Database for Monolithic Application
   mysql-main:
     image: mysql:8.0

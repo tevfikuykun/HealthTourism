@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IconButton, Tooltip } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useAuth } from '../hooks/useAuth';
+import { favoriteService } from '../services/api';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
 
@@ -18,12 +19,28 @@ import { useTranslation } from 'react-i18next';
  */
 export default function FavoriteButton({ itemId, itemType, isFavorite: initialIsFavorite = false, onToggle }) {
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Check favorite status on mount if authenticated
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      if (isAuthenticated && user?.id && itemId) {
+        try {
+          const response = await favoriteService.isFavorite(user.id, itemType, itemId);
+          setIsFavorite(response.data || false);
+        } catch (error) {
+          // If check fails, use initial value
+          console.error('Error checking favorite status:', error);
+        }
+      }
+    };
+    checkFavoriteStatus();
+  }, [isAuthenticated, user?.id, itemId, itemType]);
+
   const handleToggle = async () => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user?.id) {
       toast.error(t('loginRequiredForFavorites', 'Favori eklemek için giriş yapmanız gerekmektedir.'));
       return;
     }
@@ -31,12 +48,11 @@ export default function FavoriteButton({ itemId, itemType, isFavorite: initialIs
     try {
       setIsLoading(true);
       
-      // TODO: Favorite API entegrasyonu
-      // if (isFavorite) {
-      //   await favoriteService.remove(itemId, itemType);
-      // } else {
-      //   await favoriteService.add(itemId, itemType);
-      // }
+      if (isFavorite) {
+        await favoriteService.remove(user.id, itemType, itemId);
+      } else {
+        await favoriteService.add(user.id, itemType, itemId);
+      }
 
       const newFavoriteState = !isFavorite;
       setIsFavorite(newFavoriteState);
@@ -47,7 +63,7 @@ export default function FavoriteButton({ itemId, itemType, isFavorite: initialIs
 
       toast.success(newFavoriteState ? t('addedToFavorites', 'Favorilere eklendi') : t('removedFromFavorites', 'Favorilerden çıkarıldı'));
     } catch (error) {
-      toast.error(t('errorOccurred', 'İşlem sırasında bir hata oluştu'));
+      toast.error(error.response?.data?.message || t('errorOccurred', 'İşlem sırasında bir hata oluştu'));
     } finally {
       setIsLoading(false);
     }
