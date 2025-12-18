@@ -1,0 +1,195 @@
+# Istio Traffic Management Configuration
+# Retries, Timeouts, Circuit Breaking - No code changes required!
+
+---
+# Global Retry & Timeout Policy
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: global-destination-rule
+  namespace: healthtourism
+spec:
+  host: "*.healthtourism.svc.cluster.local"
+  trafficPolicy:
+    # Connection pool settings
+    connectionPool:
+      tcp:
+        maxConnections: 100
+        connectTimeout: 10s
+      http:
+        h2UpgradePolicy: UPGRADE
+        http1MaxPendingRequests: 100
+        http2MaxRequests: 1000
+        maxRequestsPerConnection: 100
+        maxRetries: 3
+    
+    # Load balancing
+    loadBalancer:
+      simple: LEAST_REQUEST
+      localityLbSetting:
+        enabled: true
+    
+    # Outlier detection (Circuit Breaker)
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 10s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+      minHealthPercent: 30
+
+---
+# API Gateway Virtual Service with Retries
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: api-gateway
+  namespace: healthtourism
+spec:
+  hosts:
+    - api-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /api/
+      route:
+        - destination:
+            host: api-gateway
+            port:
+              number: 8080
+      timeout: 30s
+      retries:
+        attempts: 3
+        perTryTimeout: 10s
+        retryOn: connect-failure,refused-stream,unavailable,cancelled,retriable-4xx,reset,5xx
+
+---
+# Auth Service - Critical, more retries
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: auth-service
+  namespace: healthtourism
+spec:
+  hosts:
+    - auth-service
+  http:
+    - route:
+        - destination:
+            host: auth-service
+            port:
+              number: 8023
+      timeout: 10s
+      retries:
+        attempts: 5
+        perTryTimeout: 2s
+        retryOn: connect-failure,refused-stream,unavailable,cancelled,reset
+
+---
+# Auth Service Destination Rule - Stricter circuit breaker
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: auth-service
+  namespace: healthtourism
+spec:
+  host: auth-service
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 50
+      http:
+        http1MaxPendingRequests: 50
+        http2MaxRequests: 500
+        maxRetries: 5
+    outlierDetection:
+      consecutive5xxErrors: 3
+      interval: 5s
+      baseEjectionTime: 60s
+      maxEjectionPercent: 100
+
+---
+# AI Services - Longer timeouts (model inference)
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: ai-health-companion
+  namespace: healthtourism
+spec:
+  hosts:
+    - ai-health-companion-service
+  http:
+    - route:
+        - destination:
+            host: ai-health-companion-service
+            port:
+              number: 8035
+      timeout: 120s  # AI models need more time
+      retries:
+        attempts: 2
+        perTryTimeout: 60s
+        retryOn: connect-failure,unavailable
+
+---
+# Payment Service - No retries (idempotency concerns)
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: payment-service
+  namespace: healthtourism
+spec:
+  hosts:
+    - payment-service
+  http:
+    - route:
+        - destination:
+            host: payment-service
+            port:
+              number: 8010
+      timeout: 30s
+      retries:
+        attempts: 0  # No retries for payments!
+
+---
+# Blockchain Service - Extended timeout
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: blockchain-service
+  namespace: healthtourism
+spec:
+  hosts:
+    - blockchain-service
+  http:
+    - route:
+        - destination:
+            host: blockchain-service
+            port:
+              number: 8040
+      timeout: 60s
+      retries:
+        attempts: 3
+        perTryTimeout: 20s
+        retryOn: connect-failure,unavailable
+
+---
+# IoT Service - Real-time, minimal retries
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: iot-monitoring-service
+  namespace: healthtourism
+spec:
+  hosts:
+    - iot-monitoring-service
+  http:
+    - route:
+        - destination:
+            host: iot-monitoring-service
+            port:
+              number: 8032
+      timeout: 5s  # Real-time needs fast fail
+      retries:
+        attempts: 1
+        perTryTimeout: 2s
+        retryOn: connect-failure
+

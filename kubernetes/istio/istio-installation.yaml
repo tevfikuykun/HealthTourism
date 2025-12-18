@@ -1,0 +1,137 @@
+# Istio Installation Configuration
+# Install with: istioctl install -f istio-installation.yaml
+
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: healthtourism-istio
+  namespace: istio-system
+spec:
+  profile: default
+  
+  # Mesh configuration
+  meshConfig:
+    # Enable access logging
+    accessLogFile: /dev/stdout
+    accessLogFormat: |
+      [%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%"
+      %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT%
+      %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%
+      "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%"
+      "%REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%"
+    
+    # Default retry policy
+    defaultConfig:
+      holdApplicationUntilProxyStarts: true
+      proxyMetadata:
+        ISTIO_META_DNS_CAPTURE: "true"
+        ISTIO_META_DNS_AUTO_ALLOCATE: "true"
+      tracing:
+        sampling: 100.0
+        zipkin:
+          address: jaeger-collector.observability:9411
+    
+    # Enable automatic mTLS
+    enableAutoMtls: true
+    
+    # Outbound traffic policy
+    outboundTrafficPolicy:
+      mode: REGISTRY_ONLY
+  
+  # Components configuration
+  components:
+    # Ingress Gateway
+    ingressGateways:
+      - name: istio-ingressgateway
+        enabled: true
+        k8s:
+          service:
+            type: LoadBalancer
+            ports:
+              - port: 80
+                targetPort: 8080
+                name: http2
+              - port: 443
+                targetPort: 8443
+                name: https
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 2000m
+              memory: 1024Mi
+          hpaSpec:
+            minReplicas: 2
+            maxReplicas: 10
+            metrics:
+              - type: Resource
+                resource:
+                  name: cpu
+                  targetAverageUtilization: 80
+    
+    # Egress Gateway
+    egressGateways:
+      - name: istio-egressgateway
+        enabled: true
+        k8s:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+    
+    # Pilot (control plane)
+    pilot:
+      enabled: true
+      k8s:
+        resources:
+          requests:
+            cpu: 500m
+            memory: 2048Mi
+        hpaSpec:
+          minReplicas: 2
+          maxReplicas: 5
+        env:
+          - name: PILOT_TRACE_SAMPLING
+            value: "100"
+  
+  # Global values
+  values:
+    global:
+      # Proxy configuration
+      proxy:
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+        # Enable protocol detection
+        autoInject: enabled
+      
+      # Enable tracing
+      tracer:
+        zipkin:
+          address: jaeger-collector.observability:9411
+    
+    # Kiali dashboard
+    kiali:
+      enabled: true
+      dashboard:
+        auth:
+          strategy: anonymous
+    
+    # Grafana
+    grafana:
+      enabled: true
+    
+    # Prometheus
+    prometheus:
+      enabled: true
+    
+    # Jaeger tracing
+    tracing:
+      enabled: true
+      provider: jaeger
+

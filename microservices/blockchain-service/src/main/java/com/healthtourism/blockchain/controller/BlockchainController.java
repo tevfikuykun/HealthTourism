@@ -22,6 +22,9 @@ public class BlockchainController {
     @Autowired(required = false)
     private IPFSService ipfsService;
     
+    @Autowired(required = false)
+    private com.healthtourism.blockchain.service.PolygonLayer2Service polygonLayer2Service;
+    
     @Autowired
     private ObjectMapper objectMapper;
     
@@ -142,5 +145,41 @@ public class BlockchainController {
     @GetMapping("/verify")
     public ResponseEntity<Boolean> verifyChainIntegrity() {
         return ResponseEntity.ok(blockchainService.verifyChainIntegrity());
+    }
+    
+    /**
+     * Store record on Polygon Layer 2 (cost-effective)
+     */
+    @PostMapping("/polygon/store")
+    public ResponseEntity<Map<String, Object>> storeOnPolygon(
+            @RequestParam String dataHash,
+            @RequestParam String ipfsHash,
+            @RequestBody(required = false) Map<String, Object> metadata) {
+        if (polygonLayer2Service == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(polygonLayer2Service.storeRecordOnPolygon(dataHash, ipfsHash, metadata));
+    }
+    
+    /**
+     * Compare costs between Ethereum and Polygon
+     */
+    @GetMapping("/polygon/compare-costs")
+    public ResponseEntity<Map<String, Object>> compareCosts(@RequestParam String dataHash) {
+        if (polygonLayer2Service == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(polygonLayer2Service.compareCosts(dataHash));
+    }
+    
+    /**
+     * Get Polygon network status
+     */
+    @GetMapping("/polygon/status")
+    public ResponseEntity<Map<String, Object>> getPolygonStatus() {
+        if (polygonLayer2Service == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(polygonLayer2Service.getNetworkStatus());
     }
 }

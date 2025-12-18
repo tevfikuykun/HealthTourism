@@ -1,0 +1,96 @@
+# Istio Gateway Configuration
+# Ingress Gateway with TLS termination
+
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: healthtourism-gateway
+  namespace: healthtourism
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: healthtourism-tls-cert
+    hosts:
+    - "api.healthtourism.com"
+    - "*.healthtourism.com"
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "api.healthtourism.com"
+    tls:
+      httpsRedirect: true  # Redirect HTTP to HTTPS
+
+---
+# Virtual Service for routing
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: healthtourism-routes
+  namespace: healthtourism
+spec:
+  hosts:
+  - "api.healthtourism.com"
+  gateways:
+  - healthtourism-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /api/
+    route:
+    - destination:
+        host: api-gateway
+        port:
+          number: 8080
+    timeout: 60s
+    retries:
+      attempts: 3
+      perTryTimeout: 20s
+      retryOn: gateway-error,connect-failure,refused-stream
+
+---
+# Rate Limiting at Istio level
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rate-limit-filter
+  namespace: healthtourism
+spec:
+  workloadSelector:
+    labels:
+      app: api-gateway
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.local_ratelimit
+        typed_config:
+          "@type": type.googleapis.com/udpa.type.v1.TypedStruct
+          type_url: type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+          value:
+            stat_prefix: http_local_rate_limiter
+            token_bucket:
+              max_tokens: 1000
+              tokens_per_fill: 100
+              fill_interval: 1s
+            filter_enabled:
+              runtime_key: local_rate_limit_enabled
+              default_value:
+                numerator: 100
+                denominator: HUNDRED
+

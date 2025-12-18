@@ -109,12 +109,78 @@ services:
     networks:
       - healthtourism-network
 
+  # Milvus Vector Database for RAG
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.5
+    container_name: healthtourism-etcd
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    volumes:
+      - etcd-data:/etcd
+    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    networks:
+      - healthtourism-network
+
+  minio:
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    container_name: healthtourism-minio
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    volumes:
+      - minio-data:/minio_data
+    command: minio server /minio_data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - healthtourism-network
+
+  milvus-standalone:
+    image: milvusdb/milvus:v2.3.4
+    container_name: healthtourism-milvus
+    command: ["milvus", "run", "standalone"]
+    depends_on:
+      - etcd
+      - minio
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+    volumes:
+      - milvus-data:/var/lib/milvus
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    networks:
+      - healthtourism-network
+
+  # MQTT Broker for IoT devices
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: healthtourism-mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-config:/mosquitto/config
+    networks:
+      - healthtourism-network
+
 volumes:
   postgres-core-data:
   mysql-notification-data:
   redis-data:
   rabbitmq-data:
   elasticsearch-data:
+  etcd-data:
+  minio-data:
+  milvus-data:
+  mosquitto-data:
+  mosquitto-config:
 
 networks:
   healthtourism-network:

@@ -1,0 +1,92 @@
+# OWASP ZAP Automation Framework Configuration
+# Security Testing (DAST) for Health Tourism Platform
+
+env:
+  contexts:
+    - name: "Health Tourism API"
+      urls:
+        - "http://localhost:8080"
+      includePaths:
+        - "http://localhost:8080/api/.*"
+      excludePaths:
+        - "http://localhost:8080/actuator/.*"
+        - "http://localhost:8080/swagger-ui/.*"
+      authentication:
+        method: "json"
+        parameters:
+          loginPageUrl: "http://localhost:8080/api/auth/login"
+          loginRequestUrl: "http://localhost:8080/api/auth/login"
+          loginRequestBody: '{"email":"{%username%}","password":"{%password%}"}'
+          tokenExtractorRegex: '"accessToken":"([^"]+)"'
+          tokenPrefix: "Bearer "
+        verification:
+          method: "response"
+          loggedInRegex: "accessToken"
+      users:
+        - name: "test-user"
+          credentials:
+            username: "test@example.com"
+            password: "Test123!"
+        - name: "admin-user"
+          credentials:
+            username: "admin@example.com"
+            password: "Admin123!"
+      sessionManagement:
+        method: "headers"
+        parameters:
+          headerName: "Authorization"
+
+jobs:
+  # Spider the application
+  - type: spider
+    parameters:
+      context: "Health Tourism API"
+      user: "test-user"
+      maxDuration: 10
+      maxDepth: 5
+      maxChildren: 10
+
+  # OpenAPI import
+  - type: openapi
+    parameters:
+      apiUrl: "http://localhost:8080/api-docs"
+      context: "Health Tourism API"
+
+  # Active scan
+  - type: activeScan
+    parameters:
+      context: "Health Tourism API"
+      user: "test-user"
+      policy: "API-Scan"
+      maxRuleDurationInMins: 5
+      maxScanDurationInMins: 60
+
+  # Passive scan wait
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 10
+
+  # Generate reports
+  - type: report
+    parameters:
+      template: "traditional-html"
+      reportDir: "/zap/reports"
+      reportFile: "security-report"
+    risks:
+      - high
+      - medium
+      - low
+
+  - type: report
+    parameters:
+      template: "traditional-json"
+      reportDir: "/zap/reports"
+      reportFile: "security-report"
+
+# Alert filters
+alertFilters:
+  - ruleId: 10096  # Timestamp Disclosure
+    newRisk: "Info"
+  - ruleId: 10027  # Information Disclosure - Suspicious Comments
+    newRisk: "Info"
+

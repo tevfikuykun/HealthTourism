@@ -50,6 +50,12 @@
             <artifactId>bcprov-jdk15on</artifactId>
             <version>1.70</version>
         </dependency>
+        <!-- Web3j for Polygon/Ethereum integration -->
+        <dependency>
+            <groupId>org.web3j</groupId>
+            <artifactId>core</artifactId>
+            <version>4.9.8</version>
+        </dependency>
     </dependencies>
     
     <dependencyManagement>
