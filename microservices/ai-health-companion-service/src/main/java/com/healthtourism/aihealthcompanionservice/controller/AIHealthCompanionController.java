@@ -38,6 +38,26 @@ public class AIHealthCompanionController {
         }
     }
     
+    @PostMapping("/ask-async")
+    @Operation(summary = "Ask AI Health Companion asynchronously",
+               description = "Returns immediately with requestId, response published to Kafka")
+    public ResponseEntity<Map<String, String>> askQuestionAsync(@RequestBody Map<String, Object> request) {
+        try {
+            String requestId = aiHealthCompanionService.askQuestionAsync(
+                    Long.valueOf(request.get("userId").toString()),
+                    Long.valueOf(request.get("reservationId").toString()),
+                    request.get("question").toString());
+            
+            return ResponseEntity.ok(Map.of(
+                    "requestId", requestId,
+                    "status", "processing",
+                    "message", "Your request is being processed. Results will be published to Kafka topic: ai-health-companion-responses"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
     @GetMapping("/user/{userId}")
     @Operation(summary = "Get all conversations for a user")
     public ResponseEntity<List<HealthCompanionConversation>> getConversationsByUser(@PathVariable Long userId) {

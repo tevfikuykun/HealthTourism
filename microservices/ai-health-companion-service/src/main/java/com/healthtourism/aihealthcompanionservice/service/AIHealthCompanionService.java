@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.UUID;
 
 /**
  * AI Health Companion Service
@@ -24,6 +25,12 @@ public class AIHealthCompanionService {
     
     @Autowired
     private HealthCompanionConversationRepository conversationRepository;
+    
+    @Autowired(required = false)
+    private AsyncAIResponseService asyncAIResponseService;
+    
+    @Autowired(required = false)
+    private VectorDatabaseService vectorDatabaseService;
     
     @Autowired(required = false)
     private RestTemplate restTemplate;
@@ -126,10 +133,41 @@ public class AIHealthCompanionService {
     }
     
     /**
-     * Retrieve relevant medical knowledge (RAG) - Enhanced with IPFS and IoT context
-     * In production, this would query a vector database or knowledge base
+     * Retrieve relevant medical knowledge (RAG) - Enhanced with Vector Database
+     * Uses Milvus to search thousands of documents in seconds
      */
     private String retrieveRelevantKnowledge(String question, Map<String, Object> medicalContext) {
+        // Use Vector Database if available
+        if (vectorDatabaseService != null) {
+            try {
+                // Generate embedding for question
+                List<Float> queryEmbedding = vectorDatabaseService.generateEmbedding(question);
+                String embeddingStr = queryEmbedding.toString().replace("[", "").replace("]", "");
+                
+                // Search top 5 most relevant documents
+                List<String> relevantDocs = vectorDatabaseService.searchRelevantDocuments(embeddingStr, 5);
+                
+                if (!relevantDocs.isEmpty()) {
+                    StringBuilder context = new StringBuilder();
+                    context.append("Retrieved from medical knowledge base:\n\n");
+                    for (int i = 0; i < relevantDocs.size(); i++) {
+                        context.append("Document ").append(i + 1).append(": ").append(relevantDocs.get(i)).append("\n\n");
+                    }
+                    return context.toString();
+                }
+            } catch (Exception e) {
+                System.err.println("Vector database search failed, falling back to keyword search: " + e.getMessage());
+            }
+        }
+        
+        // Fallback to original keyword-based search
+        return retrieveRelevantKnowledgeFallback(question, medicalContext);
+    }
+    
+    /**
+     * Fallback RAG retrieval using keyword matching
+     */
+    private String retrieveRelevantKnowledgeFallback(String question, Map<String, Object> medicalContext) {
         // Enhanced RAG retrieval with IPFS and IoT context
         // In production:
         // 1. Embed question + IPFS context + IoT data into vector space
@@ -336,5 +374,35 @@ public class AIHealthCompanionService {
     public HealthCompanionConversation getConversationById(Long id) {
         return conversationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Conversation not found"));
+    }
+    
+    /**
+     * Async version - processes in background and publishes to Kafka
+     */
+    public String askQuestionAsync(Long userId, Long reservationId, String question) {
+        String requestId = asyncAIResponseService != null ? 
+                asyncAIResponseService.generateRequestId() : UUID.randomUUID().toString();
+        
+        // Process asynchronously
+        new Thread(() -> {
+            try {
+                HealthCompanionConversation conversation = askQuestion(userId, reservationId, question);
+                
+                // Publish to Kafka
+                if (asyncAIResponseService != null) {
+                    Map<String, Object> response = Map.of(
+                            "conversationId", conversation.getId(),
+                            "response", conversation.getAiResponse(),
+                            "confidenceScore", conversation.getConfidenceScore(),
+                            "urgencyLevel", conversation.getUrgencyLevel()
+                    );
+                    asyncAIResponseService.publishAICompanionResponse(requestId, userId, response);
+                }
+            } catch (Exception e) {
+                System.err.println("Error processing async AI request: " + e.getMessage());
+            }
+        }).start();
+        
+        return requestId;
     }
 }

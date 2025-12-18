@@ -1,0 +1,162 @@
+# Istio Fault Injection for Chaos Engineering
+# Test system resilience with single commands!
+
+---
+# Inject 5s delay to auth-service (test timeout handling)
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: auth-service-chaos-delay
+  namespace: healthtourism
+  labels:
+    chaos: enabled
+spec:
+  hosts:
+    - auth-service
+  http:
+    - fault:
+        delay:
+          percentage:
+            value: 10  # 10% of requests
+          fixedDelay: 5s
+      route:
+        - destination:
+            host: auth-service
+            port:
+              number: 8023
+
+---
+# Inject 503 errors to user-service (test circuit breaker)
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: user-service-chaos-abort
+  namespace: healthtourism
+  labels:
+    chaos: enabled
+spec:
+  hosts:
+    - user-service
+  http:
+    - fault:
+        abort:
+          percentage:
+            value: 20  # 20% of requests
+          httpStatus: 503
+      route:
+        - destination:
+            host: user-service
+            port:
+              number: 8001
+
+---
+# Inject delay to database-heavy service (test slow queries)
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: reservation-service-chaos
+  namespace: healthtourism
+  labels:
+    chaos: enabled
+spec:
+  hosts:
+    - reservation-service
+  http:
+    - match:
+        - headers:
+            x-chaos-test:
+              exact: "true"
+      fault:
+        delay:
+          percentage:
+            value: 100
+          fixedDelay: 10s
+      route:
+        - destination:
+            host: reservation-service
+    - route:
+        - destination:
+            host: reservation-service
+
+---
+# Inject network partition simulation
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: blockchain-service-chaos
+  namespace: healthtourism
+  labels:
+    chaos: enabled
+spec:
+  hosts:
+    - blockchain-service
+  http:
+    - match:
+        - headers:
+            x-chaos-partition:
+              exact: "true"
+      fault:
+        abort:
+          percentage:
+            value: 100
+          httpStatus: 503
+      route:
+        - destination:
+            host: blockchain-service
+    - route:
+        - destination:
+            host: blockchain-service
+
+---
+# Gradual degradation test (increasing delays)
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: ai-companion-chaos-gradual
+  namespace: healthtourism
+  labels:
+    chaos: enabled
+spec:
+  hosts:
+    - ai-health-companion-service
+  http:
+    - match:
+        - headers:
+            x-chaos-level:
+              exact: "high"
+      fault:
+        delay:
+          percentage:
+            value: 50
+          fixedDelay: 30s
+      route:
+        - destination:
+            host: ai-health-companion-service
+    - match:
+        - headers:
+            x-chaos-level:
+              exact: "medium"
+      fault:
+        delay:
+          percentage:
+            value: 30
+          fixedDelay: 10s
+      route:
+        - destination:
+            host: ai-health-companion-service
+    - match:
+        - headers:
+            x-chaos-level:
+              exact: "low"
+      fault:
+        delay:
+          percentage:
+            value: 10
+          fixedDelay: 3s
+      route:
+        - destination:
+            host: ai-health-companion-service
+    - route:
+        - destination:
+            host: ai-health-companion-service
+

@@ -1,0 +1,195 @@
+# Istio Observability Stack
+# Kiali (3D Service Map), Jaeger (Tracing), Prometheus, Grafana
+
+---
+# Kiali Configuration - 3D Service Map
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kiali
+  namespace: istio-system
+data:
+  config.yaml: |
+    auth:
+      strategy: anonymous
+    deployment:
+      accessible_namespaces:
+        - "**"
+      view_only_mode: false
+    external_services:
+      prometheus:
+        url: http://prometheus.istio-system:9090
+      grafana:
+        enabled: true
+        in_cluster_url: http://grafana.istio-system:3000
+        url: http://grafana.istio-system:3000
+      tracing:
+        enabled: true
+        in_cluster_url: http://jaeger-query.observability:16686
+        url: http://jaeger-query.observability:16686
+        use_grpc: false
+    server:
+      web_root: /kiali
+
+---
+# Jaeger for Distributed Tracing
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: observability
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger
+  namespace: observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jaeger
+  template:
+    metadata:
+      labels:
+        app: jaeger
+    spec:
+      containers:
+        - name: jaeger
+          image: jaegertracing/all-in-one:1.52
+          ports:
+            - containerPort: 16686  # UI
+            - containerPort: 9411   # Zipkin
+            - containerPort: 14268  # Collector
+          env:
+            - name: COLLECTOR_ZIPKIN_HOST_PORT
+              value: ":9411"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-query
+  namespace: observability
+spec:
+  selector:
+    app: jaeger
+  ports:
+    - name: http
+      port: 16686
+      targetPort: 16686
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-collector
+  namespace: observability
+spec:
+  selector:
+    app: jaeger
+  ports:
+    - name: zipkin
+      port: 9411
+      targetPort: 9411
+    - name: collector
+      port: 14268
+      targetPort: 14268
+
+---
+# Prometheus ServiceMonitor for Istio metrics
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: istio-mesh
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      app: istiod
+  endpoints:
+    - port: http-monitoring
+      interval: 15s
+
+---
+# Grafana Dashboard ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: istio-grafana-dashboards
+  namespace: istio-system
+  labels:
+    grafana_dashboard: "1"
+data:
+  istio-mesh-dashboard.json: |
+    {
+      "title": "Health Tourism - Istio Mesh Dashboard",
+      "uid": "healthtourism-mesh",
+      "panels": [
+        {
+          "title": "Request Volume",
+          "type": "graph",
+          "targets": [
+            {
+              "expr": "sum(rate(istio_requests_total{reporter=\"source\",destination_service_namespace=\"healthtourism\"}[5m])) by (destination_service_name)",
+              "legendFormat": "{{destination_service_name}}"
+            }
+          ]
+        },
+        {
+          "title": "Request Duration P99",
+          "type": "graph",
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{reporter=\"source\",destination_service_namespace=\"healthtourism\"}[5m])) by (destination_service_name, le))",
+              "legendFormat": "{{destination_service_name}}"
+            }
+          ]
+        },
+        {
+          "title": "Error Rate",
+          "type": "graph",
+          "targets": [
+            {
+              "expr": "sum(rate(istio_requests_total{reporter=\"source\",destination_service_namespace=\"healthtourism\",response_code=~\"5.*\"}[5m])) by (destination_service_name) / sum(rate(istio_requests_total{reporter=\"source\",destination_service_namespace=\"healthtourism\"}[5m])) by (destination_service_name) * 100",
+              "legendFormat": "{{destination_service_name}}"
+            }
+          ]
+        },
+        {
+          "title": "Circuit Breaker Status",
+          "type": "stat",
+          "targets": [
+            {
+              "expr": "sum(envoy_cluster_outlier_detection_ejections_active{cluster_name=~\".*healthtourism.*\"}) by (cluster_name)",
+              "legendFormat": "{{cluster_name}}"
+            }
+          ]
+        }
+      ]
+    }
+
+---
+# PeerAuthentication for strict mTLS
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: healthtourism
+spec:
+  mtls:
+    mode: STRICT
+
+---
+# Telemetry configuration
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: mesh-default
+  namespace: istio-system
+spec:
+  tracing:
+    - providers:
+        - name: jaeger
+      randomSamplingPercentage: 100.0
+  metrics:
+    - providers:
+        - name: prometheus
+
