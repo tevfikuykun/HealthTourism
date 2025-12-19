@@ -8,3 +8,5 @@ metadata:
     app.kubernetes.io/name: healthtourism
     app.kubernetes.io/part-of: health-tourism-platform
 
+
+

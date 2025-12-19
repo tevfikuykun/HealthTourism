@@ -1,0 +1,27 @@
+# AWS Nitro Enclave Image
+# Minimal OS footprint for secure AI processing
+
+FROM public.ecr.aws/lambda/python:3.11
+
+# Install minimal dependencies
+RUN yum install -y \
+    python3-pip \
+    && yum clean all
+
+# Copy AI service code
+WORKDIR /app
+COPY ai-enclave-service/ .
+
+# Install Python dependencies
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Configure for Nitro Enclaves
+ENV PYTHONUNBUFFERED=1
+ENV ENCLAVE_MODE=true
+
+# Expose VSOCK port for communication
+EXPOSE 5000
+
+# Run enclave service
+CMD ["python3", "enclave_main.py"]
+
