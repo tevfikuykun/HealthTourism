@@ -75,3 +75,5 @@ stringData:
   ENCRYPTION_AES_KEY: "dGhpcy1pcy1hLTMyLWJ5dGUtYWVzLTI1Ni1rZXkh"
   JWT_SECRET: "your-super-secret-jwt-key-for-production-min-256-bits"
 
+
+

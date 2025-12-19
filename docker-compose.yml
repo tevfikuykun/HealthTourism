@@ -170,6 +170,36 @@ services:
     networks:
       - healthtourism-network
 
+  # Neo4j Graph Database
+  neo4j:
+    image: neo4j:5.15
+    container_name: healthtourism-neo4j
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    environment:
+      NEO4J_AUTH: neo4j/neo4j
+      NEO4J_PLUGINS: '["apoc"]'
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    networks:
+      - healthtourism-network
+
+  # Axon Server (Event Store for Event Sourcing)
+  axon-server:
+    image: axoniq/axonserver:latest
+    container_name: healthtourism-axon-server
+    ports:
+      - "8124:8124"  # HTTP
+      - "8024:8024"  # gRPC
+    environment:
+      AXONSERVER_HOSTNAME: axonserver
+    volumes:
+      - axon-data:/data
+    networks:
+      - healthtourism-network
+
 volumes:
   postgres-core-data:
   mysql-notification-data:
@@ -181,6 +211,9 @@ volumes:
   milvus-data:
   mosquitto-data:
   mosquitto-config:
+  neo4j-data:
+  neo4j-logs:
+  axon-data:
 
 networks:
   healthtourism-network:

@@ -12,7 +12,7 @@ import { useTranslation } from './i18n';
 import i18n from './i18n'; 
 
 import { getTheme } from './theme';
-import Header from './components/Header.jsx';
+import Header from './components/Header/EnhancedHeader.jsx';
 import Footer from './components/Footer.jsx';
 import ChatWidget from './components/Chat/ChatWidget';
 import Chatbot from './components/Chatbot/Chatbot';
@@ -21,6 +21,7 @@ import Breadcrumb from './components/Breadcrumb';
 import OfflineIndicator from './components/OfflineIndicator/OfflineIndicator';
 import CookieConsent from './components/CookieConsent/CookieConsent';
 import AccessibilityMenu from './components/Accessibility/AccessibilityMenu';
+import SmartConcierge from './components/SmartConcierge/SmartConcierge';
 // Orijinal rota listenizi kullanmak için
 import appRoutes from './config/routes.js'; 
 
@@ -102,6 +103,18 @@ const LazyCulturalGuide = lazy(() => import('./pages/CulturalGuide.jsx'));
 const LazyQuotes = lazy(() => import('./pages/Quotes.jsx'));
 const LazyLeads = lazy(() => import('./pages/Leads.jsx'));
 const LazySuperApp = lazy(() => import('./pages/SuperApp.jsx'));
+const LazyJourneyTimeline = lazy(() => import('./pages/JourneyTimeline.jsx'));
+const LazyMedicalPassport = lazy(() => import('./pages/MedicalPassport.jsx'));
+const LazyEmergencyHelp = lazy(() => import('./pages/EmergencyHelp.jsx'));
+const LazyTeleConsultation = lazy(() => import('./pages/TeleConsultation.jsx'));
+const LazyPatientMonitoringDashboard = lazy(() => import('./pages/doctor/PatientMonitoringDashboard.jsx'));
+const LazyPartnerPortal = lazy(() => import('./pages/PartnerPortal.jsx'));
+const LazyLegalTransparency = lazy(() => import('./pages/LegalTransparency.jsx'));
+const LazyBeforeAfterGallery = lazy(() => import('./pages/BeforeAfterGallery.jsx'));
+const LazyMeetCoordinator = lazy(() => import('./pages/MeetCoordinator.jsx'));
+const LazyTreatmentGuide = lazy(() => import('./pages/TreatmentGuide.jsx'));
+const LazyCaseManagement = lazy(() => import('./pages/CaseManagement.jsx'));
+const LazySelfHealingDashboard = lazy(() => import('./pages/admin/SelfHealingDashboard.jsx'));
 
 const queryClient = new QueryClient(); // React Query Client
 
@@ -244,8 +257,27 @@ function AppContent() {
                                     {/* Super-App: AI Health Companion Centered */}
                                     <Route path="/super-app" element={renderSuspense(LazySuperApp)} />
                                     
+                                    {/* Patient Journey Pages */}
+                                    <Route path="/journey-timeline" element={renderSuspense(LazyJourneyTimeline)} />
+                                    <Route path="/medical-passport" element={renderSuspense(LazyMedicalPassport)} />
+                                    <Route path="/emergency-help" element={renderSuspense(LazyEmergencyHelp)} />
+                                    
+                                    {/* Doctor Pages */}
+                                    <Route path="/doctor/patients" element={renderSuspense(LazyPatientMonitoringDashboard)} />
+                                    
+                                    {/* Partner & Legal Pages */}
+                                    <Route path="/partner-portal" element={renderSuspense(LazyPartnerPortal)} />
+                                    <Route path="/legal-transparency" element={renderSuspense(LazyLegalTransparency)} />
+                                    
+                                    {/* Strategic Pages */}
+                                    <Route path="/before-after" element={renderSuspense(LazyBeforeAfterGallery)} />
+                                    <Route path="/meet-coordinator" element={renderSuspense(LazyMeetCoordinator)} />
+                                    <Route path="/treatment-guide" element={renderSuspense(LazyTreatmentGuide)} />
+                                    <Route path="/case-management" element={renderSuspense(LazyCaseManagement)} />
+                                    
                                     {/* New Features */}
                                     <Route path="/video-consultation" element={renderSuspense(LazyVideoConsultation)} />
+                                    <Route path="/tele-consultation/:patientId?" element={renderSuspense(LazyTeleConsultation)} />
                                     <Route path="/travel-planner" element={renderSuspense(LazyTravelPlanner)} />
                                     <Route path="/forum" element={renderSuspense(LazyForum)} />
                                     <Route path="/security/2fa" element={renderSuspense(LazyTwoFactorAuth)} />
@@ -271,6 +303,7 @@ function AppContent() {
                                     {/* Admin Routes */}
                                     <Route path="/admin/users" element={renderSuspense(LazyUserManagement)} />
                                     <Route path="/admin/reports" element={renderSuspense(LazyReports)} />
+                                    <Route path="/admin/self-healing" element={renderSuspense(LazySelfHealingDashboard)} />
                                     
                                     {/* User Routes */}
                                     <Route path="/invoices" element={renderSuspense(LazyInvoices)} />
@@ -335,6 +368,7 @@ function AppContent() {
                         <OfflineIndicator />
                         <CookieConsent />
                         <AccessibilityMenu />
+                        <SmartConcierge />
                     </Router>
                 </ThemeProvider>
             </Provider>

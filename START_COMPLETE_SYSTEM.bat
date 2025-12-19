@@ -149,3 +149,5 @@ echo Press any key to open Eureka Dashboard...
 pause >nul
 start http://localhost:8761
 
+
+

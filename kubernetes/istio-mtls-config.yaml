@@ -126,3 +126,5 @@ spec:
     jwksUri: "http://auth-service.healthtourism.svc.cluster.local:8023/.well-known/jwks.json"
     forwardOriginalToken: true
 
+
+

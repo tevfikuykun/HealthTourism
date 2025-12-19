@@ -104,3 +104,5 @@ fi
 
 echo -e "\n${GREEN}✅ Snyk scan completed${NC}"
 
+
+
