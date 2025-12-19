@@ -1,7 +1,8 @@
 import React from 'react';
 import { IconButton, Menu, MenuItem, Tooltip, Box, Typography } from '@mui/material';
 import LanguageIcon from '@mui/icons-material/Language';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../i18n';
+import i18n from '../i18n';
 
 const languages = [
   { code: 'tr', label: 'Türkçe', flag: '🇹🇷', nativeName: 'Türkçe' },
@@ -27,13 +28,29 @@ export default function LanguageSwitcher() {
 
   const handleLanguageChange = async (langCode) => {
     try {
-      await i18n.changeLanguage(langCode);
+      console.log('Dil değiştiriliyor:', langCode);
+      // Önce localStorage'a kaydet
       localStorage.setItem('i18nextLng', langCode);
+      
+      // i18n dilini değiştir
+      await i18n.changeLanguage(langCode);
+      
+      // Backend'den yeni dil dosyasını yükle
+      await i18n.reloadResources(langCode);
+      
+      console.log('Dil değiştirildi:', i18n.language);
       handleClose();
-      // Component'lerin güncellenmesi için state değişikliği yeterli
-      // window.location.reload() yerine i18n otomatik günceller
+      
+      // Component'lerin güncellenmesi için force update
+      window.dispatchEvent(new Event('languagechange'));
     } catch (error) {
       console.error('Dil değiştirme hatası:', error);
+      // Hata olsa bile localStorage'dan oku ve tekrar dene
+      try {
+        await i18n.changeLanguage(langCode);
+      } catch (retryError) {
+        console.error('Dil değiştirme retry hatası:', retryError);
+      }
     }
   };
 

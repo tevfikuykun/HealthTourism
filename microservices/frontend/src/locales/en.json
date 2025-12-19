@@ -438,6 +438,38 @@
     "description": "Description",
     "result": "Result",
     "responseTime": "Response Time"
+  },
+  "home": {
+    "services": "OUR SERVICES",
+    "servicesTitle": "4 Main Areas Focused on Health and Comfort",
+    "servicesDescription": "We offer globally accredited hospitals and personalized travel/accommodation packages.",
+    "accreditedHospitals": "Accredited Hospitals",
+    "accreditedHospitalsDesc": "Leading healthcare institutions and clinics with international standards.",
+    "personalTreatmentPlan": "Personal Treatment Plan",
+    "personalTreatmentPlanDesc": "Appointments with experienced specialist doctors and personalized treatment packages created for you.",
+    "accommodationDuringTreatment": "Accommodation During Treatment",
+    "accommodationDuringTreatmentDesc": "Comfortable hotels or residences near the hospital that support your recovery process.",
+    "travelSupport": "A to Z Travel Support",
+    "travelSupportDesc": "Flight, VIP transfer, airport pickup and post-treatment follow-up organization.",
+    "whyChooseUs": "Why Should You Choose Us for Your Health Journey?",
+    "personalHealthConsultant": "Personal Health Consultant",
+    "personalHealthConsultantDesc": "A dedicated consultant accompanies you throughout the entire process (before, during, and after).",
+    "accreditedQuality": "Accredited Quality Assurance",
+    "accreditedQualityDesc": "All hospitals and doctors we work with meet international accreditation standards.",
+    "transparentPricing": "Transparent and Fixed Prices",
+    "transparentPricingDesc": "No hidden fees. Fixed price guarantee including treatment, accommodation and transfer, personalized for you.",
+    "howItWorks": "Your Health Journey in Just 3 Steps",
+    "step1": "STEP 1",
+    "step1Title": "Quote and Analysis",
+    "step1Desc": "Share your expectations. Our experts will create your free, personalized treatment plan.",
+    "step2": "STEP 2",
+    "step2Title": "Reservation Confirmation",
+    "step2Desc": "Approve the package (treatment, accommodation, travel). We will complete all reservations.",
+    "step3": "STEP 3",
+    "step3Title": "Travel and Treatment",
+    "step3Desc": "Be met at the airport and begin your recovery process with your dedicated consultant.",
+    "getStarted": "Get Started Now",
+    "browseHospitals": "Browse Partner Hospitals"
   }
 }
 

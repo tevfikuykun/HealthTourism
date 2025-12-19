@@ -15,3 +15,4 @@ public interface SelfHealingEventRepository extends JpaRepository<SelfHealingEve
     List<SelfHealingEvent> findAllByOrderByTimestampDesc();
 }
 
+

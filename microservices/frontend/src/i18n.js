@@ -32,7 +32,8 @@ const fallbackResources = {
 
 const initI18n = () => {
   return i18n
-    .use(Backend) // Lazy loading için backend
+    // Backend'i kaldırdık - manuel yükleme kullanacağız
+    // .use(Backend)
     .use(LanguageDetector)
     .use(initReactI18next)
     .init({
@@ -43,16 +44,6 @@ const initI18n = () => {
       // Fallback resources - i18n yüklenemese bile çalışsın
       resources: fallbackResources,
       
-      // Backend configuration - JSON dosyalarını lazy load et
-      backend: {
-        loadPath: '/locales/{{lng}}.json',
-        crossDomain: false,
-        requestOptions: {
-          cache: 'no-cache'
-        },
-        // Hata durumunda fallback kullan
-        allowMultiLoading: false,
-      },
       
       detection: {
         order: ['localStorage', 'navigator', 'htmlTag'],
@@ -64,17 +55,58 @@ const initI18n = () => {
         escapeValue: false
       },
       
+      // Key separator - nested key'ler için
+      keySeparator: '.',
+      nsSeparator: ':',
+      
       react: {
         useSuspense: false,
+        bindI18n: 'languageChanged loaded',
+        bindI18nStore: 'added removed',
       },
       
       // Hata durumunda bile çalışmaya devam et
       partialBundledLanguages: true,
       load: 'languageOnly',
       
-      // Backend hata olsa bile devam et
+      // Hemen başlat (manuel yükleme kullanacağız)
       initImmediate: false,
     });
+};
+
+// Manuel olarak JSON yükle ve ekle (nested yapıyı korumak için)
+const loadTranslations = async (lang) => {
+  try {
+    const response = await fetch(`/locales/${lang}.json?t=${Date.now()}`, {
+      cache: 'no-cache'
+    });
+    if (!response.ok) {
+      console.warn(`Failed to load translations for ${lang}`);
+      return;
+    }
+    const translations = await response.json();
+    console.log('📦 Loaded translations for', lang, ':', Object.keys(translations));
+    
+    // Nested yapıyı koruyarak ekle
+    i18n.addResourceBundle(lang, 'translation', translations, true, true);
+    
+    console.log('✅ Translations added to i18n');
+    const bundle = i18n.getResourceBundle(lang, 'translation');
+    if (bundle && bundle.common) {
+      console.log('✅ common namespace loaded:', Object.keys(bundle.common).length, 'keys');
+    }
+    if (bundle && bundle.home) {
+      console.log('✅ home namespace loaded:', Object.keys(bundle.home).length, 'keys');
+    }
+    if (bundle && bundle.nav) {
+      console.log('✅ nav namespace loaded:', Object.keys(bundle.nav).length, 'keys');
+    }
+    if (bundle && bundle.header) {
+      console.log('✅ header namespace loaded:', Object.keys(bundle.header).length, 'keys');
+    }
+  } catch (error) {
+    console.error('Error loading translations:', error);
+  }
 };
 
 // Initialize i18n - hemen başlat
@@ -82,8 +114,15 @@ initI18n()
   .then(() => {
     console.log('✅ i18n initialized successfully');
     console.log('Current language:', i18n.language);
-    console.log('Available languages:', i18n.languages);
-    console.log('i18n.isInitialized:', i18n.isInitialized);
+    
+    // Backend'den JSON'u manuel olarak yükle
+    const lang = i18n.language || 'tr';
+    loadTranslations(lang);
+    
+    // Dil değiştiğinde de yükle
+    i18n.on('languageChanged', (lng) => {
+      loadTranslations(lng);
+    });
   })
   .catch((err) => {
     console.error('❌ i18n initialization failed:', err);
@@ -104,7 +143,84 @@ i18n.t = function(key, options) {
       const fallback = options?.defaultValue || (typeof options === 'string' ? options : null) || key;
       return typeof fallback === 'string' ? fallback : String(key);
     }
-    const result = originalT(key, options);
+    
+    // Nested key'leri destekle (common.login, home.browseHospitals)
+    if (key.includes('.') && !key.includes(':')) {
+      const parts = key.split('.');
+      if (parts.length === 2) {
+        const namespace = parts[0];
+        const keyName = parts[1];
+        const lang = i18n.language || 'tr';
+        
+        // Önce i18n.getResourceBundle ile dene (en güvenilir yöntem)
+        try {
+          const bundle = i18n.getResourceBundle(lang, 'translation');
+          if (bundle && bundle[namespace] && typeof bundle[namespace] === 'object') {
+            const nested = bundle[namespace];
+            if (nested && typeof nested[keyName] === 'string') {
+              return nested[keyName];
+            }
+          }
+        } catch (e) {
+          // getResourceBundle başarısız olursa devam et
+        }
+        
+        // Alternatif: i18n.store.data ile dene
+        try {
+          if (i18n.store && i18n.store.data) {
+            const resources = i18n.store.data[lang];
+            if (resources && resources.translation) {
+              const nested = resources.translation[namespace];
+              if (nested && typeof nested === 'object' && typeof nested[keyName] === 'string') {
+                return nested[keyName];
+              }
+            }
+          }
+        } catch (e) {
+          // store.data başarısız olursa devam et
+        }
+        
+        // Son çare: Orijinal t fonksiyonunu dene (i18next'in kendi nested key desteği)
+        const directResult = originalT(key, options);
+        if (directResult !== key && directResult !== `${namespace}.${keyName}`) {
+          return directResult;
+        }
+      }
+    }
+    
+    // Orijinal t fonksiyonunu çağır - dil değişikliğini destekler
+    let result = originalT(key, options);
+    
+    // Eğer key bulunamadıysa ve nested key değilse, common namespace'inde dene
+    if (result === key && !key.includes('.')) {
+      // common.dashboard, common.profile gibi key'leri dene
+      const commonKey = `common.${key}`;
+      try {
+        if (i18n.store && i18n.store.data) {
+          const lang = i18n.language || 'tr';
+          const resources = i18n.store.data[lang];
+          if (resources && resources.translation && resources.translation.common) {
+            const commonValue = resources.translation.common[key];
+            if (typeof commonValue === 'string') {
+              return commonValue;
+            }
+          }
+        }
+      } catch (e) {
+        // Hata durumunda devam et
+      }
+      
+      // getResourceBundle ile de dene
+      try {
+        const bundle = i18n.getResourceBundle(i18n.language || 'tr', 'translation');
+        if (bundle && bundle.common && typeof bundle.common[key] === 'string') {
+          return bundle.common[key];
+        }
+      } catch (e) {
+        // Hata durumunda devam et
+      }
+    }
+    
     // Eğer key ile aynı dönerse (çeviri bulunamadı), fallback kullan
     if (result === key && options?.defaultValue) {
       return options.defaultValue;
@@ -118,6 +234,25 @@ i18n.t = function(key, options) {
   }
 };
 
+// changeLanguage fonksiyonunu override et - backend'den yeni dil dosyasını yükle
+const originalChangeLanguage = i18n.changeLanguage.bind(i18n);
+i18n.changeLanguage = async function(lng, callback) {
+  try {
+    console.log('changeLanguage çağrıldı:', lng);
+    const result = await originalChangeLanguage(lng, callback);
+    // Manuel olarak yeni dil dosyasını yükle
+    await loadTranslations(lng);
+    // Event dispatch et - component'lerin güncellenmesi için
+    window.dispatchEvent(new Event('languagechange'));
+    return result;
+  } catch (error) {
+    console.error('changeLanguage hatası:', error);
+    // Hata olsa bile devam et
+    if (callback) callback(error, null);
+    throw error;
+  }
+};
+
 // react-i18next'in useTranslation hook'unu override et
 import { useTranslation as useTranslationOriginal } from 'react-i18next';
 
@@ -126,19 +261,11 @@ export const useTranslation = (ns) => {
   try {
     const translation = useTranslationOriginal(ns);
     
-    // Güvenli t fonksiyonu oluştur
+    // Güvenli t fonksiyonu oluştur - dil değişikliğinde otomatik güncellenir
+    // Direkt i18n.t kullan çünkü nested key desteği orada
     const safeT = (key, options) => {
       try {
-        if (translation.t && typeof translation.t === 'function') {
-          const result = translation.t(key, options);
-          // Eğer key ile aynı dönerse ve defaultValue varsa, onu kullan
-          if (result === key && options?.defaultValue) {
-            return options.defaultValue;
-          }
-          // Her zaman string döndür
-          return typeof result === 'string' ? result : String(result || key);
-        }
-        // translation.t yoksa i18n.t kullan
+        // Direkt i18n.t kullan - nested key desteği ile
         return i18n.t(key, options);
       } catch (e) {
         console.warn(`Translation error for key "${key}":`, e);
@@ -147,9 +274,12 @@ export const useTranslation = (ns) => {
       }
     };
     
+    // react-i18next'in ready state'ini kullan - dil değişikliğinde otomatik re-render tetikler
     return {
       ...translation,
       t: safeT,
+      // ready state'i component'lerin re-render olmasını sağlar
+      ready: translation.ready !== undefined ? translation.ready : i18n.isInitialized,
     };
   } catch (e) {
     console.warn('useTranslation hook error:', e);

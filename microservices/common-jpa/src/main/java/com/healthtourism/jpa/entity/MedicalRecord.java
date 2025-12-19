@@ -50,3 +50,4 @@ public class MedicalRecord extends AuditableEntity {
     private String filePath; // IPFS hash or file path
 }
 
+

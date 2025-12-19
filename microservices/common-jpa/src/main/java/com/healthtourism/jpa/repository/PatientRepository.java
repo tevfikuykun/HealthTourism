@@ -50,3 +50,4 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     List<Patient> findByMedicalHistoryContaining(@Param("keyword") String keyword);
 }
 
+

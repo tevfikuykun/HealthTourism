@@ -19,3 +19,4 @@ public interface PatientNodeRepository extends Neo4jRepository<PatientNode, Long
     List<PatientNode> findPatientsWithProcedure(String procedureType);
 }
 
+

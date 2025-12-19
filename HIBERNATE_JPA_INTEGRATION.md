@@ -222,3 +222,4 @@ spring.jpa.properties.hibernate.order_inserts=true
 - ✅ Time-travel: Herhangi bir revision'a dönüş
 - ✅ Tıbbi veriler için kritik güvenlik
 
+

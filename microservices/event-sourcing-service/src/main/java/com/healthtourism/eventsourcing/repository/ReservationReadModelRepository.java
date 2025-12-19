@@ -15,3 +15,4 @@ public interface ReservationReadModelRepository extends MongoRepository<Reservat
     List<ReservationReadModel> findByStatus(String status);
 }
 
+

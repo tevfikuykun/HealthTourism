@@ -53,3 +53,4 @@ type RiskScore {
     lastCalculated: String
 }
 
+

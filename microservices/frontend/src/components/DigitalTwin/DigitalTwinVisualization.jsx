@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Card, CardContent, Slider, Grid } from '@mui/material';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n';
 
 /**
  * Digital Twin Visualization

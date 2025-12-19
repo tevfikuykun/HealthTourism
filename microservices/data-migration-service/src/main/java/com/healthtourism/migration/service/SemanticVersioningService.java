@@ -36,11 +36,21 @@ public class SemanticVersioningService {
         
         if (existing != null) {
             // Check if version is newer
-            if (compareVersions(version, existing.getCurrentVersion()) > 0) {
+            int comparison = compareVersions(version, existing.getCurrentVersion());
+            if (comparison > 0) {
                 // Trigger migration
-                dataMigrationService.migrateEntity(entityName, existing.getCurrentVersion(), version);
+                try {
+                    dataMigrationService.migrateEntity(entityName, existing.getCurrentVersion(), version);
+                } catch (Exception e) {
+                    // Log error but continue
+                    System.err.println("Migration failed: " + e.getMessage());
+                }
                 
                 existing.setCurrentVersion(version);
+                existing.setSchemaJson(jsonSchema);
+                return entityVersionRepository.save(existing);
+            } else if (comparison == 0) {
+                // Same version, just update schema
                 existing.setSchemaJson(jsonSchema);
                 return entityVersionRepository.save(existing);
             } else {

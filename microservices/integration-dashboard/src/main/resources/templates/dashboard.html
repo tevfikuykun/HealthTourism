@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integration Dashboard - Health Tourism</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card p {
+            opacity: 0.9;
+        }
+        
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .category {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .category h2 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .integration {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+        
+        .integration:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .integration-name {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .status-up {
+            background: #28a745;
+            color: white;
+        }
+        
+        .status-down {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .status-unknown {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+        
+        .last-updated {
+            text-align: center;
+            color: #666;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔌 Integration Dashboard</h1>
+            <p>Real-time status of all 30 integrations</p>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <h3 th:text="${statistics.total}">30</h3>
+                    <p>Total Integrations</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                    <h3 th:text="${statistics.up}">0</h3>
+                    <p>UP</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                    <h3 th:text="${statistics.down}">0</h3>
+                    <p>DOWN</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);">
+                    <h3 th:text="${statistics.unknown}">0</h3>
+                    <p>UNKNOWN</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="categories">
+            <div class="category" th:each="category : ${#lists.groupBy(integrations, 'category')}">
+                <h2 th:text="${category.key}">Category</h2>
+                <div class="integration" th:each="integration : ${category.value}">
+                    <span class="integration-name" th:text="${integration.name}">Integration Name</span>
+                    <div class="status">
+                        <span class="status-badge" 
+                              th:classappend="${integration.status == T(com.healthtourism.dashboard.model.IntegrationStatus.Status).UP ? 'status-up' : 
+                                              (integration.status == T(com.healthtourism.dashboard.model.IntegrationStatus.Status).DOWN ? 'status-down' : 'status-unknown')}"
+                              th:text="${integration.status}">UP</span>
+                        <span th:if="${integration.responseTime != null}" 
+                              style="font-size: 0.85em; color: #666;"
+                              th:text="'(' + ${integration.responseTime} + 'ms)'">(100ms)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="last-updated">
+            <p>Auto-refresh every 10 seconds | Last updated: <span id="lastUpdate"></span></p>
+        </div>
+    </div>
+    
+    <button class="refresh-btn" onclick="location.reload()">🔄 Refresh</button>
+    
+    <script>
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+        
+        // Auto-refresh every 10 seconds
+        setInterval(() => {
+            location.reload();
+        }, 10000);
+    </script>
+</body>
+</html>
+
+

@@ -206,3 +206,4 @@ from("kafka:medical-documents")
 
 **FHIR Adapter ve Legal Ledger gibi servislerde kod yazmak yerine Camel route'ları tanımlayarak işi basitleştirdik!**
 
+

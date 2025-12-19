@@ -234,3 +234,4 @@ services.ai-companion.url=http://ai-health-companion-service
 - ✅ Reduced complexity
 - ✅ Better performance
 
+

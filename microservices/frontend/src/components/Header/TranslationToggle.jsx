@@ -75,3 +75,4 @@ const TranslationToggle = ({ onToggle, compact = false }) => {
 
 export default TranslationToggle;
 
+

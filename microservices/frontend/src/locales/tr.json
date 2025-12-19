@@ -438,6 +438,38 @@
     "description": "Açıklama",
     "result": "Sonuç",
     "responseTime": "Yanıt Süresi"
+  },
+  "home": {
+    "services": "HİZMETLERİMİZ",
+    "servicesTitle": "Sağlık ve Konfor Odağında 4 Ana Alan",
+    "servicesDescription": "Global çapta akredite hastaneler ve size özel seyahat/konaklama paketleri sunuyoruz.",
+    "accreditedHospitals": "Akredite Hastaneler",
+    "accreditedHospitalsDesc": "Uluslararası standartlara sahip, alanında lider sağlık kuruluşları ve klinikler.",
+    "personalTreatmentPlan": "Kişisel Tedavi Planı",
+    "personalTreatmentPlanDesc": "Tecrübeli uzman doktorlardan randevu ve size özel oluşturulmuş tedavi paketleri.",
+    "accommodationDuringTreatment": "Tedavi Boyunca Konaklama",
+    "accommodationDuringTreatmentDesc": "İyileşme sürecinizi destekleyen, hastane yakını konforlu otel veya rezidanslar.",
+    "travelSupport": "A'dan Z'ye Seyahat Desteği",
+    "travelSupportDesc": "Uçuş, VIP transfer, havalimanı karşılama ve tedavi sonrası takip organizasyonu.",
+    "whyChooseUs": "Neden Sağlık Yolculuğunuzda Bizi Tercih Etmelisiniz?",
+    "personalHealthConsultant": "Kişisel Sağlık Danışmanı",
+    "personalHealthConsultantDesc": "Tüm süreç boyunca (öncesi, sırası ve sonrası) size özel, tek bir danışman eşlik eder.",
+    "accreditedQuality": "Akredite Kalite Güvencesi",
+    "accreditedQualityDesc": "Çalıştığımız tüm hastaneler ve doktorlar, uluslararası akreditasyon standartlarına sahiptir.",
+    "transparentPricing": "Şeffaf ve Sabit Fiyatlar",
+    "transparentPricingDesc": "Gizli ücret yok. Tedavi, konaklama ve transfer dahil, size özel sabit fiyat garantisi.",
+    "howItWorks": "Sağlık Yolculuğunuz Sadece 3 Adımda",
+    "step1": "ADIM 1",
+    "step1Title": "Teklif ve Analiz",
+    "step1Desc": "Beklentinizi iletin. Ücretsiz, kişisel tedavi planınızı uzmanlarımız oluştursun.",
+    "step2": "ADIM 2",
+    "step2Title": "Rezervasyon Onayı",
+    "step2Desc": "Paketi (tedavi, konaklama, seyahat) onaylayın. Tüm rezervasyonları biz tamamlayalım.",
+    "step3": "ADIM 3",
+    "step3Title": "Seyahat ve Tedavi",
+    "step3Desc": "Havaalanında karşılanın ve size özel danışmanınız eşliğinde iyileşme sürecinize başlayın.",
+    "getStarted": "Şimdi Başlayın",
+    "browseHospitals": "Anlaşmalı Hastaneleri Keşfet"
   }
 }
 

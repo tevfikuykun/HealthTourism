@@ -48,3 +48,4 @@ public class Hospital extends AuditableEntity {
     private String specialties;
 }
 
+

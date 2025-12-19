@@ -26,3 +26,4 @@ public class IoTEvent {
     private Double longitude;
 }
 
+

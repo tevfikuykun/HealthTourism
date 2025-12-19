@@ -49,9 +49,13 @@ public class VaultSecretService {
     public String getSecret(String key) {
         try {
             LogicalResponse response = vault.logical().read(secretPath + "/" + key);
-            return response.getData().get(key);
+            if (response != null && response.getData() != null) {
+                return response.getData().get(key);
+            }
+            return null;
         } catch (VaultException e) {
-            throw new RuntimeException("Failed to get secret from Vault: " + key, e);
+            // Return null instead of throwing for missing secrets
+            return null;
         }
     }
     
@@ -59,14 +63,24 @@ public class VaultSecretService {
      * Get AES encryption key
      */
     public String getAESKey() {
-        return getSecret("aes-encryption-key");
+        String key = getSecret("aes-encryption-key");
+        if (key == null) {
+            // Generate and store if not exists
+            key = generateAES256Key();
+            storeSecret("aes-encryption-key", key);
+        }
+        return key;
     }
     
     /**
      * Get Polygon private key
      */
     public String getPolygonPrivateKey() {
-        return getSecret("polygon-private-key");
+        String key = getSecret("polygon-private-key");
+        if (key == null) {
+            throw new RuntimeException("Polygon private key not found in Vault. Please store it first.");
+        }
+        return key;
     }
     
     /**

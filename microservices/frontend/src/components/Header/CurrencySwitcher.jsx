@@ -106,3 +106,4 @@ const CurrencySwitcher = ({ onCurrencyChange }) => {
 
 export default CurrencySwitcher;
 
+

@@ -11,7 +11,14 @@ export default function NotificationBell() {
   const { data: notifications } = useQuery({
     queryKey: ['notifications'],
     queryFn: () => notificationService.getByUser(null), // TODO: User ID
-    refetchInterval: 30000, // 30 saniyede bir kontrol et
+    refetchInterval: (query) => {
+      // Stop polling if there's a network error
+      if (query.state.error?.code === 'NETWORK_ERROR' || query.state.error?.statusCode === 0) {
+        return false;
+      }
+      return 30000; // 30 saniyede bir kontrol et
+    },
+    retry: false, // Don't retry on error to prevent spam
   });
 
   const unreadCount = notifications?.data?.filter((n) => !n.isRead)?.length || 0;

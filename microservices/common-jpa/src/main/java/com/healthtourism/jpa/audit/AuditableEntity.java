@@ -42,3 +42,4 @@ public abstract class AuditableEntity {
     private Long version; // Optimistic locking
 }
 
+
