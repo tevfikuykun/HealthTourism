@@ -223,3 +223,4 @@ spring.jpa.properties.hibernate.order_inserts=true
 - ✅ Tıbbi veriler için kritik güvenlik
 
 
+

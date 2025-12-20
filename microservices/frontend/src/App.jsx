@@ -45,7 +45,7 @@ const LazyPayments = lazy(() => import('./pages/Payments.jsx'));
 const LazyAboutUs = lazy(() => import('./pages/AboutUs.jsx'));
 const LazyLogin = lazy(() => import('./pages/Login.jsx'));
 const LazyRegister = lazy(() => import('./pages/Register.jsx'));
-const LazyDashboard = lazy(() => import('./pages/Dashboard.jsx'));
+const LazyDashboard = lazy(() => import('./pages/Dashboard'));
 const LazyForgotPassword = lazy(() => import('./pages/ForgotPassword.jsx'));
 const LazyResetPassword = lazy(() => import('./pages/ResetPassword.jsx'));
 const LazyVerifyEmail = lazy(() => import('./pages/VerifyEmail.jsx'));
@@ -262,11 +262,26 @@ function AppContent() {
                         <ThemeProvider theme={theme}>
                             <CssBaseline />
                             <Router>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      minHeight: '100vh',
+                      height: 'auto',
+                      overflowY: 'visible',
+                      overflowX: 'hidden',
+                      position: 'relative'
+                    }}>
 
                         <Header />
 
-                        <Box component="main" sx={{ flexGrow: 1 }}>
+                        <Box component="main" sx={{ 
+                          flexGrow: 1, 
+                          overflowY: 'visible',
+                          overflowX: 'hidden', 
+                          width: '100%',
+                          minHeight: 'calc(100vh - 72px)',
+                          position: 'relative'
+                        }}>
                             {/* Breadcrumb removed - user requested removal */}
                             <Routes>
                                     {/* Dinamik Ana Rotalar */}

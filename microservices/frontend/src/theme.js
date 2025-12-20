@@ -347,6 +347,30 @@ const getTheme = (mode = 'light') => {
           },
         },
       },
+      // CssBaseline - Fix scroll issues
+      MuiCssBaseline: {
+        styleOverrides: {
+          html: {
+            overflowY: 'scroll !important',
+            overflowX: 'hidden !important',
+            height: '100%',
+            WebkitOverflowScrolling: 'touch',
+          },
+          body: {
+            overflowY: 'scroll !important',
+            overflowX: 'hidden !important',
+            height: '100%',
+            position: 'relative',
+          },
+          '#root': {
+            minHeight: '100%',
+            height: 'auto',
+            overflowY: 'visible !important',
+            overflowX: 'hidden !important',
+            position: 'relative',
+          },
+        },
+      },
     },
     // Custom theme properties for project-specific colors
     custom: {

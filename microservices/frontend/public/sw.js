@@ -25,6 +25,15 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip Vite dev server files in development
+  const url = new URL(event.request.url);
+  if (url.pathname.includes('@vite') || 
+      url.pathname.includes('@react-refresh') || 
+      url.pathname.includes('/src/') && url.hostname === 'localhost') {
+    // Let Vite handle these files directly
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {

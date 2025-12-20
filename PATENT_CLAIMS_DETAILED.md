@@ -233,3 +233,4 @@ Bu patent başvurusu, blockchain, AI ve IoT teknolojilerinin sağlık turizmi se
 **Versiyon:** 1.0
 
 
+

@@ -121,3 +121,4 @@ const ConnectivityBadges = ({ blockchainStatus, iotStatus, compact = false }) =>
 export default ConnectivityBadges;
 
 
+

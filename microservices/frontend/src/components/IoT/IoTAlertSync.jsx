@@ -77,3 +77,4 @@ const IoTAlertSync = ({ userId }) => {
 export default IoTAlertSync;
 
 
+

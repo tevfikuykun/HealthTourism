@@ -49,3 +49,4 @@ api.get('/endpoint', {
 - Performans optimizasyonu sağlandı
 
 
+

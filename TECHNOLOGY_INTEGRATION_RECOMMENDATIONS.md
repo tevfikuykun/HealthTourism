@@ -499,3 +499,4 @@ recognition.start();
 **Önerilen Başlangıç:** WebSocket + Payment Gateway (en hızlı ROI)
 
 
+

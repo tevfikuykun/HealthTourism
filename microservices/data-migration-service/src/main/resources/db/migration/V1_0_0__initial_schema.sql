@@ -14,3 +14,4 @@ CREATE TABLE IF NOT EXISTS entity_versions (
 CREATE INDEX idx_entity_name ON entity_versions(entity_name);
 
 
+

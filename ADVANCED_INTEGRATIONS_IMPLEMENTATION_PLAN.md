@@ -1114,3 +1114,4 @@ Bu entegrasyonlar platformu **global pazara hazır** hale getirir:
 **Toplam Süre:** 6 ay (tüm entegrasyonlar için)
 
 
+

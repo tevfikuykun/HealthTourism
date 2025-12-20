@@ -28,24 +28,37 @@ initCurrency();
 // Request notification permission
 requestNotificationPermission();
 
-// Register service worker for PWA (only if available)
+// Register service worker for PWA (only in production)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    // Service worker will be registered by vite-plugin-pwa when installed
-    // For now, skip registration if sw.js doesn't exist
-    fetch('/sw.js', { method: 'HEAD' })
-      .then(() => {
-        navigator.serviceWorker.register('/sw.js')
-          .then((registration) => {
-            console.log('SW registered: ', registration);
-          })
-          .catch((registrationError) => {
-            // Silently fail if service worker not available
+    // Always unregister service workers in development mode
+    if (import.meta.env.DEV) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const registration of registrations) {
+          registration.unregister().then(() => {
+            console.log('Service worker unregistered for dev mode');
           });
-      })
-      .catch(() => {
-        // Service worker not available, skip registration
+        }
       });
+      return;
+    }
+
+    // Service worker will be registered by vite-plugin-pwa in production
+    if (import.meta.env.PROD) {
+      fetch('/sw.js', { method: 'HEAD' })
+        .then(() => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              // Silently fail if service worker not available
+            });
+        })
+        .catch(() => {
+          // Service worker not available, skip registration
+        });
+    }
   });
 }
 

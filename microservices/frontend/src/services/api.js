@@ -2,7 +2,9 @@ import axios from 'axios';
 import { handleApiError } from '../utils/errorHandler';
 import { toast } from 'react-toastify';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+// Use proxy in development, full URL in production
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+  (import.meta.env.DEV ? '/api' : 'http://localhost:8080/api');
 
 // Toast throttling - prevent duplicate error messages
 const errorToastCache = new Map();
@@ -30,8 +32,20 @@ const showThrottledToast = (message, errorCode, config = {}) => {
   const lastShown = errorToastCache.get(cacheKey);
   const now = Date.now();
   
-  // Only show toast if not shown recently
-  if (!lastShown || (now - lastShown) > TOAST_THROTTLE_TIME) {
+  // Use toastId from config if provided to prevent duplicates
+  const toastId = config.toastId || cacheKey;
+  
+  // Check if this toast is already active (prevents duplicate toasts)
+  try {
+    if (toast.isActive && toast.isActive(toastId)) {
+      return; // Don't show duplicate toast
+    }
+  } catch (e) {
+    // toast.isActive might not be available in all versions
+  }
+  
+  // Only show toast if not shown recently OR if toastId is provided (unique toast)
+  if (!lastShown || (now - lastShown) > TOAST_THROTTLE_TIME || config.toastId) {
     errorToastCache.set(cacheKey, now);
     
     // For network errors, show as warning instead of error (less intrusive)
@@ -39,12 +53,14 @@ const showThrottledToast = (message, errorCode, config = {}) => {
       toast.warning(message, {
         autoClose: 3000,
         hideProgressBar: false,
+        toastId, // Use toastId to prevent duplicates
         ...config
       });
     } else {
       toast.error(message, {
         autoClose: 4000,
         hideProgressBar: false,
+        toastId, // Use toastId to prevent duplicates
         ...config
       });
     }
@@ -98,7 +114,10 @@ api.interceptors.response.use(
     const config = error.config || {};
     
     // Check if toast should be suppressed
-    if (config._suppressToast || config.suppressErrorToast) {
+    // Suppress toast for auth endpoints (register/login) - they handle errors themselves
+    const isAuthEndpoint = config.url?.includes('/auth/register') || config.url?.includes('/auth/login');
+    
+    if (config._suppressToast || config.suppressErrorToast || isAuthEndpoint) {
       return Promise.reject(appError);
     }
     
@@ -133,7 +152,13 @@ api.interceptors.response.use(
         }
       } else {
         // For other errors, show normally but throttled
-        showThrottledToast(appError.message, appError.code);
+        // Use a unique toastId based on error code and status to prevent duplicates
+        // Also include a timestamp component to allow same error after throttle period
+        const toastId = `error-${appError.code}-${appError.statusCode || 'unknown'}-${Math.floor(Date.now() / TOAST_THROTTLE_TIME)}`;
+        showThrottledToast(appError.message, appError.code, {
+          toastId: toastId,
+          autoClose: appError.statusCode === 500 ? 6000 : 4000 // Longer for server errors
+        });
       }
     }
     
@@ -144,8 +169,22 @@ api.interceptors.response.use(
 // --- API SERVICES ---
 
 export const authService = {
-  register: (data) => api.post('/auth/register', data),
-  login: (data) => api.post('/auth/login', data),
+  register: (data, config = {}) => {
+    const requestConfig = {
+      ...config,
+      suppressErrorToast: true,
+      _suppressToast: true, // Also suppress in interceptor
+    };
+    return api.post('/auth/register', data, requestConfig);
+  },
+  login: (data, config = {}) => {
+    const requestConfig = {
+      ...config,
+      suppressErrorToast: true,
+      _suppressToast: true, // Also suppress in interceptor
+    };
+    return api.post('/auth/login', data, requestConfig);
+  },
   logout: (refreshToken) => api.post('/auth/logout', { refreshToken }),
   refreshToken: (refreshToken) => api.post('/auth/refresh', { refreshToken }),
   validateToken: (token) => api.post('/auth/validate', { token }),
@@ -490,6 +529,14 @@ export const patientJourneyService = {
   getJourneySteps: (patientId, reservationId) => api.get(`/patient-journey/patient/${patientId}/reservation/${reservationId}/steps`),
   updateStepStatus: (patientId, reservationId, stepId, status) => api.put(`/patient-journey/patient/${patientId}/reservation/${reservationId}/steps/${stepId}`, { status }),
   getCurrentStep: (patientId, reservationId) => api.get(`/patient-journey/patient/${patientId}/reservation/${reservationId}/current-step`),
+};
+
+// Patient Monitoring Service (Doctor's Patient List)
+export const patientMonitoringService = {
+  getPatientsByDoctor: (doctorId) => api.get(`/patient-monitoring/doctor/${doctorId}/patients`),
+  getPatientDetails: (patientId) => api.get(`/patient-monitoring/patient/${patientId}`),
+  getAll: (params) => api.get('/patient-monitoring/patients', { params }),
+  getByReservation: (reservationId) => api.get(`/patient-monitoring/reservation/${reservationId}`),
 };
 
 // Default export (Opsiyonel, geriye dönük uyumluluk için)

@@ -195,6 +195,7 @@ const PartnerPortal = () => {
                       color={sale.status === 'COMPLETED' ? 'success' : 'default'}
                       size="small"
                     />
+                    </TableCell>
                   </TableRow>
               ))}
             </TableBody>
@@ -276,5 +277,6 @@ const PartnerPortal = () => {
 };
 
 export default PartnerPortal;
+
 
 

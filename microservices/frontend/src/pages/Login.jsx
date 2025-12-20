@@ -16,7 +16,6 @@ import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { useAuth } from '../hooks/useAuth';
 import { authService } from '../services/api';
 import EmailIcon from '@mui/icons-material/Email';
 import LockIcon from '@mui/icons-material/Lock';
@@ -62,21 +61,59 @@ export default function Login() {
       setIsLoading(true);
       setError('');
 
-      const response = await authService.login(data);
-      const { token, refreshToken, user } = response.data;
+      // Suppress toast notifications for login (we show Alert instead)
+      // Suppress toast notifications for login endpoint - we handle errors ourselves
+      const response = await authService.login(data, { suppressErrorToast: true });
+      
+      // Handle different response formats
+      const responseData = response?.data || response;
+      const token = responseData?.token || responseData?.accessToken;
+      const refreshToken = responseData?.refreshToken;
+      const user = responseData?.user || responseData;
+
+      if (!token) {
+        throw new Error('Token alınamadı. Lütfen tekrar deneyin.');
+      }
 
       // Store tokens
       localStorage.setItem('token', token);
-      localStorage.setItem('refreshToken', refreshToken);
+      if (refreshToken) {
+        localStorage.setItem('refreshToken', refreshToken);
+      }
       localStorage.setItem('user', JSON.stringify(user));
 
-      // Update auth context
-      login(user);
-
-      // Redirect to intended page or home
-      navigate(from, { replace: true });
+      // Update auth context - useAuth hook expects mutate format
+      // But we'll trigger a page reload or use window.location to ensure state is updated
+      window.location.href = from === '/' ? '/' : from;
     } catch (err) {
-      setError(err.response?.data?.message || 'Giriş yapılırken bir hata oluştu');
+      console.error('Login error:', err);
+      let errorMessage = 'Giriş yapılırken bir hata oluştu';
+      
+      if (err.response) {
+        // Server responded with error - show detailed error message
+        const responseData = err.response.data;
+        errorMessage = responseData?.message || 
+                      responseData?.error || 
+                      responseData?.errorMessage ||
+                      (responseData?.errors ? JSON.stringify(responseData.errors) : null) ||
+                      `Sunucu hatası (${err.response.status}): ${responseData?.status || 'Bilinmeyen hata'}`;
+        
+        // Log full error for debugging
+        console.error('Login server error:', {
+          status: err.response.status,
+          data: responseData,
+          headers: err.response.headers
+        });
+      } else if (err.request) {
+        // Request made but no response - Backend is not running
+        errorMessage = 'Backend servisine bağlanılamadı. Lütfen backend servislerinin çalıştığından emin olun. (http://localhost:8080)';
+        console.error('Backend connection error:', err.request);
+      } else {
+        // Error in request setup
+        errorMessage = err.message || 'Beklenmeyen bir hata oluştu';
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

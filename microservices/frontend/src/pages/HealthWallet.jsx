@@ -102,7 +102,8 @@ const HealthWallet = () => {
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%)',
         position: 'relative',
-        overflow: 'hidden',
+        overflowX: 'hidden',
+        overflowY: 'auto',
         '&::before': {
           content: '""',
           position: 'absolute',

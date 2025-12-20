@@ -69,3 +69,4 @@ const WalletBalance = ({ balance, trend, compact = false }) => {
 export default WalletBalance;
 
 
+

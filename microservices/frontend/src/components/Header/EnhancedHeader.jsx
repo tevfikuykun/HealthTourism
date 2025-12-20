@@ -12,7 +12,7 @@ import {
   Notifications, Settings, Person, Logout, Search, Language,
   Translate, AccountBalance, CloudSync, CheckCircle, Warning,
   Sync, SyncDisabled, AccountTree, CurrencyExchange, Wallet,
-  Web, Close, Menu as MenuIcon,
+  Web, Close, Menu as MenuIcon, FlightTakeoff, DirectionsCar,
 } from '@mui/icons-material';
 import { Search as SearchIcon, Bell, Wallet as WalletIcon, User, Menu as MenuIconLucide, X, Command, Cpu, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -50,6 +50,7 @@ const EnhancedHeader = () => {
   const [userMenuAnchor, setUserMenuAnchor] = useState(null);
   const [notificationAnchor, setNotificationAnchor] = useState(null);
   const [tenantMenuAnchor, setTenantMenuAnchor] = useState(null);
+  const [travelMenuAnchor, setTravelMenuAnchor] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [translationEnabled, setTranslationEnabled] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
@@ -60,7 +61,7 @@ const EnhancedHeader = () => {
     queryKey: ['blockchain-status'],
     queryFn: async () => {
       try {
-        const response = await api.get('/api/blockchain/polygon/status');
+        const response = await api.get('/blockchain/polygon/status');
         return response.data;
       } catch (error) {
         return { connected: false, network: 'Polygon' };
@@ -74,7 +75,7 @@ const EnhancedHeader = () => {
     queryKey: ['iot-sync-status'],
     queryFn: async () => {
       try {
-        const response = await api.get('/api/iot-monitoring/user/me/latest');
+        const response = await api.get('/iot-monitoring/user/me/latest');
         return response.data;
       } catch (error) {
         return null;
@@ -89,7 +90,7 @@ const EnhancedHeader = () => {
     queryKey: ['wallet-balance'],
     queryFn: async () => {
       try {
-        const response = await api.get('/api/health-wallet/balance');
+        const response = await api.get('/health-wallet/balance');
         return response.data;
       } catch (error) {
         return null;
@@ -104,7 +105,7 @@ const EnhancedHeader = () => {
     queryKey: ['ai-notifications'],
     queryFn: async () => {
       try {
-        const response = await api.get('/api/notifications/ai-insights');
+        const response = await api.get('/notifications/ai-insights');
         return response.data;
       } catch (error) {
         return [];
@@ -119,7 +120,7 @@ const EnhancedHeader = () => {
     queryKey: ['user-tenants'],
     queryFn: async () => {
       try {
-        const response = await api.get('/api/tenants/user/me');
+        const response = await api.get('/tenants/user/me');
         return response.data;
       } catch (error) {
         return [];
@@ -143,6 +144,8 @@ const EnhancedHeader = () => {
   const handleNotificationClose = () => setNotificationAnchor(null);
   const handleTenantMenuOpen = (event) => setTenantMenuAnchor(event.currentTarget);
   const handleTenantMenuClose = () => setTenantMenuAnchor(null);
+  const handleTravelMenuOpen = (event) => setTravelMenuAnchor(event.currentTarget);
+  const handleTravelMenuClose = () => setTravelMenuAnchor(null);
 
   const handleLogout = () => {
     logout();
@@ -267,9 +270,10 @@ const EnhancedHeader = () => {
                         fontWeight: 700, 
                         color: '#94a3b8',
                         letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
                       }}
                     >
-                      Mainnet v2.5
+                      MAINNET v2.5
                     </Typography>
                   </Box>
                   {selectedTenant && (
@@ -293,12 +297,12 @@ const EnhancedHeader = () => {
             {/* CENTER: Navigation + Search - Material-UI + Tailwind + Framer Motion */}
             <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: { xs: 1, md: 2 }, justifyContent: 'center' }}>
               {/* Desktop Navigation */}
-              <Box sx={{ display: { xs: 'none', lg: 'flex' }, gap: 0.5 }}>
+              <Box sx={{ display: { xs: 'none', lg: 'flex' }, gap: 0.5, flexWrap: 'wrap' }}>
+                {/* Ana Sayfalar - Herkese Açık */}
                 <motion.div whileHover="hover" variants={hoverLift}>
                   <Button 
                     component={RouterLink} 
-                    to="/dashboard"
-                    className="px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-indigo-50"
+                    to="/hospitals"
                     sx={{
                       px: 2,
                       py: 1,
@@ -306,8 +310,8 @@ const EnhancedHeader = () => {
                       textTransform: 'none',
                       fontWeight: 600,
                       fontSize: '0.875rem',
-                      color: location.pathname === '/dashboard' ? 'primary.main' : 'text.primary',
-                      bgcolor: location.pathname === '/dashboard' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
+                      color: location.pathname === '/hospitals' ? 'primary.main' : 'text.primary',
+                      bgcolor: location.pathname === '/hospitals' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
                       transition: 'all 0.2s ease',
                       '&:hover': {
                         bgcolor: 'rgba(79, 70, 229, 0.08)',
@@ -315,15 +319,14 @@ const EnhancedHeader = () => {
                       }
                     }}
                   >
-                    {t('nav.dashboard', 'Dashboard')}
+                    {t('nav.hospitals', 'Hastaneler')}
                   </Button>
                 </motion.div>
                 
                 <motion.div whileHover="hover" variants={hoverLift}>
                   <Button 
                     component={RouterLink} 
-                    to="/patient-journey"
-                    className="px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-indigo-50"
+                    to="/doctors"
                     sx={{
                       px: 2,
                       py: 1,
@@ -331,8 +334,8 @@ const EnhancedHeader = () => {
                       textTransform: 'none',
                       fontWeight: 600,
                       fontSize: '0.875rem',
-                      color: location.pathname === '/patient-journey' ? 'primary.main' : 'text.primary',
-                      bgcolor: location.pathname === '/patient-journey' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
+                      color: location.pathname === '/doctors' ? 'primary.main' : 'text.primary',
+                      bgcolor: location.pathname === '/doctors' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
                       transition: 'all 0.2s ease',
                       '&:hover': {
                         bgcolor: 'rgba(79, 70, 229, 0.08)',
@@ -340,15 +343,14 @@ const EnhancedHeader = () => {
                       }
                     }}
                   >
-                    {t('nav.journey', 'Yolculuk')}
+                    {t('nav.doctors', 'Doktorlar')}
                   </Button>
                 </motion.div>
                 
                 <motion.div whileHover="hover" variants={hoverLift}>
                   <Button 
                     component={RouterLink} 
-                    to="/health-wallet"
-                    className="px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-indigo-50"
+                    to="/accommodations"
                     sx={{
                       px: 2,
                       py: 1,
@@ -356,8 +358,8 @@ const EnhancedHeader = () => {
                       textTransform: 'none',
                       fontWeight: 600,
                       fontSize: '0.875rem',
-                      color: location.pathname === '/health-wallet' ? 'primary.main' : 'text.primary',
-                      bgcolor: location.pathname === '/health-wallet' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
+                      color: location.pathname === '/accommodations' ? 'primary.main' : 'text.primary',
+                      bgcolor: location.pathname === '/accommodations' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
                       transition: 'all 0.2s ease',
                       '&:hover': {
                         bgcolor: 'rgba(79, 70, 229, 0.08)',
@@ -365,9 +367,207 @@ const EnhancedHeader = () => {
                       }
                     }}
                   >
-                    {t('nav.wallet', 'Cüzdan')}
+                    {t('nav.accommodations', 'Konaklama')}
                   </Button>
                 </motion.div>
+                
+                <motion.div whileHover="hover" variants={hoverLift}>
+                  <Button 
+                    component={RouterLink} 
+                    to="/packages"
+                    sx={{
+                      px: 2,
+                      py: 1,
+                      borderRadius: 3,
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      fontSize: '0.875rem',
+                      color: location.pathname === '/packages' ? 'primary.main' : 'text.primary',
+                      bgcolor: location.pathname === '/packages' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        bgcolor: 'rgba(79, 70, 229, 0.08)',
+                        transform: 'translateY(-1px)',
+                      }
+                    }}
+                  >
+                    {t('nav.packages', 'Paketler')}
+                  </Button>
+                </motion.div>
+                
+                {/* Seyahat Dropdown */}
+                <motion.div whileHover="hover" variants={hoverLift}>
+                  <Button 
+                    onClick={handleTravelMenuOpen}
+                    endIcon={<FlightTakeoff />}
+                    sx={{
+                      px: 2,
+                      py: 1,
+                      borderRadius: 3,
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      fontSize: '0.875rem',
+                      color: ['/flights', '/transfers', '/car-rentals'].some(path => location.pathname.startsWith(path)) ? 'primary.main' : 'text.primary',
+                      bgcolor: ['/flights', '/transfers', '/car-rentals'].some(path => location.pathname.startsWith(path)) ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        bgcolor: 'rgba(79, 70, 229, 0.08)',
+                        transform: 'translateY(-1px)',
+                      }
+                    }}
+                  >
+                    {t('nav.travel', 'Seyahat')}
+                  </Button>
+                </motion.div>
+
+                {/* Giriş Yapıldıktan Sonra Görünür Sayfalar */}
+                {isAuthenticated && (
+                  <>
+                    <motion.div whileHover="hover" variants={hoverLift}>
+                      <Button 
+                        component={RouterLink} 
+                        to="/dashboard"
+                        sx={{
+                          px: 2,
+                          py: 1,
+                          borderRadius: 3,
+                          textTransform: 'none',
+                          fontWeight: 600,
+                          fontSize: '0.875rem',
+                          color: location.pathname === '/dashboard' ? 'primary.main' : 'text.primary',
+                          bgcolor: location.pathname === '/dashboard' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            bgcolor: 'rgba(79, 70, 229, 0.08)',
+                            transform: 'translateY(-1px)',
+                          }
+                        }}
+                      >
+                        {t('nav.dashboard', 'Dashboard')}
+                      </Button>
+                    </motion.div>
+                    
+                    <motion.div whileHover="hover" variants={hoverLift}>
+                      <Button 
+                        component={RouterLink} 
+                        to="/patient-journey"
+                        sx={{
+                          px: 2,
+                          py: 1,
+                          borderRadius: 3,
+                          textTransform: 'none',
+                          fontWeight: 600,
+                          fontSize: '0.875rem',
+                          color: location.pathname === '/patient-journey' ? 'primary.main' : 'text.primary',
+                          bgcolor: location.pathname === '/patient-journey' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            bgcolor: 'rgba(79, 70, 229, 0.08)',
+                            transform: 'translateY(-1px)',
+                          }
+                        }}
+                      >
+                        {t('nav.journey', 'Yolculuk')}
+                      </Button>
+                    </motion.div>
+                    
+                    <motion.div whileHover="hover" variants={hoverLift}>
+                      <Button 
+                        component={RouterLink} 
+                        to="/health-wallet"
+                        sx={{
+                          px: 2,
+                          py: 1,
+                          borderRadius: 3,
+                          textTransform: 'none',
+                          fontWeight: 600,
+                          fontSize: '0.875rem',
+                          color: location.pathname === '/health-wallet' ? 'primary.main' : 'text.primary',
+                          bgcolor: location.pathname === '/health-wallet' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            bgcolor: 'rgba(79, 70, 229, 0.08)',
+                            transform: 'translateY(-1px)',
+                          }
+                        }}
+                      >
+                        {t('nav.wallet', 'Cüzdan')}
+                      </Button>
+                    </motion.div>
+                    
+                    <motion.div whileHover="hover" variants={hoverLift}>
+                      <Button 
+                        component={RouterLink} 
+                        to="/reservations"
+                        sx={{
+                          px: 2,
+                          py: 1,
+                          borderRadius: 3,
+                          textTransform: 'none',
+                          fontWeight: 600,
+                          fontSize: '0.875rem',
+                          color: location.pathname.startsWith('/reservations') ? 'primary.main' : 'text.primary',
+                          bgcolor: location.pathname.startsWith('/reservations') ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            bgcolor: 'rgba(79, 70, 229, 0.08)',
+                            transform: 'translateY(-1px)',
+                          }
+                        }}
+                      >
+                        {t('nav.reservations', 'Rezervasyonlar')}
+                      </Button>
+                    </motion.div>
+                    
+                    <motion.div whileHover="hover" variants={hoverLift}>
+                      <Button 
+                        component={RouterLink} 
+                        to="/digital-twin"
+                        sx={{
+                          px: 2,
+                          py: 1,
+                          borderRadius: 3,
+                          textTransform: 'none',
+                          fontWeight: 600,
+                          fontSize: '0.875rem',
+                          color: location.pathname === '/digital-twin' ? 'primary.main' : 'text.primary',
+                          bgcolor: location.pathname === '/digital-twin' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            bgcolor: 'rgba(79, 70, 229, 0.08)',
+                            transform: 'translateY(-1px)',
+                          }
+                        }}
+                      >
+                        {t('nav.digitalTwin', 'Dijital İkiz')}
+                      </Button>
+                    </motion.div>
+                    
+                    <motion.div whileHover="hover" variants={hoverLift}>
+                      <Button 
+                        component={RouterLink} 
+                        to="/favorites"
+                        sx={{
+                          px: 2,
+                          py: 1,
+                          borderRadius: 3,
+                          textTransform: 'none',
+                          fontWeight: 600,
+                          fontSize: '0.875rem',
+                          color: location.pathname === '/favorites' ? 'primary.main' : 'text.primary',
+                          bgcolor: location.pathname === '/favorites' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            bgcolor: 'rgba(79, 70, 229, 0.08)',
+                            transform: 'translateY(-1px)',
+                          }
+                        }}
+                      >
+                        {t('nav.favorites', 'Favoriler')}
+                      </Button>
+                    </motion.div>
+                  </>
+                )}
               </Box>
 
               {/* Global Search - Material-UI + Tailwind + Lucide-React */}
@@ -664,15 +864,47 @@ const EnhancedHeader = () => {
               className="bg-white border-t border-gray-200"
             >
               <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Button component={RouterLink} to="/dashboard" fullWidth className="rounded-xl">
-                  {t('nav.dashboard', 'Dashboard')}
+                {/* Herkese Açık Sayfalar */}
+                <Button component={RouterLink} to="/hospitals" fullWidth className="rounded-xl">
+                  {t('nav.hospitals', 'Hastaneler')}
                 </Button>
-                <Button component={RouterLink} to="/patient-journey" fullWidth className="rounded-xl">
-                  {t('nav.journey', 'Yolculuk')}
+                <Button component={RouterLink} to="/doctors" fullWidth className="rounded-xl">
+                  {t('nav.doctors', 'Doktorlar')}
                 </Button>
-                <Button component={RouterLink} to="/health-wallet" fullWidth className="rounded-xl">
-                  {t('nav.wallet', 'Cüzdan')}
+                <Button component={RouterLink} to="/accommodations" fullWidth className="rounded-xl">
+                  {t('nav.accommodations', 'Konaklama')}
                 </Button>
+                <Button component={RouterLink} to="/packages" fullWidth className="rounded-xl">
+                  {t('nav.packages', 'Paketler')}
+                </Button>
+                <Button onClick={handleTravelMenuOpen} fullWidth className="rounded-xl">
+                  {t('nav.travel', 'Seyahat')}
+                </Button>
+                
+                {/* Giriş Yapıldıktan Sonra Görünür */}
+                {isAuthenticated && (
+                  <>
+                    <Divider sx={{ my: 1 }} />
+                    <Button component={RouterLink} to="/dashboard" fullWidth className="rounded-xl">
+                      {t('nav.dashboard', 'Dashboard')}
+                    </Button>
+                    <Button component={RouterLink} to="/patient-journey" fullWidth className="rounded-xl">
+                      {t('nav.journey', 'Yolculuk')}
+                    </Button>
+                    <Button component={RouterLink} to="/health-wallet" fullWidth className="rounded-xl">
+                      {t('nav.wallet', 'Cüzdan')}
+                    </Button>
+                    <Button component={RouterLink} to="/reservations" fullWidth className="rounded-xl">
+                      {t('nav.reservations', 'Rezervasyonlar')}
+                    </Button>
+                    <Button component={RouterLink} to="/digital-twin" fullWidth className="rounded-xl">
+                      {t('nav.digitalTwin', 'Dijital İkiz')}
+                    </Button>
+                    <Button component={RouterLink} to="/favorites" fullWidth className="rounded-xl">
+                      {t('nav.favorites', 'Favoriler')}
+                    </Button>
+                  </>
+                )}
               </Box>
             </motion.div>
           )}
@@ -773,6 +1005,51 @@ const EnhancedHeader = () => {
               <ListItemText primary={tenant.name} secondary={tenant.type} />
             </MenuItem>
           ))}
+        </Menu>
+
+        {/* Travel Menu (Seyahat) */}
+        <Menu
+          anchorEl={travelMenuAnchor}
+          open={Boolean(travelMenuAnchor)}
+          onClose={handleTravelMenuClose}
+          PaperProps={{ sx: { borderRadius: 3, mt: 1, minWidth: 200 } }}
+        >
+          <MenuItem
+            component={RouterLink}
+            to="/flights"
+            onClick={handleTravelMenuClose}
+            className="rounded-lg"
+            sx={{ borderRadius: 2, mb: 0.5 }}
+          >
+            <ListItemIcon>
+              <FlightTakeoff fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary={t('nav.flights', 'Uçak Bileti')} />
+          </MenuItem>
+          <MenuItem
+            component={RouterLink}
+            to="/transfers"
+            onClick={handleTravelMenuClose}
+            className="rounded-lg"
+            sx={{ borderRadius: 2, mb: 0.5 }}
+          >
+            <ListItemIcon>
+              <AccountBalance fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary={t('nav.transfers', 'Transferler')} />
+          </MenuItem>
+          <MenuItem
+            component={RouterLink}
+            to="/car-rentals"
+            onClick={handleTravelMenuClose}
+            className="rounded-lg"
+            sx={{ borderRadius: 2 }}
+          >
+            <ListItemIcon>
+              <DirectionsCar fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary={t('nav.carRentals', 'Araç Kiralama')} />
+          </MenuItem>
         </Menu>
 
         {/* User Menu */}

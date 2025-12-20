@@ -64,23 +64,53 @@ function Home() {
     );
 
     // Neden Bizi Seçmelisiniz Kartı - Material-UI + Tailwind + Framer Motion
-    const WhyUsCard = ({ icon: Icon, title, description, index }) => (
-        <motion.div
-            variants={staggerItem}
-            initial="initial"
-            animate="animate"
-            {...hoverLift}
-        >
-            <Box 
-                className="text-center p-4 rounded-lg bg-white/50 backdrop-blur-sm"
-                sx={{ textAlign: 'center', p: 2 }}
+    const WhyUsCard = ({ icon: Icon, title, description, index }) => {
+        const cardTheme = useTheme();
+        const isDark = cardTheme.palette.mode === 'dark';
+        return (
+            <motion.div
+                variants={staggerItem}
+                initial="initial"
+                animate="animate"
+                {...hoverLift}
             >
-                <Icon color="secondary" sx={{ fontSize: 60, mb: 1.5 }} />
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>{title}</Typography>
-                <Typography variant="body2" color="text.secondary">{description}</Typography>
-            </Box>
-        </motion.div>
-    );
+                <Box 
+                    className="text-center p-4 rounded-lg backdrop-blur-sm"
+                    sx={{ 
+                        textAlign: 'center', 
+                        p: 2,
+                        bgcolor: isDark 
+                            ? 'rgba(255, 255, 255, 0.05)' 
+                            : 'rgba(255, 255, 255, 0.5)',
+                        border: isDark 
+                            ? '1px solid rgba(255, 255, 255, 0.1)' 
+                            : 'none',
+                        borderRadius: 2,
+                    }}
+                >
+                    <Icon color="secondary" sx={{ fontSize: 60, mb: 1.5 }} />
+                    <Typography 
+                        variant="h6" 
+                        sx={{ 
+                            fontWeight: 700, 
+                            mb: 1,
+                            color: 'text.primary',
+                        }}
+                    >
+                        {title}
+                    </Typography>
+                    <Typography 
+                        variant="body2" 
+                        sx={{ 
+                            color: 'text.secondary',
+                        }}
+                    >
+                        {description}
+                    </Typography>
+                </Box>
+            </motion.div>
+        );
+    };
 
     return (
         <Box>
@@ -219,7 +249,15 @@ function Home() {
             </Container>
 
             {/* 3. Neden Bizi Seçmelisiniz (Güven Bölümü) - Material-UI + Tailwind + Framer Motion */}
-            <Box className="bg-blue-50 py-16" sx={{ bgcolor: theme.palette.primary.light, py: 8 }}>
+            <Box 
+                className="py-16" 
+                sx={{ 
+                    bgcolor: theme.palette.mode === 'dark' 
+                        ? 'rgba(15, 23, 42, 0.5)' 
+                        : theme.palette.primary.light, 
+                    py: 8 
+                }}
+            >
                 <Container maxWidth="lg">
                     <motion.div
                         variants={fadeInUp}
@@ -227,7 +265,18 @@ function Home() {
                         whileInView="animate"
                         viewport={{ once: true }}
                     >
-                        <Typography variant="h4" align="center" className="font-bold mb-2 text-blue-900" sx={{ mb: 2, fontWeight: 700, color: 'primary.dark' }}>
+                        <Typography 
+                            variant="h4" 
+                            align="center" 
+                            className="font-bold mb-2" 
+                            sx={{ 
+                                mb: 2, 
+                                fontWeight: 700, 
+                                color: theme.palette.mode === 'dark' 
+                                    ? 'text.primary' 
+                                    : 'primary.dark' 
+                            }}
+                        >
                             {t('home.whyChooseUs')}
                         </Typography>
                         <Divider sx={{ mb: 6, width: '100px', mx: 'auto', bgcolor: theme.palette.secondary.main, height: 3 }} />

@@ -62,3 +62,4 @@ http://localhost:3002
 Maven kurulumu zaman alıyorsa, basit bir HTML dashboard oluşturabilirim. İster misiniz?
 
 
+

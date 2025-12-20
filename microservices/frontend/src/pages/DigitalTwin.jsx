@@ -124,7 +124,8 @@ const DigitalTwin = () => {
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%)',
         position: 'relative',
-        overflow: 'hidden',
+        overflowX: 'hidden',
+        overflowY: 'auto',
         '&::before': {
           content: '""',
           position: 'absolute',

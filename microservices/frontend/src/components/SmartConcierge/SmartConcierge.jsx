@@ -38,7 +38,7 @@ const SmartConcierge = () => {
   const { data: journeyStatus } = useQuery({
     queryKey: ['concierge-status'],
     queryFn: async () => {
-      const response = await api.get('/api/reservations/current/status');
+      const response = await api.get('/reservations/current/status');
       return response.data;
     },
     refetchInterval: 30000,
@@ -48,7 +48,7 @@ const SmartConcierge = () => {
   const { data: iotData } = useQuery({
     queryKey: ['concierge-iot'],
     queryFn: async () => {
-      const response = await api.get('/api/iot-monitoring/user/me/latest');
+      const response = await api.get('/iot-monitoring/user/me/latest');
       return response.data;
     },
     refetchInterval: 10000,
@@ -212,5 +212,6 @@ const SmartConcierge = () => {
 };
 
 export default SmartConcierge;
+
 
 
