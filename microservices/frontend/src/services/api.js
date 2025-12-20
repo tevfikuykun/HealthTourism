@@ -2,7 +2,75 @@ import axios from 'axios';
 import { handleApiError } from '../utils/errorHandler';
 import { toast } from 'react-toastify';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+// Use proxy in development, full URL in production
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+  (import.meta.env.DEV ? '/api' : 'http://localhost:8080/api');
+
+// Toast throttling - prevent duplicate error messages
+const errorToastCache = new Map();
+const TOAST_THROTTLE_TIME = 5000; // 5 seconds
+const MAX_TOAST_CACHE_SIZE = 50;
+
+// Clean old cache entries periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, timestamp] of errorToastCache.entries()) {
+    if (now - timestamp > TOAST_THROTTLE_TIME) {
+      errorToastCache.delete(key);
+    }
+  }
+  // Prevent memory leak
+  if (errorToastCache.size > MAX_TOAST_CACHE_SIZE) {
+    const firstKey = errorToastCache.keys().next().value;
+    errorToastCache.delete(firstKey);
+  }
+}, TOAST_THROTTLE_TIME);
+
+// Helper function to show throttled toast
+const showThrottledToast = (message, errorCode, config = {}) => {
+  const cacheKey = `${errorCode}_${message}`;
+  const lastShown = errorToastCache.get(cacheKey);
+  const now = Date.now();
+  
+  // Use toastId from config if provided to prevent duplicates
+  const toastId = config.toastId || cacheKey;
+  
+  // Check if this toast is already active (prevents duplicate toasts)
+  try {
+    if (toast.isActive && toast.isActive(toastId)) {
+      return; // Don't show duplicate toast
+    }
+  } catch (e) {
+    // toast.isActive might not be available in all versions
+  }
+  
+  // Only show toast if not shown recently OR if toastId is provided (unique toast)
+  if (!lastShown || (now - lastShown) > TOAST_THROTTLE_TIME || config.toastId) {
+    errorToastCache.set(cacheKey, now);
+    
+    // For network errors, show as warning instead of error (less intrusive)
+    if (errorCode === 'NETWORK_ERROR') {
+      toast.warning(message, {
+        autoClose: 3000,
+        hideProgressBar: false,
+        toastId, // Use toastId to prevent duplicates
+        ...config
+      });
+    } else {
+      toast.error(message, {
+        autoClose: 4000,
+        hideProgressBar: false,
+        toastId, // Use toastId to prevent duplicates
+        ...config
+      });
+    }
+  }
+};
+
+// Track if backend is reachable
+let isBackendReachable = true;
+let lastBackendCheck = 0;
+const BACKEND_CHECK_INTERVAL = 30000; // 30 seconds
 
 // 1. DÜZELTME: 'api' değişkeninin başına 'export' eklendi (currency.js hatası için)
 export const api = axios.create({
@@ -20,6 +88,12 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Add flag to suppress toast for specific requests
+    if (config.suppressErrorToast) {
+      config._suppressToast = true;
+    }
+    
     return config;
   },
   (error) => {
@@ -29,18 +103,63 @@ api.interceptors.request.use(
 
 // Response interceptor - Global hata yönetimi
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Backend is reachable
+    isBackendReachable = true;
+    lastBackendCheck = Date.now();
+    return response;
+  },
   (error) => {
     const appError = handleApiError(error);
+    const config = error.config || {};
+    
+    // Check if toast should be suppressed
+    // Suppress toast for auth endpoints (register/login) - they handle errors themselves
+    const isAuthEndpoint = config.url?.includes('/auth/register') || config.url?.includes('/auth/login');
+    
+    if (config._suppressToast || config.suppressErrorToast || isAuthEndpoint) {
+      return Promise.reject(appError);
+    }
+    
+    // Update backend reachability
+    if (appError.code === 'NETWORK_ERROR') {
+      const now = Date.now();
+      if (now - lastBackendCheck > BACKEND_CHECK_INTERVAL) {
+        isBackendReachable = false;
+        lastBackendCheck = now;
+      }
+    }
     
     if (appError.statusCode === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
+      return Promise.reject(appError);
     }
     
+    // Only show toast for non-401 errors
+    // Network errors are throttled and shown as warnings
     if (appError.statusCode !== 401) {
-      toast.error(appError.message);
+      // For network errors, only show if backend was previously reachable
+      // This prevents spam when backend is completely down
+      if (appError.code === 'NETWORK_ERROR') {
+        if (isBackendReachable || Date.now() - lastBackendCheck > BACKEND_CHECK_INTERVAL) {
+          showThrottledToast(
+            'Connection issue. Some features may be unavailable.',
+            appError.code,
+            { toastId: 'network-error' } // Same toastId prevents duplicates
+          );
+        }
+      } else {
+        // For other errors, show normally but throttled
+        // Use a unique toastId based on error code and status to prevent duplicates
+        // Also include a timestamp component to allow same error after throttle period
+        const toastId = `error-${appError.code}-${appError.statusCode || 'unknown'}-${Math.floor(Date.now() / TOAST_THROTTLE_TIME)}`;
+        showThrottledToast(appError.message, appError.code, {
+          toastId: toastId,
+          autoClose: appError.statusCode === 500 ? 6000 : 4000 // Longer for server errors
+        });
+      }
     }
     
     return Promise.reject(appError);
@@ -50,8 +169,22 @@ api.interceptors.response.use(
 // --- API SERVICES ---
 
 export const authService = {
-  register: (data) => api.post('/auth/register', data),
-  login: (data) => api.post('/auth/login', data),
+  register: (data, config = {}) => {
+    const requestConfig = {
+      ...config,
+      suppressErrorToast: true,
+      _suppressToast: true, // Also suppress in interceptor
+    };
+    return api.post('/auth/register', data, requestConfig);
+  },
+  login: (data, config = {}) => {
+    const requestConfig = {
+      ...config,
+      suppressErrorToast: true,
+      _suppressToast: true, // Also suppress in interceptor
+    };
+    return api.post('/auth/login', data, requestConfig);
+  },
   logout: (refreshToken) => api.post('/auth/logout', { refreshToken }),
   refreshToken: (refreshToken) => api.post('/auth/refresh', { refreshToken }),
   validateToken: (token) => api.post('/auth/validate', { token }),
@@ -177,11 +310,6 @@ export const fileStorageService = {
 export const currencyService = {
   getRates: (baseCurrency = 'TRY') => api.get(`/currency/rates/${baseCurrency}`),
   convert: (amount, from, to) => api.get('/currency/convert', { params: { amount, from, to } }),
-};
-
-export const auditService = {
-  getLogs: (params) => api.get('/audit/logs', { params }),
-  getStats: () => api.get('/audit/stats'),
 };
 
 export const blockchainService = {
@@ -351,6 +479,64 @@ export const healthWalletService = {
   getByWalletId: (walletId) => api.get(`/health-wallet/wallet/${walletId}`),
   accessByQR: (qrCodeHash) => api.get(`/health-wallet/qr/${qrCodeHash}`),
   getCompleteData: (userId) => api.get(`/health-wallet/user/${userId}/complete`),
+};
+
+// Blockchain Wallet Service (Polygon Network)
+export const blockchainWalletService = {
+  getBalance: (walletAddress) => api.get(`/blockchain/polygon/wallet/${walletAddress}/balance`),
+  getTransactions: (walletAddress, params) => api.get(`/blockchain/polygon/wallet/${walletAddress}/transactions`, { params }),
+  getHealthTokens: (walletAddress) => api.get(`/blockchain/polygon/wallet/${walletAddress}/tokens`),
+  getNFTs: (walletAddress) => api.get(`/blockchain/polygon/wallet/${walletAddress}/nfts`),
+  getEscrowBalance: (reservationId) => api.get(`/blockchain/polygon/escrow/${reservationId}/balance`),
+  getNetworkStatus: () => api.get('/blockchain/polygon/status'),
+};
+
+// Clinical Decision Support Service (GraphRAG/Neo4j)
+export const clinicalDecisionService = {
+  getSimilarCases: (patientId, params) => api.get(`/clinical-decision/patient/${patientId}/similar-cases`, { params }),
+  getRiskAnalysis: (patientId) => api.get(`/clinical-decision/patient/${patientId}/risk-analysis`),
+  getIotCorrelation: (patientId, hours = 24) => api.get(`/clinical-decision/patient/${patientId}/iot-correlation`, { params: { hours } }),
+  getGraphInsights: (patientId) => api.get(`/clinical-decision/patient/${patientId}/graph-insights`),
+  getEvidenceBasedRecommendations: (patientId) => api.get(`/clinical-decision/patient/${patientId}/recommendations`),
+};
+
+// Audit & Transparency Service (Hibernate Envers/Zipkin)
+export const auditService = {
+  getAuditLogs: (params) => api.get('/audit/logs', { params }),
+  getAuditLogsByUser: (userId, params) => api.get(`/audit/logs/user/${userId}`, { params }),
+  getAuditLogsByResource: (resourceType, resourceId, params) => api.get(`/audit/logs/resource/${resourceType}/${resourceId}`, { params }),
+  getTraceById: (traceId) => api.get(`/audit/trace/${traceId}`),
+  getTracesByUser: (userId, params) => api.get(`/audit/traces/user/${userId}`, { params }),
+  getDataAccessLogs: (params) => api.get('/audit/data-access', { params }),
+  exportAuditLogs: (params) => api.get('/audit/export', { params, responseType: 'blob' }),
+};
+
+// Security & Vault Service (Quantum-Safe, Zero-Trust)
+export const securityService = {
+  getActiveSessions: (userId) => api.get(`/security/sessions/user/${userId}`),
+  revokeSession: (sessionId) => api.delete(`/security/sessions/${sessionId}`),
+  revokeAllSessions: (userId) => api.delete(`/security/sessions/user/${userId}/all`),
+  getAccessPermissions: (userId) => api.get(`/security/permissions/user/${userId}`),
+  getKeyRotationStatus: () => api.get('/security/vault/key-rotation/status'),
+  getQuantumSafeKeys: () => api.get('/security/vault/quantum-safe-keys'),
+  rotateKey: (keyId) => api.post(`/security/vault/keys/${keyId}/rotate`),
+  getZeroTrustStatus: () => api.get('/security/zero-trust/status'),
+};
+
+// Patient Journey Service
+export const patientJourneyService = {
+  getJourney: (patientId, reservationId) => api.get(`/patient-journey/patient/${patientId}/reservation/${reservationId}`),
+  getJourneySteps: (patientId, reservationId) => api.get(`/patient-journey/patient/${patientId}/reservation/${reservationId}/steps`),
+  updateStepStatus: (patientId, reservationId, stepId, status) => api.put(`/patient-journey/patient/${patientId}/reservation/${reservationId}/steps/${stepId}`, { status }),
+  getCurrentStep: (patientId, reservationId) => api.get(`/patient-journey/patient/${patientId}/reservation/${reservationId}/current-step`),
+};
+
+// Patient Monitoring Service (Doctor's Patient List)
+export const patientMonitoringService = {
+  getPatientsByDoctor: (doctorId) => api.get(`/patient-monitoring/doctor/${doctorId}/patients`),
+  getPatientDetails: (patientId) => api.get(`/patient-monitoring/patient/${patientId}`),
+  getAll: (params) => api.get('/patient-monitoring/patients', { params }),
+  getByReservation: (reservationId) => api.get(`/patient-monitoring/reservation/${reservationId}`),
 };
 
 // Default export (Opsiyonel, geriye dönük uyumluluk için)

@@ -423,3 +423,5 @@ const PatientDetailView = ({ patient, iotData, riskScore }) => {
 
 export default PatientMonitoringDashboard;
 
+
+

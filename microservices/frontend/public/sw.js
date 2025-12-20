@@ -20,6 +20,20 @@ self.addEventListener('install', (event) => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
+  // Skip non-GET requests and external URLs
+  if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+
+  // Skip Vite dev server files in development
+  const url = new URL(event.request.url);
+  if (url.pathname.includes('@vite') || 
+      url.pathname.includes('@react-refresh') || 
+      url.pathname.includes('/src/') && url.hostname === 'localhost') {
+    // Let Vite handle these files directly
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
@@ -27,7 +41,15 @@ self.addEventListener('fetch', (event) => {
         if (response) {
           return response;
         }
-        return fetch(event.request);
+        // Network request with error handling
+        return fetch(event.request).catch((error) => {
+          console.warn('Fetch failed for:', event.request.url, error);
+          // Return a basic response for navigation requests
+          if (event.request.mode === 'navigate') {
+            return caches.match('/index.html');
+          }
+          throw error;
+        });
       })
   );
 });

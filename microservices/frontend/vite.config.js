@@ -3,10 +3,19 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom'],
+    exclude: [],
+  },
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Disable service worker in development mode
+      devOptions: {
+        enabled: false,
+        type: 'module',
+      },
       manifest: {
         name: 'Health Tourism',
         short_name: 'HealthTourism',
@@ -14,21 +23,25 @@ export default defineConfig({
         theme_color: '#1976d2',
         background_color: '#ffffff',
         display: 'standalone',
-        icons: [
-          {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
+        icons: []
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        // Exclude Vite dev server files from cache
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/localhost:3000\/.*/i,
+            handler: 'NetworkOnly',
+          },
+          {
+            urlPattern: /^https:\/\/.*\/@vite\/.*/i,
+            handler: 'NetworkOnly',
+          },
+          {
+            urlPattern: /^https:\/\/.*\/@react-refresh\/.*/i,
+            handler: 'NetworkOnly',
+          },
+        ],
       }
     })
   ],

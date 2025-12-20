@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integration Dashboard - Health Tourism</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card p {
+            opacity: 0.9;
+        }
+        
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .category {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .category h2 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .integration {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+        
+        .integration:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .integration-name {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .status-up {
+            background: #28a745;
+            color: white;
+        }
+        
+        .status-down {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .status-unknown {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+        
+        .last-updated {
+            text-align: center;
+            color: #666;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔌 Integration Dashboard</h1>
+            <p>Real-time status of all 30 integrations</p>
+            
+            <div class="stats" id="stats">
+                <div class="stat-card">
+                    <h3 id="total">30</h3>
+                    <p>Total Integrations</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                    <h3 id="up">0</h3>
+                    <p>UP</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                    <h3 id="down">0</h3>
+                    <p>DOWN</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);">
+                    <h3 id="unknown">0</h3>
+                    <p>UNKNOWN</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="categories" id="categories">
+            <div class="loading">Loading integrations...</div>
+        </div>
+        
+        <div class="last-updated">
+            <p>Auto-refresh every 10 seconds | Last updated: <span id="lastUpdate"></span></p>
+        </div>
+    </div>
+    
+    <button class="refresh-btn" onclick="checkAllIntegrations()">🔄 Refresh</button>
+    
+    <script>
+        const integrations = [
+            // Security & Cryptography
+            {name: "HashiCorp Vault", category: "Security", url: "http://localhost:8200/v1/sys/health", port: 8200},
+            {name: "Quantum-Safe Cryptography", category: "Security", url: null, port: null},
+            {name: "AES-256-GCM Encryption", category: "Security", url: null, port: null},
+            
+            // Integration & Messaging
+            {name: "Apache Camel", category: "Integration", url: "http://localhost:8091/actuator/health", port: 8091},
+            {name: "Apache Kafka", category: "Integration", url: null, port: 9092},
+            {name: "RabbitMQ", category: "Integration", url: "http://localhost:15672/api/overview", port: 5672},
+            {name: "MQTT", category: "Integration", url: null, port: 1883},
+            {name: "WebSocket", category: "Integration", url: "http://localhost:8031/actuator/health", port: 8031},
+            
+            // Database & Storage
+            {name: "PostgreSQL", category: "Database", url: null, port: 5432},
+            {name: "MySQL", category: "Database", url: null, port: 3306},
+            {name: "MongoDB", category: "Database", url: null, port: 27017},
+            {name: "Neo4j", category: "Database", url: "http://localhost:7474", port: 7474},
+            {name: "Redis", category: "Database", url: null, port: 6379},
+            {name: "Elasticsearch", category: "Database", url: "http://localhost:9200", port: 9200},
+            {name: "Milvus", category: "Database", url: null, port: 19530},
+            
+            // Observability & Monitoring
+            {name: "Zipkin", category: "Observability", url: "http://localhost:9411", port: 9411},
+            {name: "OpenTelemetry", category: "Observability", url: null, port: null},
+            {name: "Prometheus", category: "Observability", url: "http://localhost:9090", port: 9090},
+            {name: "Grafana", category: "Observability", url: "http://localhost:3000", port: 3000},
+            
+            // Architecture & Patterns
+            {name: "Event Sourcing (Axon)", category: "Architecture", url: "http://localhost:8124/actuator/health", port: 8124},
+            {name: "CQRS", category: "Architecture", url: null, port: null},
+            {name: "GraphQL Gateway", category: "Architecture", url: "http://localhost:8090/actuator/health", port: 8090},
+            {name: "Hibernate/JPA", category: "Architecture", url: null, port: null},
+            {name: "Semantic Versioning", category: "Architecture", url: "http://localhost:8092/actuator/health", port: 8092},
+            {name: "Micro-Frontends", category: "Architecture", url: null, port: null},
+            
+            // AI & Machine Learning
+            {name: "Apache Flink", category: "AI/ML", url: "http://localhost:8081", port: 8081},
+            {name: "Confidential Computing", category: "AI/ML", url: null, port: null},
+            {name: "AIOps (Keptn)", category: "AI/ML", url: null, port: null},
+            
+            // Infrastructure & Orchestration
+            {name: "Kubernetes", category: "Infrastructure", url: null, port: null},
+            {name: "Istio Service Mesh", category: "Infrastructure", url: null, port: null}
+        ];
+        
+        async function checkIntegration(integration) {
+            if (integration.url) {
+                try {
+                    const response = await fetch(integration.url, {method: 'GET', mode: 'no-cors'});
+                    return 'UP';
+                } catch (e) {
+                    return 'DOWN';
+                }
+            } else if (integration.port) {
+                // Port check via API (if backend available)
+                try {
+                    const response = await fetch(`http://localhost:3002/api/check-port?port=${integration.port}`);
+                    const data = await response.json();
+                    return data.status || 'UNKNOWN';
+                } catch (e) {
+                    return 'UNKNOWN';
+                }
+            }
+            return 'UNKNOWN';
+        }
+        
+        async function checkAllIntegrations() {
+            const categories = {};
+            let up = 0, down = 0, unknown = 0;
+            
+            for (const integration of integrations) {
+                if (!categories[integration.category]) {
+                    categories[integration.category] = [];
+                }
+                
+                const status = await checkIntegration(integration);
+                integration.status = status;
+                
+                if (status === 'UP') up++;
+                else if (status === 'DOWN') down++;
+                else unknown++;
+                
+                categories[integration.category].push(integration);
+            }
+            
+            // Update stats
+            document.getElementById('up').textContent = up;
+            document.getElementById('down').textContent = down;
+            document.getElementById('unknown').textContent = unknown;
+            
+            // Render categories
+            const categoriesDiv = document.getElementById('categories');
+            categoriesDiv.innerHTML = '';
+            
+            for (const [categoryName, items] of Object.entries(categories)) {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+                categoryDiv.innerHTML = `<h2>${categoryName}</h2>`;
+                
+                items.forEach(item => {
+                    const integrationDiv = document.createElement('div');
+                    integrationDiv.className = 'integration';
+                    integrationDiv.innerHTML = `
+                        <span class="integration-name">${item.name}</span>
+                        <div class="status">
+                            <span class="status-badge status-${item.status.toLowerCase()}">${item.status}</span>
+                        </div>
+                    `;
+                    categoryDiv.appendChild(integrationDiv);
+                });
+                
+                categoriesDiv.appendChild(categoryDiv);
+            }
+            
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+        }
+        
+        // Initial load
+        checkAllIntegrations();
+        
+        // Auto-refresh every 10 seconds
+        setInterval(checkAllIntegrations, 10000);
+    </script>
+</body>
+</html>
+
+
+

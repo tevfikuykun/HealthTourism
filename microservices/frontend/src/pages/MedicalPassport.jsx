@@ -322,3 +322,5 @@ const MedicalPassport = () => {
 
 export default MedicalPassport;
 
+
+

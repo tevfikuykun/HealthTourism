@@ -200,6 +200,51 @@ services:
     networks:
       - healthtourism-network
 
+  # HashiCorp Vault (Secret Management)
+  vault:
+    image: hashicorp/vault:latest
+    container_name: healthtourism-vault
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: myroot
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - vault-data:/vault/data
+    networks:
+      - healthtourism-network
+    command: vault server -dev
+
+  # Apache Flink (Complex Event Processing)
+  flink-jobmanager:
+    image: flink:1.18-scala_2.12
+    container_name: healthtourism-flink-jobmanager
+    ports:
+      - "8081:8081"
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 4
+        parallelism.default: 2
+    networks:
+      - healthtourism-network
+
+  flink-taskmanager:
+    image: flink:1.18-scala_2.12
+    container_name: healthtourism-flink-taskmanager
+    depends_on:
+      - flink-jobmanager
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 4
+    networks:
+      - healthtourism-network
+
 volumes:
   postgres-core-data:
   mysql-notification-data:
@@ -214,6 +259,7 @@ volumes:
   neo4j-data:
   neo4j-logs:
   axon-data:
+  vault-data:
 
 networks:
   healthtourism-network:

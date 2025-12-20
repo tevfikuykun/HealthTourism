@@ -1,0 +1,57 @@
+type Query {
+    """
+    Get complete patient data in single query
+    Combines data from Reservation, AI, IoT, and Risk Scoring services
+    """
+    patientData(patientId: ID!): PatientData
+}
+
+type PatientData {
+    patientId: ID
+    name: String
+    email: String
+    
+    # From Reservation Service
+    reservations: [Reservation]
+    
+    # From AI Health Companion Service
+    healthRecords: [HealthRecord]
+    
+    # From IoT Monitoring Service
+    iotData: [IoTData]
+    
+    # From Patient Risk Scoring Service
+    riskScore: RiskScore
+}
+
+type Reservation {
+    id: ID
+    hospitalName: String
+    procedureType: String
+    status: String
+    reservationDate: String
+}
+
+type HealthRecord {
+    id: ID
+    recordType: String
+    diagnosis: String
+    treatment: String
+    recordDate: String
+}
+
+type IoTData {
+    id: ID
+    heartRate: Float
+    temperature: Float
+    timestamp: String
+}
+
+type RiskScore {
+    recoveryScore: Float
+    trend: String
+    lastCalculated: String
+}
+
+
+

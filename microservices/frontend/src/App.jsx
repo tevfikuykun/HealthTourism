@@ -14,10 +14,14 @@ import i18n from './i18n';
 import { getTheme } from './theme';
 import Header from './components/Header/EnhancedHeader.jsx';
 import Footer from './components/Footer.jsx';
+// RainbowKit & Wagmi for Web3 Wallet Connection
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import { WagmiProvider } from 'wagmi';
+import { wagmiConfig } from './config/wagmi';
 import ChatWidget from './components/Chat/ChatWidget';
-import Chatbot from './components/Chatbot/Chatbot';
+// Chatbot removed - duplicate chat button, using ChatWidget instead
 import Tour from './components/Onboarding/Tour';
-import Breadcrumb from './components/Breadcrumb';
+// Breadcrumb removed - user requested removal
 import OfflineIndicator from './components/OfflineIndicator/OfflineIndicator';
 import CookieConsent from './components/CookieConsent/CookieConsent';
 import AccessibilityMenu from './components/Accessibility/AccessibilityMenu';
@@ -41,7 +45,7 @@ const LazyPayments = lazy(() => import('./pages/Payments.jsx'));
 const LazyAboutUs = lazy(() => import('./pages/AboutUs.jsx'));
 const LazyLogin = lazy(() => import('./pages/Login.jsx'));
 const LazyRegister = lazy(() => import('./pages/Register.jsx'));
-const LazyDashboard = lazy(() => import('./pages/Dashboard.jsx'));
+const LazyDashboard = lazy(() => import('./pages/Dashboard'));
 const LazyForgotPassword = lazy(() => import('./pages/ForgotPassword.jsx'));
 const LazyResetPassword = lazy(() => import('./pages/ResetPassword.jsx'));
 const LazyVerifyEmail = lazy(() => import('./pages/VerifyEmail.jsx'));
@@ -115,8 +119,45 @@ const LazyMeetCoordinator = lazy(() => import('./pages/MeetCoordinator.jsx'));
 const LazyTreatmentGuide = lazy(() => import('./pages/TreatmentGuide.jsx'));
 const LazyCaseManagement = lazy(() => import('./pages/CaseManagement.jsx'));
 const LazySelfHealingDashboard = lazy(() => import('./pages/admin/SelfHealingDashboard.jsx'));
+const LazyHealthWallet = lazy(() => import('./pages/HealthWallet.jsx'));
+const LazyClinicalDecisionSupport = lazy(() => import('./pages/doctor/ClinicalDecisionSupport.jsx'));
+const LazyTransparencyAuditCenter = lazy(() => import('./pages/admin/TransparencyAuditCenter.jsx'));
+const LazySecurityCenter = lazy(() => import('./pages/SecurityCenter.jsx'));
+const LazyPatientJourney = lazy(() => import('./pages/PatientJourney.jsx'));
+const LazyDigitalTwin = lazy(() => import('./pages/DigitalTwin.jsx'));
 
-const queryClient = new QueryClient(); // React Query Client
+// React Query Client with optimized retry settings
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Reduce retries for network errors to prevent spam
+      retry: (failureCount, error) => {
+        // Don't retry on network errors (0 status code)
+        if (error?.code === 'NETWORK_ERROR' || error?.statusCode === 0) {
+          return false;
+        }
+        // Retry other errors max 1 time
+        return failureCount < 1;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      // Disable refetch on window focus to reduce unnecessary requests
+      refetchOnWindowFocus: false,
+      // Disable refetch on reconnect to prevent spam
+      refetchOnReconnect: false,
+      // Stale time to reduce unnecessary refetches
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+    mutations: {
+      // Don't retry mutations on network errors
+      retry: (failureCount, error) => {
+        if (error?.code === 'NETWORK_ERROR' || error?.statusCode === 0) {
+          return false;
+        }
+        return failureCount < 1;
+      },
+    },
+  },
+});
 
 const routeMap = {
     '/': LazyHome,
@@ -216,15 +257,32 @@ function AppContent() {
         // 🚨 Providerlar ile Sarma 🚨
         <QueryClientProvider client={queryClient}>
             <Provider store={store}>
-                <ThemeProvider theme={theme}>
-                    <CssBaseline />
-                    <Router>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+                <WagmiProvider config={wagmiConfig}>
+                    <RainbowKitProvider>
+                        <ThemeProvider theme={theme}>
+                            <CssBaseline />
+                            <Router>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      minHeight: '100vh',
+                      height: 'auto',
+                      overflowY: 'visible',
+                      overflowX: 'hidden',
+                      position: 'relative'
+                    }}>
 
                         <Header />
 
-                        <Box component="main" sx={{ flexGrow: 1 }}>
-                            <Breadcrumb />
+                        <Box component="main" sx={{ 
+                          flexGrow: 1, 
+                          overflowY: 'visible',
+                          overflowX: 'hidden', 
+                          width: '100%',
+                          minHeight: 'calc(100vh - 72px)',
+                          position: 'relative'
+                        }}>
+                            {/* Breadcrumb removed - user requested removal */}
                             <Routes>
                                     {/* Dinamik Ana Rotalar */}
                                     {appRoutes.map((route) => {
@@ -259,15 +317,25 @@ function AppContent() {
                                     
                                     {/* Patient Journey Pages */}
                                     <Route path="/journey-timeline" element={renderSuspense(LazyJourneyTimeline)} />
+                                    <Route path="/patient-journey" element={renderSuspense(LazyPatientJourney)} />
                                     <Route path="/medical-passport" element={renderSuspense(LazyMedicalPassport)} />
                                     <Route path="/emergency-help" element={renderSuspense(LazyEmergencyHelp)} />
+                                    <Route path="/health-wallet" element={renderSuspense(LazyHealthWallet)} />
+                                    <Route path="/digital-twin" element={renderSuspense(LazyDigitalTwin)} />
+                                    <Route path="/security-center" element={renderSuspense(LazySecurityCenter)} />
                                     
                                     {/* Doctor Pages */}
                                     <Route path="/doctor/patients" element={renderSuspense(LazyPatientMonitoringDashboard)} />
+                                    <Route path="/doctor/clinical-decision-support" element={renderSuspense(LazyClinicalDecisionSupport)} />
+                                    <Route path="/clinical-decision" element={renderSuspense(LazyClinicalDecisionSupport)} />
                                     
                                     {/* Partner & Legal Pages */}
                                     <Route path="/partner-portal" element={renderSuspense(LazyPartnerPortal)} />
                                     <Route path="/legal-transparency" element={renderSuspense(LazyLegalTransparency)} />
+                                    
+                                    {/* Admin Pages */}
+                                    <Route path="/admin/transparency-audit" element={renderSuspense(LazyTransparencyAuditCenter)} />
+                                    <Route path="/audit-logs" element={renderSuspense(LazyTransparencyAuditCenter)} />
                                     
                                     {/* Strategic Pages */}
                                     <Route path="/before-after" element={renderSuspense(LazyBeforeAfterGallery)} />
@@ -363,14 +431,16 @@ function AppContent() {
 
                         </Box>
                         <ChatWidget />
-                        <Chatbot />
+                        {/* Chatbot removed - duplicate chat button */}
                         <Tour />
                         <OfflineIndicator />
                         <CookieConsent />
                         <AccessibilityMenu />
                         <SmartConcierge />
                     </Router>
-                </ThemeProvider>
+                        </ThemeProvider>
+                    </RainbowKitProvider>
+                </WagmiProvider>
             </Provider>
         </QueryClientProvider>
     );

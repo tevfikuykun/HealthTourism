@@ -43,6 +43,31 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
+        
+        <!-- Quantum-Safe Cryptography (PQC) -->
+        <!-- Bouncy Castle for Post-Quantum Algorithms -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>1.78</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk18on</artifactId>
+            <version>1.78</version>
+        </dependency>
+        
+        <!-- NIST PQC Algorithms -->
+        <!-- Dilithium (Digital Signatures) -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-ext-jdk18on</artifactId>
+            <version>1.78</version>
+        </dependency>
+        
+        <!-- Kyber (Key Encapsulation) -->
+        <!-- Note: Bouncy Castle includes experimental PQC support -->
+        
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

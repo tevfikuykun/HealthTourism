@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,9 +30,6 @@ public class AuthService {
     
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
-    
-    @Autowired(required = false)
-    private RedisRefreshTokenService redisRefreshTokenService;
     
     @Autowired
     private JwtUtil jwtUtil;
@@ -80,7 +76,7 @@ public class AuthService {
         sendVerificationEmail(user.getEmail(), user.getFirstName(), verificationToken);
         
         String accessToken = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole());
-        String refreshToken = generateRefreshToken(user.getId(), null);
+        String refreshToken = generateRefreshToken(user.getId());
         
         return new AuthResponse(
             accessToken,
@@ -113,7 +109,7 @@ public class AuthService {
         userRepository.save(user);
         
         String accessToken = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole());
-        String refreshToken = generateRefreshToken(user.getId(), null);
+        String refreshToken = generateRefreshToken(user.getId());
         
         return new AuthResponse(
             accessToken,
@@ -127,37 +123,21 @@ public class AuthService {
     }
     
     public AuthResponse refreshToken(String refreshToken) {
-        // Try Redis first, fallback to database
-        Map<String, Object> tokenData = null;
-        if (redisRefreshTokenService != null) {
-            tokenData = redisRefreshTokenService.validateRefreshToken(refreshToken);
+        RefreshToken token = refreshTokenRepository.findByToken(refreshToken)
+            .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+        
+        if (token.getIsRevoked() || token.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Refresh token expired or revoked");
         }
         
-        Long userId;
-        if (tokenData != null) {
-            // Redis token found
-            userId = Long.valueOf(tokenData.get("userId").toString());
-            // Revoke old token
-            redisRefreshTokenService.revokeToken(refreshToken);
-        } else {
-            // Fallback to database
-            RefreshToken token = refreshTokenRepository.findByToken(refreshToken)
-                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
-            
-            if (token.getIsRevoked() || token.getExpiryDate().isBefore(LocalDateTime.now())) {
-                throw new RuntimeException("Refresh token expired or revoked");
-            }
-            
-            userId = token.getUserId();
-            token.setIsRevoked(true);
-            refreshTokenRepository.save(token);
-        }
-        
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(token.getUserId())
             .orElseThrow(() -> new RuntimeException("User not found"));
         
         String newAccessToken = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole());
-        String newRefreshToken = generateRefreshToken(user.getId(), null);
+        String newRefreshToken = generateRefreshToken(user.getId());
+        
+        token.setIsRevoked(true);
+        refreshTokenRepository.save(token);
         
         return new AuthResponse(
             newAccessToken,
@@ -171,34 +151,22 @@ public class AuthService {
     }
     
     public void logout(String refreshToken) {
-        // Try Redis first
-        if (redisRefreshTokenService != null) {
-            redisRefreshTokenService.revokeToken(refreshToken);
-        } else {
-            // Fallback to database
-            Optional<RefreshToken> token = refreshTokenRepository.findByToken(refreshToken);
-            if (token.isPresent()) {
-                token.get().setIsRevoked(true);
-                refreshTokenRepository.save(token.get());
-            }
+        Optional<RefreshToken> token = refreshTokenRepository.findByToken(refreshToken);
+        if (token.isPresent()) {
+            token.get().setIsRevoked(true);
+            refreshTokenRepository.save(token.get());
         }
     }
     
-    private String generateRefreshToken(Long userId, String deviceId) {
-        // Use Redis if available, otherwise fallback to database
-        if (redisRefreshTokenService != null) {
-            return redisRefreshTokenService.generateRefreshToken(userId, deviceId);
-        } else {
-            // Fallback to database storage
-            String token = UUID.randomUUID().toString();
-            RefreshToken refreshToken = new RefreshToken();
-            refreshToken.setToken(token);
-            refreshToken.setUserId(userId);
-            refreshToken.setExpiryDate(LocalDateTime.now().plusDays(30));
-            refreshToken.setIsRevoked(false);
-            refreshTokenRepository.save(refreshToken);
-            return token;
-        }
+    private String generateRefreshToken(Long userId) {
+        String token = UUID.randomUUID().toString();
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setToken(token);
+        refreshToken.setUserId(userId);
+        refreshToken.setExpiryDate(LocalDateTime.now().plusDays(30));
+        refreshToken.setIsRevoked(false);
+        refreshTokenRepository.save(refreshToken);
+        return token;
     }
     
     public Boolean validateToken(String token) {
