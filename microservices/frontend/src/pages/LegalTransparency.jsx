@@ -55,7 +55,7 @@ const LegalTransparency = () => {
   const { data: dataStorage } = useQuery({
     queryKey: ['data-storage'],
     queryFn: async () => {
-      const response = await api.get('/api/legal/data-storage');
+      const response = await api.get('/legal/data-storage');
       return response.data;
     },
   });
@@ -64,7 +64,7 @@ const LegalTransparency = () => {
   const { data: accessLogs } = useQuery({
     queryKey: ['access-logs'],
     queryFn: async () => {
-      const response = await api.get('/api/legal/access-logs');
+      const response = await api.get('/legal/access-logs');
       return response.data;
     },
   });
@@ -73,7 +73,7 @@ const LegalTransparency = () => {
   const { data: compliance } = useQuery({
     queryKey: ['compliance'],
     queryFn: async () => {
-      const response = await api.get('/api/legal/compliance');
+      const response = await api.get('/legal/compliance');
       return response.data;
     },
   });

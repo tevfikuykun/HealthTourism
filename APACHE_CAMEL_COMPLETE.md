@@ -208,3 +208,6 @@ from("kafka:medical-documents")
 
 
 
+
+
+

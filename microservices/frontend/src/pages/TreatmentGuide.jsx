@@ -55,7 +55,7 @@ const TreatmentGuide = () => {
   const { data: aiRecommendations } = useQuery({
     queryKey: ['ai-recommendations'],
     queryFn: async () => {
-      const response = await api.get('/api/ai-health-companion/personalized-guide');
+      const response = await api.get('/ai-health-companion/personalized-guide');
       return response.data;
     },
   });

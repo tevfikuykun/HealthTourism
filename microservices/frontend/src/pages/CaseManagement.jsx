@@ -48,7 +48,7 @@ const CaseManagement = () => {
   const { data: cases, isLoading } = useQuery({
     queryKey: ['user-cases'],
     queryFn: async () => {
-      const response = await api.get('/api/cases/user/me');
+      const response = await api.get('/cases/user/me');
       return response.data;
     },
   });

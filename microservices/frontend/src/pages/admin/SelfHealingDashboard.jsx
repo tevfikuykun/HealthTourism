@@ -64,7 +64,7 @@ const SelfHealingDashboard = () => {
   const { data: healingEvents, isLoading, refetch } = useQuery({
     queryKey: ['self-healing-events'],
     queryFn: async () => {
-      const response = await api.get('/api/keptn/self-healing-events');
+      const response = await api.get('/keptn/self-healing-events');
       return response.data;
     },
     refetchInterval: 10000, // 10 saniyede bir güncelle
@@ -74,7 +74,7 @@ const SelfHealingDashboard = () => {
   const { data: metrics } = useQuery({
     queryKey: ['self-healing-metrics'],
     queryFn: async () => {
-      const response = await api.get('/api/keptn/metrics');
+      const response = await api.get('/keptn/metrics');
       return response.data;
     },
     refetchInterval: 30000,
@@ -84,7 +84,7 @@ const SelfHealingDashboard = () => {
   const { data: costSavings } = useQuery({
     queryKey: ['cost-savings'],
     queryFn: async () => {
-      const response = await api.get('/api/keptn/cost-savings');
+      const response = await api.get('/keptn/cost-savings');
       return response.data;
     },
   });

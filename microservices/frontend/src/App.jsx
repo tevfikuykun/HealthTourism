@@ -211,14 +211,14 @@ function AppContent() {
             
             i18n.on('initialized', handleInitialized);
             
-            // Timeout ile fallback - 1.5 saniye sonra hazır kabul et
+            // Timeout ile fallback - 500ms sonra hazır kabul et (daha hızlı)
             const timeout = setTimeout(() => {
                 console.warn('i18n initialization timeout, continuing anyway');
                 if (!i18n.isInitialized) {
                     i18n.isInitialized = true;
                 }
                 setI18nReady(true);
-            }, 1500);
+            }, 500); // Reduced from 1500ms to 500ms
             
             return () => {
                 i18n.off('initialized', handleInitialized);
@@ -231,9 +231,11 @@ function AppContent() {
 
     const theme = useMemo(() => getTheme(mode), [mode]);
 
-    // i18n henüz hazır değilse loading göster (max 2 saniye)
+    // i18n henüz hazır değilse loading göster (max 500ms)
     // Ama i18n.isInitialized true ise devam et
-    if (!i18n.isInitialized && !i18nReady && !translationReady) {
+    // Also check if i18n has resources loaded (more reliable check)
+    const hasI18nResources = i18n.hasResourceBundle(i18n.language || 'tr', 'translation');
+    if (!i18n.isInitialized && !i18nReady && !translationReady && !hasI18nResources) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
                 <CircularProgress />

@@ -150,3 +150,6 @@ Her veri geçişi için:
 
 
 
+
+
+

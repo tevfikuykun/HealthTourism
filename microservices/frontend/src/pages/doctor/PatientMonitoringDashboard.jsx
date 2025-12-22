@@ -55,7 +55,7 @@ const PatientMonitoringDashboard = () => {
   const { data: patients, isLoading, refetch } = useQuery({
     queryKey: ['doctor-patients'],
     queryFn: async () => {
-      const response = await api.get('/api/doctors/me/patients');
+      const response = await api.get('/doctors/me/patients');
       return response.data;
     },
     refetchInterval: 30000, // 30 saniyede bir güncelle
@@ -65,7 +65,7 @@ const PatientMonitoringDashboard = () => {
   const { data: iotData } = useQuery({
     queryKey: ['doctor-iot-data'],
     queryFn: async () => {
-      const response = await api.get('/api/iot-monitoring/doctor/me');
+      const response = await api.get('/iot-monitoring/doctor/me');
       return response.data;
     },
     refetchInterval: 10000, // 10 saniyede bir IoT verisi çek
@@ -75,7 +75,7 @@ const PatientMonitoringDashboard = () => {
   const { data: riskScores } = useQuery({
     queryKey: ['doctor-risk-scores'],
     queryFn: async () => {
-      const response = await api.get('/api/patient-risk-scoring/doctor/me');
+      const response = await api.get('/patient-risk-scoring/doctor/me');
       return response.data;
     },
     refetchInterval: 60000, // 1 dakikada bir risk skoru çek

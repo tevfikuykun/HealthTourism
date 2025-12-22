@@ -44,7 +44,7 @@ const MeetCoordinator = () => {
   const { data: coordinators, isLoading } = useQuery({
     queryKey: ['coordinators'],
     queryFn: async () => {
-      const response = await api.get('/api/coordinators/assigned');
+      const response = await api.get('/coordinators/assigned');
       return response.data;
     },
   });

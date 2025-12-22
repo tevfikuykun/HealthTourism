@@ -8,7 +8,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||
 
 // Toast throttling - prevent duplicate error messages
 const errorToastCache = new Map();
-const TOAST_THROTTLE_TIME = 5000; // 5 seconds
+const activeToasts = new Set(); // Track active toast IDs
+const TOAST_THROTTLE_TIME = 30000; // 30 seconds - longer throttle to prevent spam
 const MAX_TOAST_CACHE_SIZE = 50;
 
 // Clean old cache entries periodically
@@ -36,17 +37,30 @@ const showThrottledToast = (message, errorCode, config = {}) => {
   const toastId = config.toastId || cacheKey;
   
   // Check if this toast is already active (prevents duplicate toasts)
+  if (activeToasts.has(toastId)) {
+    return; // Don't show duplicate toast
+  }
+  
+  // Check if toast.isActive is available (react-toastify v9+)
   try {
-    if (toast.isActive && toast.isActive(toastId)) {
+    if (typeof toast.isActive === 'function' && toast.isActive(toastId)) {
+      activeToasts.add(toastId);
       return; // Don't show duplicate toast
     }
   } catch (e) {
-    // toast.isActive might not be available in all versions
+    // toast.isActive might not be available, continue
   }
   
-  // Only show toast if not shown recently OR if toastId is provided (unique toast)
-  if (!lastShown || (now - lastShown) > TOAST_THROTTLE_TIME || config.toastId) {
+  // Only show toast if not shown recently (30 seconds) AND not already active
+  if ((!lastShown || (now - lastShown) > TOAST_THROTTLE_TIME) && !activeToasts.has(toastId)) {
     errorToastCache.set(cacheKey, now);
+    activeToasts.add(toastId);
+    
+    // Remove from active toasts after toast closes
+    const autoCloseTime = config.autoClose || 4000;
+    setTimeout(() => {
+      activeToasts.delete(toastId);
+    }, autoCloseTime + 100); // Add small buffer
     
     // For network errors, show as warning instead of error (less intrusive)
     if (errorCode === 'NETWORK_ERROR') {
@@ -54,13 +68,19 @@ const showThrottledToast = (message, errorCode, config = {}) => {
         autoClose: 3000,
         hideProgressBar: false,
         toastId, // Use toastId to prevent duplicates
+        onClose: () => {
+          activeToasts.delete(toastId);
+        },
         ...config
       });
     } else {
       toast.error(message, {
-        autoClose: 4000,
+        autoClose: autoCloseTime,
         hideProgressBar: false,
         toastId, // Use toastId to prevent duplicates
+        onClose: () => {
+          activeToasts.delete(toastId);
+        },
         ...config
       });
     }
@@ -137,9 +157,16 @@ api.interceptors.response.use(
       return Promise.reject(appError);
     }
     
-    // Only show toast for non-401 errors
+    // Only show toast for non-401, non-500, and non-503 errors
+    // 500/503 errors are backend issues - completely disable toasts for these
     // Network errors are throttled and shown as warnings
-    if (appError.statusCode !== 401) {
+    // Skip toast for 500/503 errors entirely - backend is down, user can't fix it
+    if (appError.statusCode === 500 || appError.statusCode === 503) {
+      // Silently ignore 500/503 errors in toast - return error to caller
+      return Promise.reject(appError);
+    }
+    
+    if (appError.statusCode !== 401 && appError.statusCode !== 500 && appError.statusCode !== 503) {
       // For network errors, only show if backend was previously reachable
       // This prevents spam when backend is completely down
       if (appError.code === 'NETWORK_ERROR') {
@@ -151,16 +178,17 @@ api.interceptors.response.use(
           );
         }
       } else {
-        // For other errors, show normally but throttled
-        // Use a unique toastId based on error code and status to prevent duplicates
-        // Also include a timestamp component to allow same error after throttle period
-        const toastId = `error-${appError.code}-${appError.statusCode || 'unknown'}-${Math.floor(Date.now() / TOAST_THROTTLE_TIME)}`;
+        // For other errors (400, 403, 404, etc.), show normally but throttled
+        // Use a unique toastId based on error code and status
+        const toastId = `error-${appError.code}-${appError.statusCode || 'unknown'}`;
         showThrottledToast(appError.message, appError.code, {
           toastId: toastId,
-          autoClose: appError.statusCode === 500 ? 6000 : 4000 // Longer for server errors
+          autoClose: 4000
         });
       }
     }
+    // 500 errors are silently ignored in toast (backend is down, user can't fix it)
+    // Error is still returned to the calling code for handling
     
     return Promise.reject(appError);
   }
