@@ -4,6 +4,7 @@ import com.healthtourism.reservationservice.dto.ReservationDTO;
 import com.healthtourism.reservationservice.dto.ReservationRequestDTO;
 import com.healthtourism.reservationservice.entity.Reservation;
 import com.healthtourism.reservationservice.repository.ReservationRepository;
+import com.healthtourism.reservationservice.util.ReservationNumberGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,12 @@ class ReservationServiceTest {
 
     @Mock
     private EventStoreService eventStoreService;
+
+    @Mock
+    private ReservationNumberGenerator reservationNumberGenerator;
+
+    @Mock
+    private PriceCalculationService priceCalculationService;
 
     @InjectMocks
     private ReservationService reservationService;
@@ -70,6 +77,9 @@ class ReservationServiceTest {
     void testCreateReservationSuccess() {
         when(reservationRepository.findConflictingReservations(any(), any(), any()))
             .thenReturn(Collections.emptyList());
+        when(reservationNumberGenerator.generateReservationNumber()).thenReturn("RES_TEST_0001");
+        when(priceCalculationService.calculateTotalPrice(any(), any(), anyInt(), any()))
+            .thenReturn(new BigDecimal("1000.00"));
         when(reservationRepository.save(any(Reservation.class))).thenAnswer(invocation -> {
             Reservation r = invocation.getArgument(0);
             r.setId(1L);
