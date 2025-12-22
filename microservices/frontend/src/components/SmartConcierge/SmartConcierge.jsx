@@ -33,25 +33,50 @@ const SmartConcierge = () => {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(true);
   const [dismissed, setDismissed] = useState(false);
+  
+  // Check if user is authenticated
+  const isAuthenticated = !!localStorage.getItem('token');
 
   // Fetch current journey status
-  const { data: journeyStatus } = useQuery({
+  const { data: journeyStatus, isLoading: isLoadingJourney } = useQuery({
     queryKey: ['concierge-status'],
     queryFn: async () => {
-      const response = await api.get('/reservations/current/status');
-      return response.data;
+      try {
+        const response = await api.get('/reservations/current/status');
+        return response.data;
+      } catch (error) {
+        // Silently handle 503 errors (service unavailable)
+        if (error?.response?.status === 503) {
+          return null; // Return null instead of throwing
+        }
+        throw error; // Re-throw other errors
+      }
     },
     refetchInterval: 30000,
+    retry: false, // Don't retry on failure
+    enabled: isAuthenticated, // Only fetch when authenticated
+    staleTime: 60000, // Consider data fresh for 60 seconds
   });
 
   // Fetch IoT data for personalized messages
-  const { data: iotData } = useQuery({
+  const { data: iotData, isLoading: isLoadingIot } = useQuery({
     queryKey: ['concierge-iot'],
     queryFn: async () => {
-      const response = await api.get('/iot-monitoring/user/me/latest');
-      return response.data;
+      try {
+        const response = await api.get('/iot-monitoring/user/me/latest');
+        return response.data;
+      } catch (error) {
+        // Silently handle 503 errors (service unavailable)
+        if (error?.response?.status === 503) {
+          return null; // Return null instead of throwing
+        }
+        throw error; // Re-throw other errors
+      }
     },
-    refetchInterval: 10000,
+    refetchInterval: 30000, // Reduced from 10s to 30s
+    retry: false, // Don't retry on failure
+    enabled: isAuthenticated, // Only fetch when authenticated
+    staleTime: 60000, // Consider data fresh for 60 seconds
   });
 
   const getConciergeMessage = () => {
@@ -129,6 +154,13 @@ const SmartConcierge = () => {
   };
 
   const message = getConciergeMessage();
+
+  // Don't show loading spinner if services are unavailable
+  // If both queries are loading but we're not authenticated, don't show anything
+  if (!isAuthenticated) return null;
+  
+  // If queries are still loading and we have no message, don't show anything
+  if ((isLoadingJourney || isLoadingIot) && !message) return null;
 
   if (dismissed || !message) return null;
 

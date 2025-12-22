@@ -64,10 +64,15 @@ const EnhancedHeader = () => {
         const response = await api.get('/blockchain/polygon/status');
         return response.data;
       } catch (error) {
+        // Silently handle 503 errors (service unavailable)
+        if (error?.response?.status === 503) {
+          return { connected: false, network: 'Polygon' };
+        }
         return { connected: false, network: 'Polygon' };
       }
     },
-    refetchInterval: 30000,
+    refetchInterval: 60000, // Reduced from 30s to 60s
+    retry: false, // Don't retry on failure
   });
 
   // IoT sync status

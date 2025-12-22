@@ -58,7 +58,7 @@ const JourneyTimeline = () => {
   const { data: journeyData, isLoading, refetch } = useQuery({
     queryKey: ['journey-timeline'],
     queryFn: async () => {
-      const response = await api.get('/api/reservations/current/journey');
+      const response = await api.get('/reservations/current/journey');
       return response.data;
     },
     refetchInterval: 30000, // 30 saniyede bir güncelle

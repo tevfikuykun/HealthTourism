@@ -31,7 +31,7 @@ const CurrencySwitcher = ({ onCurrencyChange }) => {
   const { data: exchangeRates } = useQuery({
     queryKey: ['exchange-rates'],
     queryFn: async () => {
-      const response = await api.get('/api/currency/rates');
+      const response = await api.get('/currency/rates');
       return response.data;
     },
     refetchInterval: 60000, // 1 dakikada bir güncelle

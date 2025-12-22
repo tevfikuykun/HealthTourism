@@ -46,7 +46,7 @@ const BeforeAfterGallery = () => {
   const { data: cases, isLoading } = useQuery({
     queryKey: ['before-after-cases'],
     queryFn: async () => {
-      const response = await api.get('/api/cases/before-after');
+      const response = await api.get('/cases/before-after');
       return response.data;
     },
   });

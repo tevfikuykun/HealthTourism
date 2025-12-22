@@ -12,10 +12,11 @@ export function useAuth() {
       localStorage.setItem('refreshToken', data.data.refreshToken);
       localStorage.setItem('user', JSON.stringify(data.data));
       queryClient.setQueryData(['user'], data.data);
-      toast.success('Login successful!');
+      toast.success('Login successful!', { toastId: 'login-success' });
     },
     onError: (error) => {
-      toast.error(error.message || 'Login failed');
+      // Don't show toast for login errors - Login page handles errors itself
+      // toast.error(error.message || 'Login failed');
     },
   });
 
@@ -26,10 +27,11 @@ export function useAuth() {
       localStorage.setItem('refreshToken', data.data.refreshToken);
       localStorage.setItem('user', JSON.stringify(data.data));
       queryClient.setQueryData(['user'], data.data);
-      toast.success('Registration successful! Please verify your email.');
+      toast.success('Registration successful! Please verify your email.', { toastId: 'register-success' });
     },
     onError: (error) => {
-      toast.error(error.message || 'Registration failed');
+      // Don't show toast for register errors - Register page handles errors itself
+      // toast.error(error.message || 'Registration failed');
     },
   });
 

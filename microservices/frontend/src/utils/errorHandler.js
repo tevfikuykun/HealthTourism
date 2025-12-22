@@ -14,7 +14,16 @@ export const handleApiError = (error) => {
     const { status, data } = error.response;
     switch (status) {
       case 400:
-        return new AppError(data.message || 'Invalid request', 400, 'BAD_REQUEST');
+        // Show detailed validation errors if available
+        let errorMessage = data.message || 'Invalid request';
+        if (data.errors && Array.isArray(data.errors)) {
+          errorMessage = data.errors.map(e => e.defaultMessage || e.message).join(', ');
+        } else if (data.error) {
+          errorMessage = data.error;
+        } else if (typeof data === 'string') {
+          errorMessage = data;
+        }
+        return new AppError(errorMessage, 400, 'BAD_REQUEST');
       case 401:
         return new AppError('Unauthorized. Please login again.', 401, 'UNAUTHORIZED');
       case 403:
@@ -25,12 +34,14 @@ export const handleApiError = (error) => {
         return new AppError('Too many requests. Please try again later.', 429, 'RATE_LIMIT');
       case 500:
         return new AppError('Server error. Please try again later.', 500, 'SERVER_ERROR');
+      case 503:
+        return new AppError('Service unavailable. Please try again later.', 503, 'SERVICE_UNAVAILABLE');
       default:
         return new AppError(data.message || 'An error occurred', status, 'UNKNOWN');
     }
   } else if (error.request) {
     // Request made but no response
-    return new AppError('Network error. Please check your connection.', 0, 'NETWORK_ERROR');
+    return new AppError('Backend servisine bağlanılamadı. Lütfen backend servislerinin çalıştığından emin olun.', 0, 'NETWORK_ERROR');
   } else {
     // Something else happened
     return new AppError(error.message || 'An unexpected error occurred', 0, 'UNKNOWN');

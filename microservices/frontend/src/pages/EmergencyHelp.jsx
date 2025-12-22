@@ -73,7 +73,7 @@ const EmergencyHelp = () => {
 
     try {
       // Send emergency alert
-      const response = await api.post('/api/emergency/alert', {
+      const response = await api.post('/emergency/alert', {
         location,
         timestamp: new Date().toISOString(),
         type: 'MEDICAL_EMERGENCY',

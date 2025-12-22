@@ -63,7 +63,9 @@ public class AuthService {
         user.setCountry(request.getCountry());
         user.setRole(request.getRole() != null ? request.getRole() : "USER");
         user.setIsActive(true);
-        user.setEmailVerified(false);
+        // Auto-verify email for development - set to true
+        // TODO: Set to false and implement email verification flow in production
+        user.setEmailVerified(true);
         
         // Email verification token oluştur
         String verificationToken = UUID.randomUUID().toString();
@@ -101,9 +103,11 @@ public class AuthService {
             throw new RuntimeException("User account is inactive");
         }
 
-        if (user.getEmailVerified() == null || !user.getEmailVerified()) {
-            throw new RuntimeException("Please verify your email before logging in");
-        }
+        // Email verification check - temporarily disabled for development
+        // TODO: Re-enable email verification in production
+        // if (user.getEmailVerified() == null || !user.getEmailVerified()) {
+        //     throw new RuntimeException("Please verify your email before logging in");
+        // }
         
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);

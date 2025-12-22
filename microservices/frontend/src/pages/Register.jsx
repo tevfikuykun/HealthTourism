@@ -151,7 +151,7 @@ export default function Register() {
             }, 2000);
           } else {
             // Registration successful but auto-login failed
-            setSuccess(true);
+            setSuccess(false); // Clear success message
             setError('Kayıt başarılı! Lütfen giriş yapın.');
             setTimeout(() => {
               navigate('/login');
@@ -161,7 +161,7 @@ export default function Register() {
           console.error('Auto-login error:', loginErr);
           // Registration successful but auto-login failed
           // User can manually login
-          setSuccess(true);
+          setSuccess(false); // Clear success message
           setError('Kayıt başarılı! Lütfen giriş yapın.');
           setTimeout(() => {
             navigate('/login');
@@ -171,35 +171,77 @@ export default function Register() {
         throw new Error('Kayıt başarısız. Lütfen tekrar deneyin.');
       }
     } catch (err) {
-      console.error('Registration error:', err);
+      console.error('=== REGISTRATION ERROR START ===');
+      console.error('Error object:', err);
+      console.error('Error name:', err?.name);
+      console.error('Error message:', err?.message);
+      console.error('Error statusCode:', err?.statusCode);
+      console.error('Error code:', err?.code);
+      
+      // Check for response data (from axios)
+      if (err?.response) {
+        console.error('Response status:', err.response.status);
+        console.error('Response data:', err.response.data);
+        console.error('Response headers:', err.response.headers);
+      }
+      
+      // Check for request (network error)
+      if (err?.request) {
+        console.error('Request object:', err.request);
+      }
+      
+      console.error('=== REGISTRATION ERROR END ===');
       
       // Better error handling
       let errorMessage = 'Kayıt olurken bir hata oluştu';
       
-      if (err.response) {
-        // Server responded with error - show detailed error message
+      // Priority 1: Check response.data (direct backend response)
+      if (err?.response?.data) {
         const responseData = err.response.data;
-        errorMessage = responseData?.message || 
-                      responseData?.error || 
-                      responseData?.errorMessage ||
-                      (responseData?.errors ? JSON.stringify(responseData.errors) : null) ||
-                      `Sunucu hatası (${err.response.status}): ${responseData?.status || 'Bilinmeyen hata'}`;
+        console.log('Response data:', responseData);
         
-        // Log full error for debugging
-        console.error('Registration server error:', {
-          status: err.response.status,
-          data: responseData,
-          headers: err.response.headers
-        });
-      } else if (err.request) {
-        // Request made but no response - Backend is not running or not accessible
+        if (responseData.message) {
+          errorMessage = responseData.message;
+        } else if (responseData.error) {
+          errorMessage = responseData.error;
+        } else if (responseData.errorMessage) {
+          errorMessage = responseData.errorMessage;
+        } else if (Array.isArray(responseData.errors) && responseData.errors.length > 0) {
+          errorMessage = responseData.errors.map(e => e.defaultMessage || e.message || e).join(', ');
+        } else if (typeof responseData === 'string') {
+          errorMessage = responseData;
+        } else {
+          errorMessage = `Sunucu hatası (${err.response.status}): ${JSON.stringify(responseData)}`;
+        }
+      }
+      // Priority 2: Check if it's an AppError instance (from api.js interceptor)
+      else if (err?.name === 'AppError' && err?.message) {
+        // Check if it's a network error
+        if (err.code === 'NETWORK_ERROR') {
+          errorMessage = 'Backend servisine bağlanılamadı. Lütfen backend servislerinin çalıştığından emin olun. (http://localhost:8080)';
+        } else {
+          errorMessage = err.message;
+        }
+      }
+      // Priority 3: Check err.message (generic error)
+      else if (err?.message) {
+        // Check if it's a network error message
+        if (err.message.includes('Network Error') || err.message.includes('network')) {
+          errorMessage = 'Backend servisine bağlanılamadı. Lütfen backend servislerinin çalıştığından emin olun. (http://localhost:8080)';
+        } else {
+          errorMessage = err.message;
+        }
+      }
+      // Priority 4: Network error (no response)
+      else if (err?.request) {
         errorMessage = 'Backend servisine bağlanılamadı. Lütfen backend servislerinin çalıştığından emin olun. (http://localhost:8080)';
-        console.error('Backend connection error:', err.request);
-      } else {
-        // Error in request setup
-        errorMessage = err.message || 'Beklenmeyen bir hata oluştu';
+      }
+      // Priority 5: Fallback
+      else {
+        errorMessage = `Beklenmeyen bir hata oluştu: ${err?.name || 'Unknown error'}`;
       }
       
+      console.log('Final error message:', errorMessage);
       setError(errorMessage);
       
       // Scroll to form to show error message

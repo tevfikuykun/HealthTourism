@@ -41,7 +41,7 @@ export default function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  // useAuth hook removed - using authService directly
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -61,9 +61,15 @@ export default function Login() {
       setIsLoading(true);
       setError('');
 
+      // Debug: Log the data being sent
+      console.log('Login request data:', data);
+
       // Suppress toast notifications for login (we show Alert instead)
       // Suppress toast notifications for login endpoint - we handle errors ourselves
       const response = await authService.login(data, { suppressErrorToast: true });
+      
+      // Debug: Log the response
+      console.log('Login response:', response);
       
       // Handle different response formats
       const responseData = response?.data || response;
@@ -86,33 +92,81 @@ export default function Login() {
       // But we'll trigger a page reload or use window.location to ensure state is updated
       window.location.href = from === '/' ? '/' : from;
     } catch (err) {
-      console.error('Login error:', err);
-      let errorMessage = 'Giriş yapılırken bir hata oluştu';
+      console.error('=== LOGIN ERROR START ===');
+      console.error('Error object:', err);
+      console.error('Error name:', err?.name);
+      console.error('Error message:', err?.message);
+      console.error('Error statusCode:', err?.statusCode);
+      console.error('Error code:', err?.code);
       
-      if (err.response) {
-        // Server responded with error - show detailed error message
-        const responseData = err.response.data;
-        errorMessage = responseData?.message || 
-                      responseData?.error || 
-                      responseData?.errorMessage ||
-                      (responseData?.errors ? JSON.stringify(responseData.errors) : null) ||
-                      `Sunucu hatası (${err.response.status}): ${responseData?.status || 'Bilinmeyen hata'}`;
-        
-        // Log full error for debugging
-        console.error('Login server error:', {
-          status: err.response.status,
-          data: responseData,
-          headers: err.response.headers
-        });
-      } else if (err.request) {
-        // Request made but no response - Backend is not running
-        errorMessage = 'Backend servisine bağlanılamadı. Lütfen backend servislerinin çalıştığından emin olun. (http://localhost:8080)';
-        console.error('Backend connection error:', err.request);
-      } else {
-        // Error in request setup
-        errorMessage = err.message || 'Beklenmeyen bir hata oluştu';
+      // Check for response data (from axios)
+      if (err?.response) {
+        console.error('Response status:', err.response.status);
+        console.error('Response data (raw):', err.response.data);
+        console.error('Response data (stringified):', JSON.stringify(err.response.data, null, 2));
+        console.error('Response data type:', typeof err.response.data);
+        console.error('Response headers:', err.response.headers);
       }
       
+      // Check for request (network error)
+      if (err?.request) {
+        console.error('Request object:', err.request);
+      }
+      
+      console.error('=== LOGIN ERROR END ===');
+      
+      let errorMessage = 'Giriş yapılırken bir hata oluştu';
+      
+      // Priority 1: Check response.data FIRST (direct backend response - most accurate)
+      if (err?.response?.data) {
+        const responseData = err.response.data;
+        console.log('Response data (raw):', responseData);
+        console.log('Response data (stringified):', JSON.stringify(responseData, null, 2));
+        
+        // Try different possible error message fields
+        if (responseData.message) {
+          errorMessage = responseData.message;
+          console.log('Found message in responseData.message:', errorMessage);
+        } else if (responseData.error) {
+          errorMessage = responseData.error;
+          console.log('Found message in responseData.error:', errorMessage);
+        } else if (responseData.errorMessage) {
+          errorMessage = responseData.errorMessage;
+          console.log('Found message in responseData.errorMessage:', errorMessage);
+        } else if (Array.isArray(responseData.errors) && responseData.errors.length > 0) {
+          errorMessage = responseData.errors.map(e => e.defaultMessage || e.message || e).join(', ');
+          console.log('Found message in responseData.errors:', errorMessage);
+        } else if (typeof responseData === 'string') {
+          errorMessage = responseData;
+          console.log('Response data is string:', errorMessage);
+        } else {
+          // If no message found, show the full response for debugging
+          errorMessage = `Geçersiz istek. Detaylar: ${JSON.stringify(responseData)}`;
+          console.log('No message found, using full response:', errorMessage);
+        }
+      }
+      // Priority 2: Check if it's an AppError instance (from api.js interceptor)
+      else if (err?.name === 'AppError' && err?.message) {
+        errorMessage = err.message;
+        console.log('Using AppError message:', errorMessage);
+      }
+      // Priority 3: Check err.message (generic error)
+      else if (err?.message) {
+        errorMessage = err.message;
+        console.log('Using error message:', errorMessage);
+      }
+      // Priority 4: Network error
+      else if (err?.request) {
+        errorMessage = 'Backend servisine bağlanılamadı. Lütfen backend servislerinin çalıştığından emin olun. (http://localhost:8080)';
+        console.log('Using network error message');
+      }
+      // Priority 5: Fallback
+      else {
+        errorMessage = `Beklenmeyen bir hata oluştu: ${err?.name || 'Unknown error'}`;
+        console.log('Using fallback message');
+      }
+      
+      console.log('Final error message:', errorMessage);
       setError(errorMessage);
     } finally {
       setIsLoading(false);

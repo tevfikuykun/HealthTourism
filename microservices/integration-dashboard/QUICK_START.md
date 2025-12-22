@@ -63,3 +63,6 @@ Maven kurulumu zaman alıyorsa, basit bir HTML dashboard oluşturabilirim. İste
 
 
 
+
+
+

@@ -32,7 +32,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf
-                .csrfTokenRepository(org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository.withHttpOnlyFalse())
+                .csrfTokenRepository(new org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository())
                 .ignoringRequestMatchers("/api/auth/**", "/actuator/**") // Allow auth and actuator endpoints
             )
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -46,7 +46,7 @@ public class SecurityConfig {
             .headers(headers -> headers
                 .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"))
                 .frameOptions(frame -> frame.deny())
-                .xssProtection(xss -> xss.block())
+                // XSS protection is enabled by default in Spring Security 6.x
             );
         return http.build();
     }

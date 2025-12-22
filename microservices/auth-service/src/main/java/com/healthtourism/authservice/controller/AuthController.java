@@ -33,11 +33,12 @@ public class AuthController {
     }
     
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
             return ResponseEntity.ok(authService.login(request));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            // Return error message in response body
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
     
@@ -131,6 +132,19 @@ public class AuthController {
     }
 
     // Inner classes for request DTOs
+    private static class ErrorResponse {
+        private String message;
+        public ErrorResponse(String message) {
+            this.message = message;
+        }
+        public String getMessage() {
+            return message;
+        }
+        public void setMessage(String message) {
+            this.message = message;
+        }
+    }
+    
     private static class RefreshTokenRequest {
         private String refreshToken;
         public String getRefreshToken() { return refreshToken; }

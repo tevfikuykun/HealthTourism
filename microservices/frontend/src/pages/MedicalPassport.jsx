@@ -56,7 +56,7 @@ const MedicalPassport = () => {
   const { data: documents, isLoading } = useQuery({
     queryKey: ['medical-documents'],
     queryFn: async () => {
-      const response = await api.get('/api/medical-documents/user/me');
+      const response = await api.get('/medical-documents/user/me');
       return response.data;
     },
   });
@@ -65,7 +65,7 @@ const MedicalPassport = () => {
   const { data: blockchainRecords } = useQuery({
     queryKey: ['blockchain-records'],
     queryFn: async () => {
-      const response = await api.get('/api/blockchain/user/me');
+      const response = await api.get('/blockchain/user/me');
       return response.data;
     },
   });

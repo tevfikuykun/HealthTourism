@@ -46,7 +46,7 @@ const PartnerPortal = () => {
   const { data: partnerData, isLoading } = useQuery({
     queryKey: ['partner-data'],
     queryFn: async () => {
-      const response = await api.get('/api/partners/me');
+      const response = await api.get('/partners/me');
       return response.data;
     },
   });
@@ -55,7 +55,7 @@ const PartnerPortal = () => {
   const { data: apiUsage } = useQuery({
     queryKey: ['api-usage'],
     queryFn: async () => {
-      const response = await api.get('/api/api-keys/usage');
+      const response = await api.get('/api-keys/usage');
       return response.data;
     },
     refetchInterval: 60000,
@@ -65,7 +65,7 @@ const PartnerPortal = () => {
   const { data: salesData } = useQuery({
     queryKey: ['partner-sales'],
     queryFn: async () => {
-      const response = await api.get('/api/partners/me/sales');
+      const response = await api.get('/partners/me/sales');
       return response.data;
     },
   });
