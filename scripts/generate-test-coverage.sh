@@ -16,6 +16,7 @@ SERVICES=(
     "hospital-service"
     "doctor-service"
     "payment-service"
+    "reservation-service"
 )
 
 for service in "${SERVICES[@]}"; do

@@ -61,7 +61,6 @@ metadata:
 data:
   SERVER_PORT: "8023"
   SPRING_APPLICATION_NAME: "auth-service"
-  JWT_SECRET: "your-production-secret-key-min-256-bits-change-me"
   JWT_EXPIRATION: "86400000"
 
 ---
@@ -72,8 +71,11 @@ metadata:
   namespace: healthtourism
 type: Opaque
 stringData:
-  ENCRYPTION_AES_KEY: "dGhpcy1pcy1hLTMyLWJ5dGUtYWVzLTI1Ni1rZXkh"
-  JWT_SECRET: "your-super-secret-jwt-key-for-production-min-256-bits"
+  # NOTE: Replace these with real values via your secret manager (Vault/ExternalSecrets/SealedSecrets).
+  # - ENCRYPTION_AES_KEY: base64 of 32 bytes for AES-256
+  # - JWT_SECRET: min 256-bit secret
+  ENCRYPTION_AES_KEY: "CHANGE_ME_BASE64_32_BYTES"
+  JWT_SECRET: "CHANGE_ME_MIN_256_BIT_SECRET"
 
 
 

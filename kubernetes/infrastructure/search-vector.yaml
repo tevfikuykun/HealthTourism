@@ -129,9 +129,15 @@ spec:
             - containerPort: 9001
           env:
             - name: MINIO_ACCESS_KEY
-              value: "minioadmin"
+              valueFrom:
+                secretKeyRef:
+                  name: milvus-minio-credentials
+                  key: accessKey
             - name: MINIO_SECRET_KEY
-              value: "minioadmin"
+              valueFrom:
+                secretKeyRef:
+                  name: milvus-minio-credentials
+                  key: secretKey
           resources:
             requests:
               cpu: 100m

@@ -1,5 +1,7 @@
 # 🎉 TÜM EKSİKLER TAMAMLANDI! %100 BİTİRİLDİ!
 
+> Not: Bu doküman belirli bir kapsam için “tamamlandı” raporudur. Genel sistemin güncel durum özeti için `PROJECT_STATUS.md` referans alın.
+
 ## ✅ Tamamlanan Özellikler - Detaylı Liste
 
 ### 🔴 Kritik Eksikler (7/7) ✅

@@ -2,27 +2,30 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, master, develop ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, master, develop ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     
     strategy:
+      fail-fast: false
       matrix:
         service:
           - auth-service
           - user-service
           - hospital-service
           - payment-service
+          - reservation-service
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up JDK 25
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '25'
         distribution: 'temurin'
@@ -30,7 +33,15 @@ jobs:
     
     - name: Run tests
       working-directory: microservices/${{ matrix.service }}
-      run: mvn clean test
+      run: mvn -B clean test
+
+    - name: Upload coverage report (if generated)
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: jacoco-${{ matrix.service }}
+        path: microservices/${{ matrix.service }}/target/site/jacoco/
+        if-no-files-found: ignore
     
     - name: Generate test report
       if: always()
@@ -44,20 +55,23 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     
     strategy:
+      fail-fast: false
       matrix:
         service:
           - auth-service
           - user-service
           - hospital-service
           - payment-service
+          - reservation-service
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up JDK 25
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '25'
         distribution: 'temurin'
@@ -70,12 +84,13 @@ jobs:
     
     - name: Build application
       working-directory: microservices/${{ matrix.service }}
-      run: mvn clean package -DskipTests
+      run: mvn -B clean package -DskipTests
 
   security-scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master

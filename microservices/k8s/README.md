@@ -4,6 +4,8 @@
 
 Bu klasör, Health Tourism platformunu Kubernetes'e deploy etmek için gerekli tüm konfigürasyon dosyalarını içerir.
 
+> Not: Repo içinde ayrıca `kubernetes/istio/` altında daha güncel (Istio sidecar + daha kapsamlı) manifest seti bulunur. CI/CD deploy workflow şu an `kubernetes/istio/` yolunu kullanacak şekilde güncellenmiştir.
+
 ## Prerequisites
 
 - Kubernetes cluster (v1.24+)

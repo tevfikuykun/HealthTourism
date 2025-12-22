@@ -2,6 +2,11 @@
 
 İstanbul'a sağlık turizmi sağlayan kapsamlı bir web platformu. Hastaneler, doktorlar, konaklama imkanları ve rezervasyon yönetimi içerir.
 
+## Proje durumu ve operasyon
+
+- **Güncel durum**: `PROJECT_STATUS.md`
+- **Runbooks (backup/secrets/monitoring)**: `RUNBOOKS.md`
+
 ## Özellikler
 
 - 🏥 **Hastane Yönetimi**: İstanbul'daki hastanelerin listesi, detayları ve havalimanına mesafeleri

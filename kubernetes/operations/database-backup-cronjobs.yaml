@@ -1,0 +1,122 @@
+# Backup CronJobs (TEMPLATE)
+# - Intended as a starting point for production backups.
+# - Replace placeholders, mount a persistent volume or push to object storage.
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-core-backup
+  namespace: healthtourism
+spec:
+  schedule: "0 2 * * *" # daily at 02:00
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: postgres:15
+              env:
+                - name: PGHOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials
+                      key: host
+                - name: PGPORT
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials
+                      key: port
+                - name: PGDATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials
+                      key: database
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials
+                      key: username
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials
+                      key: password
+              command:
+                - /bin/sh
+                - -lc
+                - |
+                  set -euo pipefail
+                  TS="$(date +%Y%m%d_%H%M%S)"
+                  mkdir -p /backup
+                  pg_dump -Fc > "/backup/postgres_core_${TS}.dump"
+                  echo "Backup written to /backup (mount a PVC or upload to object storage)"
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup
+          volumes:
+            - name: backup
+              emptyDir: {}
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mysql-notification-backup
+  namespace: healthtourism
+spec:
+  schedule: "30 2 * * *" # daily at 02:30
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: mysql:8.0
+              env:
+                - name: MYSQL_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysql-credentials
+                      key: host
+                - name: MYSQL_PORT
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysql-credentials
+                      key: port
+                - name: MYSQL_DATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysql-credentials
+                      key: database
+                - name: MYSQL_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysql-credentials
+                      key: username
+                - name: MYSQL_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysql-credentials
+                      key: password
+              command:
+                - /bin/sh
+                - -lc
+                - |
+                  set -euo pipefail
+                  TS="$(date +%Y%m%d_%H%M%S)"
+                  mkdir -p /backup
+                  mysqldump -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" "-p$MYSQL_PASSWORD" \
+                    --single-transaction --routines --triggers "$MYSQL_DATABASE" > "/backup/mysql_notification_${TS}.sql"
+                  gzip -f "/backup/mysql_notification_${TS}.sql"
+                  echo "Backup written to /backup (mount a PVC or upload to object storage)"
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup
+          volumes:
+            - name: backup
+              emptyDir: {}
+
