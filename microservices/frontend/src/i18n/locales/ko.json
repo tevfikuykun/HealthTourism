@@ -1,0 +1,18 @@
+{
+  "welcome": "환영합니다",
+  "hospitals": "병원",
+  "doctors": "의사",
+  "accommodations": "숙박",
+  "packages": "패키지",
+  "reservations": "예약",
+  "login": "로그인",
+  "register": "회원가입",
+  "logout": "로그아웃",
+  "profile": "프로필",
+  "dashboard": "대시보드",
+  "search": "검색",
+  "home": "홈",
+  "about": "회사 소개",
+  "contact": "연락처"
+}
+

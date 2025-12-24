@@ -46,6 +46,16 @@ const LazyAboutUs = lazy(() => import('./pages/AboutUs.jsx'));
 const LazyLogin = lazy(() => import('./pages/Login.jsx'));
 const LazyRegister = lazy(() => import('./pages/Register.jsx'));
 const LazyDashboard = lazy(() => import('./pages/Dashboard'));
+const LazyProfile = lazy(() => import('./pages/Profile.jsx'));
+const LazySettings = lazy(() => import('./pages/Settings.jsx'));
+const LazyPatientRiskScoring = lazy(() => import('./pages/PatientRiskScoring.jsx'));
+const LazyAIHealthCompanion = lazy(() => import('./pages/AIHealthCompanion.jsx'));
+const LazyPostTreatmentCare = lazy(() => import('./pages/PostTreatmentCare.jsx'));
+const LazyVirtualTours = lazy(() => import('./pages/VirtualTours.jsx'));
+const LazyInfluencerManagement = lazy(() => import('./pages/InfluencerManagement.jsx'));
+const LazyAffiliateProgram = lazy(() => import('./pages/AffiliateProgram.jsx'));
+const LazyBlog = lazy(() => import('./pages/Blog.jsx'));
+const LazyBlogPost = lazy(() => import('./pages/BlogPost.jsx'));
 const LazyForgotPassword = lazy(() => import('./pages/ForgotPassword.jsx'));
 const LazyResetPassword = lazy(() => import('./pages/ResetPassword.jsx'));
 const LazyVerifyEmail = lazy(() => import('./pages/VerifyEmail.jsx'));
@@ -309,6 +319,14 @@ function AppContent() {
                                     
                                     {/* User Dashboard */}
                                     <Route path="/dashboard" element={renderSuspense(LazyDashboard)} />
+                                    <Route path="/profile" element={renderSuspense(LazyProfile)} />
+                                    <Route path="/settings" element={renderSuspense(LazySettings)} />
+                                    <Route path="/post-treatment-care" element={renderSuspense(LazyPostTreatmentCare)} />
+                                    <Route path="/virtual-tours" element={renderSuspense(LazyVirtualTours)} />
+                                    <Route path="/influencer-management" element={renderSuspense(LazyInfluencerManagement)} />
+                                    <Route path="/affiliate-program" element={renderSuspense(LazyAffiliateProgram)} />
+                                    <Route path="/blog" element={renderSuspense(LazyBlog)} />
+                                    <Route path="/blog/:id" element={renderSuspense(LazyBlogPost)} />
                                     <Route path="/favorites" element={renderSuspense(LazyFavorites)} />
                                     <Route path="/notifications" element={renderSuspense(LazyNotificationsPage)} />
                                     <Route path="/quotes" element={renderSuspense(LazyQuotes)} />
@@ -316,6 +334,8 @@ function AppContent() {
                                     
                                     {/* Super-App: AI Health Companion Centered */}
                                     <Route path="/super-app" element={renderSuspense(LazySuperApp)} />
+                                    <Route path="/patient-risk-scoring" element={renderSuspense(LazyPatientRiskScoring)} />
+                                    <Route path="/ai-health-companion" element={renderSuspense(LazyAIHealthCompanion)} />
                                     
                                     {/* Patient Journey Pages */}
                                     <Route path="/journey-timeline" element={renderSuspense(LazyJourneyTimeline)} />

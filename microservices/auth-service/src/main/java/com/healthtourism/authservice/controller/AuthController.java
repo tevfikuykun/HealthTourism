@@ -122,6 +122,21 @@ public class AuthController {
                     request.getLastName(),
                     request.getProfilePicture()
                 );
+            } else if ("instagram".equalsIgnoreCase(request.getProvider())) {
+                response = socialAuthService.authenticateWithInstagram(
+                    request.getId(),
+                    request.getEmail(),
+                    request.getFirstName(),
+                    request.getLastName(),
+                    request.getProfilePicture()
+                );
+            } else if ("apple".equalsIgnoreCase(request.getProvider())) {
+                response = socialAuthService.authenticateWithApple(
+                    request.getId(),
+                    request.getEmail(),
+                    request.getFirstName(),
+                    request.getLastName()
+                );
             } else {
                 return ResponseEntity.badRequest().build();
             }

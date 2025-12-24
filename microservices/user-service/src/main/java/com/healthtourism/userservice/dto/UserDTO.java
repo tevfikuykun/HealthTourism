@@ -14,6 +14,11 @@ public class UserDTO {
     private String lastName;
     private String phone;
     private String country;
+    private String city;
+    private String address;
+    private String dateOfBirth;
+    private String gender;
+    private String profilePicture;
     private String role;
     private Boolean isActive;
 }

@@ -31,6 +31,9 @@ public class PaymentService {
     @Autowired(required = false)
     private StripePaymentService stripePaymentService;
     
+    @Autowired(required = false)
+    private com.healthtourism.paymentservice.integration.PayPalPaymentService payPalPaymentService;
+    
     @Transactional
     public PaymentDTO processPayment(PaymentRequestDTO request) {
         Payment payment = new Payment();
@@ -68,7 +71,26 @@ public class PaymentService {
                 status = "FAILED";
                 payment.setNotes("Payment processing failed: " + e.getMessage());
             }
-        } else {
+        } 
+        // Process payment with PayPal if available
+        else if (payPalPaymentService != null && "PAYPAL".equals(request.getPaymentMethod())) {
+            try {
+                Map<String, Object> orderResult = payPalPaymentService.createOrder(
+                    request.getAmount(),
+                    payment.getCurrency(),
+                    "Health Tourism Payment - Reservation #" + request.getReservationId()
+                );
+                
+                transactionId = (String) orderResult.get("orderId");
+                status = "PENDING"; // PayPal requires user approval, so status is PENDING
+                payment.setNotes("PayPal order created. Approval URL: " + orderResult.get("approvalUrl"));
+                
+            } catch (Exception e) {
+                status = "FAILED";
+                payment.setNotes("PayPal payment processing failed: " + e.getMessage());
+            }
+        } 
+        else {
             // Fallback to simulation
             status = "COMPLETED";
             transactionId = "TXN-" + UUID.randomUUID().toString().substring(0, 16).toUpperCase();

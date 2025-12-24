@@ -1,0 +1,18 @@
+{
+  "welcome": "Ласкаво просимо",
+  "hospitals": "Лікарні",
+  "doctors": "Лікарі",
+  "accommodations": "Проживання",
+  "packages": "Пакети",
+  "reservations": "Бронювання",
+  "login": "Увійти",
+  "register": "Зареєструватися",
+  "logout": "Вийти",
+  "profile": "Профіль",
+  "dashboard": "Панель",
+  "search": "Пошук",
+  "home": "Головна",
+  "about": "Про нас",
+  "contact": "Контакти"
+}
+

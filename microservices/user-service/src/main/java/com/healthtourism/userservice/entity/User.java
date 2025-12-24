@@ -33,6 +33,21 @@ public class User {
     @Column(nullable = false)
     private String country;
 
+    @Column
+    private String city;
+
+    @Column
+    private String address;
+
+    @Column
+    private String dateOfBirth;
+
+    @Column
+    private String gender; // MALE, FEMALE, OTHER
+
+    @Column
+    private String profilePicture;
+
     @Column(nullable = false)
     private String role; // USER, ADMIN
 

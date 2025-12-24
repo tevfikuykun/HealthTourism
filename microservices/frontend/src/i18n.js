@@ -39,7 +39,7 @@ const initI18n = () => {
     .init({
       fallbackLng: "tr",
       defaultNS: "translation",
-      debug: true,
+      debug: false, // Missing key uyarılarını kapat
       
       // Fallback resources - i18n yüklenemese bile çalışsın
       resources: fallbackResources,
@@ -77,18 +77,41 @@ const initI18n = () => {
 // Manuel olarak JSON yükle ve ekle (nested yapıyı korumak için)
 const loadTranslations = async (lang) => {
   try {
-    const response = await fetch(`/locales/${lang}.json?t=${Date.now()}`, {
+    // Normalize language code (tr-TR -> tr)
+    const langCode = lang.split('-')[0];
+    
+    // public/locales'den fetch ile yükle
+    const response = await fetch(`/locales/${langCode}.json?t=${Date.now()}`, {
       cache: 'no-cache'
     });
+    
     if (!response.ok) {
-      console.warn(`Failed to load translations for ${lang}`);
+      console.warn(`Failed to load translations for ${langCode}: ${response.status}`);
       return;
     }
+    
     const translations = await response.json();
     console.log('📦 Loaded translations for', lang, ':', Object.keys(translations));
     
-    // Nested yapıyı koruyarak ekle
+    // Nested yapıyı koruyarak ekle - tüm namespace'leri ayrı ayrı ekle
     i18n.addResourceBundle(lang, 'translation', translations, true, true);
+    
+    // Namespace'leri de ayrı ayrı ekle (nav, header, footer, vb.)
+    if (translations.nav) {
+      i18n.addResourceBundle(lang, 'nav', translations.nav, true, true);
+    }
+    if (translations.header) {
+      i18n.addResourceBundle(lang, 'header', translations.header, true, true);
+    }
+    if (translations.footer) {
+      i18n.addResourceBundle(lang, 'footer', translations.footer, true, true);
+    }
+    if (translations.common) {
+      i18n.addResourceBundle(lang, 'common', translations.common, true, true);
+    }
+    if (translations.home) {
+      i18n.addResourceBundle(lang, 'home', translations.home, true, true);
+    }
     
     console.log('✅ Translations added to i18n');
     const bundle = i18n.getResourceBundle(lang, 'translation');

@@ -1,0 +1,18 @@
+{
+  "welcome": "ようこそ",
+  "hospitals": "病院",
+  "doctors": "医師",
+  "accommodations": "宿泊施設",
+  "packages": "パッケージ",
+  "reservations": "予約",
+  "login": "ログイン",
+  "register": "登録",
+  "logout": "ログアウト",
+  "profile": "プロフィール",
+  "dashboard": "ダッシュボード",
+  "search": "検索",
+  "home": "ホーム",
+  "about": "私たちについて",
+  "contact": "お問い合わせ"
+}
+

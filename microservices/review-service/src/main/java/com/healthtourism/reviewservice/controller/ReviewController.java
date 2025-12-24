@@ -49,5 +49,27 @@ public class ReviewController {
     public ResponseEntity<Review> verifyReview(@PathVariable Long id) {
         return ResponseEntity.ok(service.verifyReview(id));
     }
+    
+    @GetMapping("/entity/{entityType}/{entityId}/sorted")
+    public ResponseEntity<List<Review>> getReviewsSorted(
+            @PathVariable String entityType,
+            @PathVariable Long entityId,
+            @RequestParam(required = false, defaultValue = "NEWEST") String sortBy) {
+        return ResponseEntity.ok(service.getReviewsSorted(entityType, entityId, sortBy));
+    }
+    
+    @GetMapping("/entity/{entityType}/{entityId}/with-images")
+    public ResponseEntity<List<Review>> getReviewsWithImages(
+            @PathVariable String entityType,
+            @PathVariable Long entityId) {
+        return ResponseEntity.ok(service.getReviewsWithImages(entityType, entityId));
+    }
+    
+    @GetMapping("/entity/{entityType}/{entityId}/with-responses")
+    public ResponseEntity<List<Review>> getReviewsWithResponses(
+            @PathVariable String entityType,
+            @PathVariable Long entityId) {
+        return ResponseEntity.ok(service.getReviewsWithResponses(entityType, entityId));
+    }
 }
 
