@@ -1,0 +1,18 @@
+{
+  "welcome": "Välkommen",
+  "hospitals": "Sjukhus",
+  "doctors": "Läkare",
+  "accommodations": "Boende",
+  "packages": "Paket",
+  "reservations": "Bokningar",
+  "login": "Logga in",
+  "register": "Registrera",
+  "logout": "Logga ut",
+  "profile": "Profil",
+  "dashboard": "Instrumentpanel",
+  "search": "Sök",
+  "home": "Hem",
+  "about": "Om oss",
+  "contact": "Kontakt"
+}
+

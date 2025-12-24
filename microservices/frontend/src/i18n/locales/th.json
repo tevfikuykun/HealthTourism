@@ -1,0 +1,18 @@
+{
+  "welcome": "ยินดีต้อนรับ",
+  "hospitals": "โรงพยาบาล",
+  "doctors": "แพทย์",
+  "accommodations": "ที่พัก",
+  "packages": "แพ็คเกจ",
+  "reservations": "การจอง",
+  "login": "เข้าสู่ระบบ",
+  "register": "ลงทะเบียน",
+  "logout": "ออกจากระบบ",
+  "profile": "โปรไฟล์",
+  "dashboard": "แดชบอร์ด",
+  "search": "ค้นหา",
+  "home": "หน้าแรก",
+  "about": "เกี่ยวกับเรา",
+  "contact": "ติดต่อ"
+}
+

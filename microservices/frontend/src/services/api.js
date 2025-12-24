@@ -261,6 +261,27 @@ export const videoConsultationService = {
   getByUser: (userId) => api.get(`/video-consultations/user/${userId}`),
   getByDoctor: (doctorId) => api.get(`/video-consultations/doctor/${doctorId}`),
   generateRoom: (id) => api.post(`/video-consultations/${id}/generate-room`),
+  getSessions: () => api.get('/video-consultations/sessions'),
+};
+
+// Telemedicine Service (WebRTC)
+export const telemedicineService = {
+  scheduleConsultation: (data) => api.post('/telemedicine/schedule', null, {
+    params: {
+      patientId: data.patientId,
+      doctorId: data.doctorId,
+      scheduledAt: data.scheduledAt,
+    },
+  }),
+  startConsultation: (roomId) => api.post(`/telemedicine/start/${roomId}`),
+  endConsultation: (roomId, notes) => api.post(`/telemedicine/end/${roomId}`, null, {
+    params: notes ? { notes } : {},
+  }),
+  cancelConsultation: (consultationId) => api.post(`/telemedicine/cancel/${consultationId}`),
+  getByPatient: (patientId) => api.get(`/telemedicine/patient/${patientId}`),
+  getByDoctor: (doctorId) => api.get(`/telemedicine/doctor/${doctorId}`),
+  getByRoomId: (roomId) => api.get(`/telemedicine/room/${roomId}`),
+  getSignalingEndpoint: (roomId) => api.get(`/telemedicine/webrtc/signaling/${roomId}`),
 };
 
 export const accommodationService = {
@@ -565,6 +586,57 @@ export const patientMonitoringService = {
   getPatientDetails: (patientId) => api.get(`/patient-monitoring/patient/${patientId}`),
   getAll: (params) => api.get('/patient-monitoring/patients', { params }),
   getByReservation: (reservationId) => api.get(`/patient-monitoring/reservation/${reservationId}`),
+};
+
+// Post-Treatment Care Service
+export const postTreatmentService = {
+  getByUser: (userId) => api.get(`/post-treatment/user/${userId}`),
+  updateTaskStatus: (packageId, taskIndex, isCompleted) => 
+    api.put(`/post-treatment/${packageId}/task/${taskIndex}`, { isCompleted }),
+  scheduleFollowUp: (packageId, date) => 
+    api.post(`/post-treatment/${packageId}/follow-up`, { date }),
+};
+
+// Influencer Service
+export const influencerService = {
+  register: (data) => api.post('/influencers/register', data),
+  approve: (id) => api.post(`/influencers/${id}/approve`),
+  createCampaign: (data) => api.post('/influencers/campaigns', data),
+  getCampaigns: (influencerId) => api.get(`/influencers/campaigns/${influencerId}`),
+  updatePerformance: (id, clicks, conversions) => 
+    api.put(`/influencers/campaigns/${id}/performance`, { clicks, conversions }),
+  calculateCommission: (id) => api.get(`/influencers/campaigns/${id}/commission`),
+};
+
+// Affiliate Service
+export const affiliateService = {
+  register: (userId) => api.post('/affiliate/register', { userId }),
+  getByCode: (code) => api.get(`/affiliate/code/${code}`),
+  getByUser: async (userId) => {
+    // Try to get affiliate by checking if user has referral code
+    // Since backend doesn't have getByUser, we'll need to register first or use a workaround
+    try {
+      // Try to get by making a test request - if fails, user is not registered
+      const response = await api.get(`/affiliate/user/${userId}`);
+      return response;
+    } catch (error) {
+      // User not registered yet
+      throw error;
+    }
+  },
+  trackClick: (referralCode, userId) => 
+    api.post('/affiliate/track/click', { referralCode, userId: userId?.toString() }),
+  trackConversion: (referralId, reservationId, amount) => 
+    api.post('/affiliate/track/conversion', { referralId, reservationId, amount }),
+  getReferrals: (affiliateId) => api.get(`/affiliate/referrals/${affiliateId}`),
+};
+
+// Blog Service
+export const blogService = {
+  getAll: () => api.get('/blog'),
+  getByCategory: (category) => api.get(`/blog/category/${category}`),
+  getById: (id) => api.get(`/blog/${id}`),
+  create: (post) => api.post('/blog', post),
 };
 
 // Default export (Opsiyonel, geriye dönük uyumluluk için)

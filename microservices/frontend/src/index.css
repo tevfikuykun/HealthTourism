@@ -2,6 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+/* React DatePicker MUI uyumluluğu */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker__input-container input {
+  width: 100%;
+  padding: 16.5px 14px;
+  font-size: 1rem;
+  font-family: inherit;
+  border: 1px solid rgba(0, 0, 0, 0.23);
+  border-radius: 4px;
+  transition: border-color 0.2s;
+}
+
+.react-datepicker__input-container input:focus {
+  outline: none;
+  border-color: #1976d2;
+  border-width: 2px;
+}
+
+.react-datepicker__input-container input:hover {
+  border-color: rgba(0, 0, 0, 0.87);
+}
+
+.react-datepicker-popper {
+  z-index: 9999;
+}
+
 * {
   box-sizing: border-box;
 }

@@ -61,5 +61,65 @@ public class ReviewService {
         review.setIsVerified(true);
         return repository.save(review);
     }
+    
+    /**
+     * Get reviews sorted by different criteria
+     */
+    public List<Review> getReviewsSorted(String entityType, Long entityId, String sortBy) {
+        List<Review> reviews = repository.findByEntityTypeAndEntityIdAndIsPublishedTrue(entityType, entityId);
+        
+        switch (sortBy != null ? sortBy.toUpperCase() : "NEWEST") {
+            case "NEWEST":
+                reviews.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
+                break;
+            case "OLDEST":
+                reviews.sort((a, b) -> a.getCreatedAt().compareTo(b.getCreatedAt()));
+                break;
+            case "HIGHEST_RATING":
+                reviews.sort((a, b) -> b.getRating().compareTo(a.getRating()));
+                break;
+            case "LOWEST_RATING":
+                reviews.sort((a, b) -> a.getRating().compareTo(b.getRating()));
+                break;
+            case "MOST_HELPFUL":
+                reviews.sort((a, b) -> {
+                    int helpfulDiff = b.getHelpfulCount() - a.getHelpfulCount();
+                    if (helpfulDiff != 0) return helpfulDiff;
+                    return b.getCreatedAt().compareTo(a.getCreatedAt());
+                });
+                break;
+            case "VERIFIED_FIRST":
+                reviews.sort((a, b) -> {
+                    if (a.getIsVerified() && !b.getIsVerified()) return -1;
+                    if (!a.getIsVerified() && b.getIsVerified()) return 1;
+                    return b.getCreatedAt().compareTo(a.getCreatedAt());
+                });
+                break;
+            default:
+                reviews.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
+        }
+        
+        return reviews;
+    }
+    
+    /**
+     * Get reviews with images only
+     */
+    public List<Review> getReviewsWithImages(String entityType, Long entityId) {
+        List<Review> reviews = repository.findByEntityTypeAndEntityIdAndIsPublishedTrue(entityType, entityId);
+        return reviews.stream()
+            .filter(r -> r.getImages() != null && !r.getImages().isEmpty())
+            .collect(java.util.stream.Collectors.toList());
+    }
+    
+    /**
+     * Get reviews with doctor responses
+     */
+    public List<Review> getReviewsWithResponses(String entityType, Long entityId) {
+        List<Review> reviews = repository.findByEntityTypeAndEntityIdAndIsPublishedTrue(entityType, entityId);
+        return reviews.stream()
+            .filter(r -> r.getDoctorResponse() != null && !r.getDoctorResponse().isEmpty())
+            .collect(java.util.stream.Collectors.toList());
+    }
 }
 

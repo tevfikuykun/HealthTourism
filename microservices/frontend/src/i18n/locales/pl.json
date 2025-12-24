@@ -1,0 +1,18 @@
+{
+  "welcome": "Witamy",
+  "hospitals": "Szpitale",
+  "doctors": "Lekarze",
+  "accommodations": "Zakwaterowanie",
+  "packages": "Pakiety",
+  "reservations": "Rezerwacje",
+  "login": "Zaloguj się",
+  "register": "Zarejestruj się",
+  "logout": "Wyloguj",
+  "profile": "Profil",
+  "dashboard": "Panel",
+  "search": "Szukaj",
+  "home": "Strona główna",
+  "about": "O nas",
+  "contact": "Kontakt"
+}
+

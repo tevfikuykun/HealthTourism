@@ -1,0 +1,18 @@
+{
+  "welcome": "欢迎",
+  "hospitals": "医院",
+  "doctors": "医生",
+  "accommodations": "住宿",
+  "packages": "套餐",
+  "reservations": "预订",
+  "login": "登录",
+  "register": "注册",
+  "logout": "退出",
+  "profile": "个人资料",
+  "dashboard": "仪表板",
+  "search": "搜索",
+  "home": "首页",
+  "about": "关于我们",
+  "contact": "联系方式"
+}
+

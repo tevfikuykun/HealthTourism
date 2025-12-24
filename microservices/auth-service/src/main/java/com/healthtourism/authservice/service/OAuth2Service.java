@@ -131,4 +131,57 @@ public class OAuth2Service {
             "name", "Apple User"
         );
     }
+    
+    /**
+     * Authenticate with Instagram OAuth2
+     */
+    public Map<String, Object> authenticateWithInstagram(String authorizationCode, String redirectUri) {
+        // Instagram OAuth2 flow
+        String tokenUrl = "https://api.instagram.com/oauth/access_token";
+        
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("client_id", facebookClientId); // Instagram uses Facebook App ID
+        params.add("client_secret", facebookClientSecret);
+        params.add("grant_type", "authorization_code");
+        params.add("redirect_uri", redirectUri);
+        params.add("code", authorizationCode);
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+        
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(tokenUrl, request, Map.class);
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                String accessToken = (String) response.getBody().get("access_token");
+                return getUserInfoFromInstagram(accessToken);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to authenticate with Instagram: " + e.getMessage(), e);
+        }
+        
+        throw new RuntimeException("Failed to authenticate with Instagram");
+    }
+    
+    /**
+     * Get user info from Instagram
+     */
+    private Map<String, Object> getUserInfoFromInstagram(String accessToken) {
+        String userInfoUrl = "https://graph.instagram.com/me?fields=id,username&access_token=" + accessToken;
+        
+        try {
+            ResponseEntity<Map> response = restTemplate.getForEntity(userInfoUrl, Map.class);
+            Map<String, Object> userInfo = response.getBody();
+            
+            // Instagram doesn't provide email, so we'll use username
+            return Map.of(
+                "id", userInfo.get("id"),
+                "username", userInfo.get("username"),
+                "email", userInfo.get("username") + "@instagram.com" // Fallback
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get Instagram user info: " + e.getMessage(), e);
+        }
+    }
 }

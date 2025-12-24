@@ -94,6 +94,9 @@
             <artifactId>stripe-java</artifactId>
             <version>24.16.0</version>
         </dependency>
+        
+        <!-- PayPal SDK (optional, using REST API directly) -->
+        <!-- PayPal REST API is used via RestTemplate -->
     </dependencies>
     
     <dependencyManagement>
