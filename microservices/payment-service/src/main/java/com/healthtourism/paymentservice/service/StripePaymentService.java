@@ -43,14 +43,19 @@ public class StripePaymentService {
         }
 
         try {
-            PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
+            PaymentIntentCreateParams.Builder builder = PaymentIntentCreateParams.builder()
                     .setAmount(amount.multiply(BigDecimal.valueOf(100)).longValue()) // Convert to cents
                     .setCurrency(currency.toLowerCase())
                     .setPaymentMethod(paymentMethodId)
                     .setConfirmationMethod(PaymentIntentCreateParams.ConfirmationMethod.AUTOMATIC)
                     .setConfirm(true)
-                    .setMetadata(metadata != null ? metadata : new HashMap<>())
-                    .build();
+                    ;
+
+            if (metadata != null && !metadata.isEmpty()) {
+                builder.putAllMetadata(metadata);
+            }
+
+            PaymentIntentCreateParams params = builder.build();
 
             return PaymentIntent.create(params);
         } catch (StripeException e) {
