@@ -9,7 +9,20 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "reservations")
+@Table(name = "reservations", indexes = {
+    @Index(name = "idx_reservation_number", columnList = "reservation_number"),
+    @Index(name = "idx_user", columnList = "user_id"),
+    @Index(name = "idx_hospital", columnList = "hospital_id"),
+    @Index(name = "idx_doctor", columnList = "doctor_id"),
+    @Index(name = "idx_status", columnList = "status"),
+    @Index(name = "idx_appointment_date", columnList = "appointment_date"),
+    @Index(name = "idx_created_at", columnList = "created_at"),
+    // Composite indexes for common query patterns
+    @Index(name = "idx_doctor_date_status", columnList = "doctor_id,appointment_date,status"),
+    @Index(name = "idx_hospital_date_status", columnList = "hospital_id,appointment_date,status"),
+    @Index(name = "idx_user_status", columnList = "user_id,status"),
+    @Index(name = "idx_appointment_status", columnList = "appointment_date,status")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -45,19 +58,19 @@ public class Reservation {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hospital_id", nullable = false)
     private Hospital hospital;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "doctor_id", nullable = false)
     private Doctor doctor;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "accommodation_id")
     private Accommodation accommodation;
 }

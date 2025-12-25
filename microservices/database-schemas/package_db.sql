@@ -24,10 +24,21 @@ CREATE TABLE IF NOT EXISTS travel_packages (
     hospital_id BIGINT NOT NULL,
     doctor_id BIGINT,
     accommodation_id BIGINT,
-    INDEX idx_hospital (hospital_id),
+    INDEX idx_package_name (package_name),
     INDEX idx_package_type (package_type),
-    INDEX idx_active (is_active),
-    INDEX idx_rating (rating)
+    INDEX idx_hospital (hospital_id),
+    INDEX idx_doctor (doctor_id),
+    INDEX idx_accommodation (accommodation_id),
+    INDEX idx_is_active (is_active),
+    INDEX idx_rating (rating),
+    INDEX idx_final_price (final_price),
+    INDEX idx_includes_flight (includes_flight),
+    -- Composite indexes for common query patterns
+    INDEX idx_type_active (package_type, is_active),
+    INDEX idx_hospital_active (hospital_id, is_active),
+    INDEX idx_type_flight_active (package_type, includes_flight, is_active),
+    INDEX idx_price_active (final_price, is_active),
+    INDEX idx_rating_active (rating, is_active)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 

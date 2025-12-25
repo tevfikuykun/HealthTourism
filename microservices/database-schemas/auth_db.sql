@@ -9,15 +9,26 @@ CREATE TABLE IF NOT EXISTS users (
     first_name VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL,
     phone VARCHAR(50) NOT NULL,
+    phone_number VARCHAR(50),
     country VARCHAR(100) NOT NULL,
     role VARCHAR(50) NOT NULL,
     is_active BOOLEAN NOT NULL,
-    last_login DATETIME,
+    account_non_locked BOOLEAN NOT NULL DEFAULT TRUE,
+    account_non_expired BOOLEAN NOT NULL DEFAULT TRUE,
+    credentials_non_expired BOOLEAN NOT NULL DEFAULT TRUE,
+    email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    last_login_date DATETIME,
     created_at DATETIME NOT NULL,
-    updated_at DATETIME NOT NULL,
-    INDEX idx_email (email),
-    INDEX idx_role (role),
-    INDEX idx_active (is_active)
+    updated_at DATETIME,
+    INDEX idx_user_email (email),
+    INDEX idx_user_phone (phone),
+    INDEX idx_user_role (role),
+    INDEX idx_user_is_active (is_active),
+    INDEX idx_user_country (country),
+    INDEX idx_user_last_login (last_login_date),
+    -- Composite indexes for common query patterns
+    INDEX idx_role_active (role, is_active),
+    INDEX idx_email_active (email, is_active)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS refresh_tokens (

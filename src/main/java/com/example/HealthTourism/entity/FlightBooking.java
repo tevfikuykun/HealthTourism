@@ -10,7 +10,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "flight_bookings")
+@Table(name = "flight_bookings", indexes = {
+    @Index(name = "idx_departure", columnList = "departure_city,departure_date_time"),
+    @Index(name = "idx_arrival", columnList = "arrival_city"),
+    @Index(name = "idx_available", columnList = "is_available"),
+    @Index(name = "idx_date", columnList = "departure_date_time"),
+    @Index(name = "idx_route", columnList = "departure_city,arrival_city"),
+    @Index(name = "idx_airline", columnList = "airline_name"),
+    @Index(name = "idx_available_seats", columnList = "available_seats,is_available"),
+    @Index(name = "idx_date_range", columnList = "departure_date_time,arrival_date_time")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,6 +27,15 @@ public class FlightBooking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    /**
+     * Optimistic locking version field.
+     * Prevents concurrent seat booking conflicts.
+     * Automatically incremented on each update.
+     */
+    @Version
+    @Column(name = "version")
+    private Long version;
 
     @Column(nullable = false)
     private String airlineName;
@@ -42,6 +60,13 @@ public class FlightBooking {
 
     @Column(nullable = false)
     private Integer availableSeats;
+    
+    /**
+     * Total seats capacity of the flight.
+     * Used for calculating occupancy rate and promotional queries.
+     */
+    @Column(nullable = false)
+    private Integer totalSeats;
 
     @Column(nullable = false)
     private BigDecimal price;

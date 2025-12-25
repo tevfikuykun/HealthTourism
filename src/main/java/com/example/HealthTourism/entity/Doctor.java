@@ -8,7 +8,18 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Entity
-@Table(name = "doctors")
+@Table(name = "doctors", indexes = {
+    @Index(name = "idx_hospital", columnList = "hospital_id"),
+    @Index(name = "idx_specialization", columnList = "specialization"),
+    @Index(name = "idx_available", columnList = "is_available"),
+    @Index(name = "idx_rating", columnList = "rating"),
+    // Composite indexes for common query patterns
+    @Index(name = "idx_hospital_available", columnList = "hospital_id,is_available"),
+    @Index(name = "idx_specialization_available", columnList = "specialization,is_available"),
+    @Index(name = "idx_rating_experience", columnList = "rating,experience_years")
+    // Note: For languages field (TEXT), consider using FULLTEXT index in MySQL for better search performance
+    // This can be added via SQL migration: ALTER TABLE doctors ADD FULLTEXT INDEX idx_languages_ft (languages);
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -50,7 +61,7 @@ public class Doctor {
     @Column(nullable = false)
     private Boolean isAvailable;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hospital_id", nullable = false)
     private Hospital hospital;
 

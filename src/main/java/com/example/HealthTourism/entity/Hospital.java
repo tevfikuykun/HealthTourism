@@ -5,10 +5,22 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
-@Table(name = "hospitals")
+@Table(name = "hospitals", indexes = {
+    @Index(name = "idx_city", columnList = "city"),
+    @Index(name = "idx_district", columnList = "district"),
+    @Index(name = "idx_active", columnList = "is_active"),
+    @Index(name = "idx_rating", columnList = "rating"),
+    @Index(name = "idx_airport_distance", columnList = "airport_distance"),
+    // Composite indexes for common query patterns
+    @Index(name = "idx_city_active", columnList = "city,is_active"),
+    @Index(name = "idx_city_district_active", columnList = "city,district,is_active"),
+    @Index(name = "idx_rating_airport", columnList = "rating,airport_distance")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -58,6 +70,20 @@ public class Hospital {
 
     @Column(nullable = false)
     private Boolean isActive;
+    
+    /**
+     * Hastane akreditasyonları (JCI, ISO, vb.)
+     * Sağlık turizminde güven her şeydir - akreditasyonlar kurumsal güvenilirliği artırır.
+     * ElementCollection olarak saklanır: hospital_accreditations tablosunda.
+     */
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+        name = "hospital_accreditations",
+        joinColumns = @JoinColumn(name = "hospital_id"),
+        indexes = @Index(name = "idx_hospital_accreditation", columnList = "accreditation")
+    )
+    @Column(name = "accreditation", length = 100)
+    private Set<String> accreditations = new HashSet<>();
 
     @OneToMany(mappedBy = "hospital", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Doctor> doctors;

@@ -9,7 +9,17 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
-@Table(name = "accommodations")
+@Table(name = "accommodations", indexes = {
+    @Index(name = "idx_hospital", columnList = "hospital_id"),
+    @Index(name = "idx_city", columnList = "city"),
+    @Index(name = "idx_rating", columnList = "rating"),
+    // Composite index for health tourism queries: finding hotels near hospitals
+    @Index(name = "idx_hospital_distance", columnList = "hospital_id,distance_to_hospital"),
+    // Index for price range searches
+    @Index(name = "idx_price_active", columnList = "price_per_night,is_active"),
+    // Index for city and active status (common filter combination)
+    @Index(name = "idx_city_active", columnList = "city,is_active")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -84,7 +94,7 @@ public class Accommodation {
     @Column(nullable = false)
     private Boolean isActive;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hospital_id", nullable = false)
     private Hospital hospital;
 

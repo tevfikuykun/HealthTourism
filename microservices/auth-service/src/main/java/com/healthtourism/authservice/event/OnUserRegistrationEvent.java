@@ -1,6 +1,6 @@
 package com.healthtourism.authservice.event;
 
-import com.healthtourism.userservice.entity.User;
+import com.healthtourism.authservice.entity.User;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 

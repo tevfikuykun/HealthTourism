@@ -10,7 +10,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "car_rental_reservations")
+@Table(name = "car_rental_reservations", indexes = {
+    @Index(name = "idx_car_rental", columnList = "car_rental_id"),
+    @Index(name = "idx_user", columnList = "user_id"),
+    @Index(name = "idx_status", columnList = "status"),
+    // Composite index for date conflict checking (critical for preventing double booking)
+    @Index(name = "idx_car_dates_status", columnList = "car_rental_id,pickup_date,dropoff_date,status"),
+    // Index for date range queries
+    @Index(name = "idx_dates", columnList = "pickup_date,dropoff_date")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -40,11 +48,11 @@ public class CarRentalReservation {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "car_rental_id", nullable = false)
     private CarRental carRental;
 }
