@@ -9,7 +9,19 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
-@Table(name = "car_rentals")
+@Table(name = "car_rentals", indexes = {
+    @Index(name = "idx_car_type", columnList = "car_type"),
+    @Index(name = "idx_available", columnList = "is_available"),
+    @Index(name = "idx_rating", columnList = "rating"),
+    // Composite index for capacity-based searches (critical for health tourism)
+    @Index(name = "idx_type_capacity", columnList = "car_type,passenger_capacity"),
+    // Index for price range searches
+    @Index(name = "idx_price_available", columnList = "price_per_day,is_available"),
+    // Index for location-based searches
+    @Index(name = "idx_pickup_location", columnList = "pickup_location"),
+    // Index for driver and availability filtering
+    @Index(name = "idx_driver_available", columnList = "includes_driver,is_available")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

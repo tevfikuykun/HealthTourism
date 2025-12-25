@@ -29,7 +29,14 @@ CREATE TABLE IF NOT EXISTS accommodations (
     hospital_id BIGINT NOT NULL,
     INDEX idx_hospital (hospital_id),
     INDEX idx_city (city),
-    INDEX idx_rating (rating)
+    INDEX idx_rating (rating),
+    -- Composite index for health tourism queries: finding hotels near hospitals
+    -- This index optimizes queries that filter by hospital_id and distance_to_hospital
+    INDEX idx_hospital_distance (hospital_id, distance_to_hospital),
+    -- Index for price range searches
+    INDEX idx_price_active (price_per_night, is_active),
+    -- Index for city and active status (common filter combination)
+    INDEX idx_city_active (city, is_active)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 

@@ -8,7 +8,21 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "translation_services")
+@Table(name = "translation_services", indexes = {
+    @Index(name = "idx_translator_name", columnList = "translator_name"),
+    @Index(name = "idx_service_type", columnList = "service_type"),
+    @Index(name = "idx_is_certified", columnList = "is_certified"),
+    @Index(name = "idx_is_available", columnList = "is_available"),
+    @Index(name = "idx_rating", columnList = "rating"),
+    @Index(name = "idx_price_per_hour", columnList = "price_per_hour"),
+    @Index(name = "idx_hospital_available", columnList = "is_available_for_hospital"),
+    @Index(name = "idx_consultation_available", columnList = "is_available_for_consultation"),
+    // Composite indexes for common query patterns
+    @Index(name = "idx_certified_available", columnList = "is_certified,is_available"),
+    @Index(name = "idx_type_certified_available", columnList = "service_type,is_certified,is_available"),
+    @Index(name = "idx_rating_available", columnList = "rating,is_available"),
+    @Index(name = "idx_hospital_certified_available", columnList = "is_available_for_hospital,is_certified,is_available")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
