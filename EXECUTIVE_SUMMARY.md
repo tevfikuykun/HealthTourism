@@ -1,5 +1,7 @@
 # 📊 YÖNETİCİ ÖZETİ - PRODUCTION HAZIRLIK
 
+> Not: Bu doküman tarihsel bir anlık görüntüdür. **Güncel durum** için `PROJECT_STATUS.md` referans alın.
+
 ## Proje Durumu: ⚠️ **65/100**
 
 ### ✅ GÜÇLÜ YÖNLER

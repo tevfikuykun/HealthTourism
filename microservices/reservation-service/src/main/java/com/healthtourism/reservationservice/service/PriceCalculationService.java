@@ -1,183 +1,176 @@
 package com.healthtourism.reservationservice.service;
 
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 /**
- * Service for calculating reservation prices
- * Calculates total price including:
- * - Doctor consultation fee
- * - Accommodation cost (price per night * number of nights)
- * - Transfer service fee (optional)
+ * Price Calculation Service
  * 
- * Uses Circuit Breaker pattern to handle service failures gracefully
+ * Centralized price calculation logic for reservations.
+ * Separates pricing concerns from business logic.
+ * 
+ * Business Rules:
+ * - Doctor consultation fee (one-time)
+ * - Accommodation cost = dailyPrice * numberOfNights
+ * - Optional: Seasonal discounts, promotions, etc.
+ * - Currency support
  */
 @Service
 public class PriceCalculationService {
     
-    private RestTemplate restTemplate;
-    
-    @Value("${doctor.service.url:http://localhost:8003}")
-    private String doctorServiceUrl;
-    
-    @Value("${accommodation.service.url:http://localhost:8004}")
-    private String accommodationServiceUrl;
-    
-    @Value("${transfer.service.url:http://localhost:8007}")
-    private String transferServiceUrl;
-    
-    @Value("${reservation.transfer.fee.default:0}")
-    private BigDecimal defaultTransferFee;
-    
-    @Value("${reservation.doctor.fee.default:500.0}")
-    private BigDecimal defaultDoctorFee;
-    
-    @Value("${reservation.accommodation.price.default:100.0}")
-    private BigDecimal defaultAccommodationPricePerNight;
-    
-    @Autowired(required = false)
-    public void setRestTemplate(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
-    
-    private RestTemplate getRestTemplate() {
-        if (restTemplate == null) {
-            restTemplate = new RestTemplate();
-        }
-        return restTemplate;
-    }
+    private static final Logger logger = LoggerFactory.getLogger(PriceCalculationService.class);
     
     /**
-     * Calculates total price for a reservation
+     * Calculate total price for a reservation
      * 
-     * @param doctorId Doctor ID for consultation fee
-     * @param accommodationId Accommodation ID (can be null)
-     * @param numberOfNights Number of nights for accommodation
-     * @param transferId Transfer service ID (can be null)
-     * @return Total calculated price
+     * @param doctorFee Doctor consultation fee
+     * @param accommodationDailyPrice Accommodation daily price (can be null)
+     * @param numberOfNights Number of nights
+     * @param currency Currency code (EUR, USD, TRY, etc.)
+     * @return Calculated total price
      */
-    public BigDecimal calculateTotalPrice(
-            Long doctorId,
-            Long accommodationId,
-            int numberOfNights,
-            Long transferId) {
+    public BigDecimal calculateTotal(
+            BigDecimal doctorFee,
+            BigDecimal accommodationDailyPrice,
+            Integer numberOfNights,
+            String currency) {
         
-        BigDecimal totalPrice = BigDecimal.ZERO;
+        logger.debug("Calculating total price: doctorFee={}, accommodationDailyPrice={}, nights={}, currency={}",
+            doctorFee, accommodationDailyPrice, numberOfNights, currency);
         
-        // 1. Add doctor consultation fee (with Circuit Breaker)
-        BigDecimal consultationFee = getDoctorConsultationFee(doctorId);
-        totalPrice = totalPrice.add(consultationFee);
-        
-        // 2. Add accommodation cost (if provided, with Circuit Breaker)
-        if (accommodationId != null && numberOfNights > 0) {
-            BigDecimal accommodationCost = getAccommodationPrice(accommodationId, numberOfNights);
-            totalPrice = totalPrice.add(accommodationCost);
+        if (doctorFee == null) {
+            throw new IllegalArgumentException("Doctor fee cannot be null");
         }
         
-        // 3. Add transfer service fee (if provided, with Circuit Breaker)
-        if (transferId != null) {
-            BigDecimal transferFee = getTransferServicePrice(transferId);
-            totalPrice = totalPrice.add(transferFee);
-        } else {
-            // Add default transfer fee if no specific transfer service selected
-            totalPrice = totalPrice.add(defaultTransferFee);
+        BigDecimal total = doctorFee;
+        
+        // Calculate accommodation cost if provided
+        if (accommodationDailyPrice != null && numberOfNights != null && numberOfNights > 0) {
+            BigDecimal accommodationCost = accommodationDailyPrice
+                    .multiply(BigDecimal.valueOf(numberOfNights));
+            total = total.add(accommodationCost);
         }
         
-        return totalPrice;
+        // Round to 2 decimal places (standard for currency)
+        total = total.setScale(2, RoundingMode.HALF_UP);
+        
+        logger.debug("Calculated total price: {}", total);
+        
+        return total;
     }
     
     /**
-     * Gets doctor consultation fee from doctor service
-     * Uses Circuit Breaker to handle service failures gracefully
+     * Calculate accommodation cost separately
+     * 
+     * @param accommodationDailyPrice Daily price
+     * @param checkInDate Check-in date
+     * @param checkOutDate Check-out date
+     * @return Accommodation cost
      */
-    @CircuitBreaker(name = "doctorService", fallbackMethod = "getDoctorConsultationFeeFallback")
-    @Retry(name = "doctorService")
-    private BigDecimal getDoctorConsultationFee(Long doctorId) {
-        String url = doctorServiceUrl + "/api/doctors/" + doctorId;
-        DoctorResponse response = getRestTemplate().getForObject(url, DoctorResponse.class);
-        if (response != null && response.getConsultationFee() != null) {
-            return BigDecimal.valueOf(response.getConsultationFee());
+    public BigDecimal calculateAccommodationCost(
+            BigDecimal accommodationDailyPrice,
+            LocalDate checkInDate,
+            LocalDate checkOutDate) {
+        
+        if (accommodationDailyPrice == null || checkInDate == null || checkOutDate == null) {
+            return BigDecimal.ZERO;
         }
-        return defaultDoctorFee;
-    }
-    
-    /**
-     * Fallback method when doctor service is unavailable
-     */
-    private BigDecimal getDoctorConsultationFeeFallback(Long doctorId, Exception e) {
-        System.err.println("Doctor service unavailable, using default fee. Error: " + e.getMessage());
-        return defaultDoctorFee;
-    }
-    
-    /**
-     * Gets accommodation price per night and calculates total cost
-     * Uses Circuit Breaker to handle service failures gracefully
-     */
-    @CircuitBreaker(name = "accommodationService", fallbackMethod = "getAccommodationPriceFallback")
-    @Retry(name = "accommodationService")
-    private BigDecimal getAccommodationPrice(Long accommodationId, int numberOfNights) {
-        String url = accommodationServiceUrl + "/api/accommodations/" + accommodationId;
-        AccommodationResponse response = getRestTemplate().getForObject(url, AccommodationResponse.class);
-        if (response != null && response.getPricePerNight() != null) {
-            return response.getPricePerNight().multiply(BigDecimal.valueOf(numberOfNights));
+        
+        if (checkOutDate.isBefore(checkInDate) || checkOutDate.isEqual(checkInDate)) {
+            throw new IllegalArgumentException("Check-out date must be after check-in date");
         }
-        return defaultAccommodationPricePerNight.multiply(BigDecimal.valueOf(numberOfNights));
+        
+        long nights = ChronoUnit.DAYS.between(checkInDate, checkOutDate);
+        
+        return accommodationDailyPrice
+                .multiply(BigDecimal.valueOf(nights))
+                .setScale(2, RoundingMode.HALF_UP);
     }
     
     /**
-     * Fallback method when accommodation service is unavailable
+     * Apply discount to price
+     * 
+     * @param basePrice Base price
+     * @param discountPercentage Discount percentage (e.g., 10 for 10%)
+     * @return Price with discount applied
      */
-    private BigDecimal getAccommodationPriceFallback(Long accommodationId, int numberOfNights, Exception e) {
-        System.err.println("Accommodation service unavailable, using default price. Error: " + e.getMessage());
-        return defaultAccommodationPricePerNight.multiply(BigDecimal.valueOf(numberOfNights));
-    }
-    
-    /**
-     * Gets transfer service price
-     * Uses Circuit Breaker to handle service failures gracefully
-     */
-    @CircuitBreaker(name = "transferService", fallbackMethod = "getTransferServicePriceFallback")
-    @Retry(name = "transferService")
-    private BigDecimal getTransferServicePrice(Long transferId) {
-        String url = transferServiceUrl + "/api/transfers/" + transferId;
-        TransferResponse response = getRestTemplate().getForObject(url, TransferResponse.class);
-        if (response != null && response.getPrice() != null) {
-            return response.getPrice();
+    public BigDecimal applyDiscount(BigDecimal basePrice, BigDecimal discountPercentage) {
+        if (basePrice == null || discountPercentage == null) {
+            return basePrice;
         }
-        return defaultTransferFee;
+        
+        if (discountPercentage.compareTo(BigDecimal.ZERO) < 0 || 
+            discountPercentage.compareTo(BigDecimal.valueOf(100)) > 0) {
+            throw new IllegalArgumentException("Discount percentage must be between 0 and 100");
+        }
+        
+        BigDecimal discountAmount = basePrice
+                .multiply(discountPercentage)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        
+        BigDecimal finalPrice = basePrice.subtract(discountAmount);
+        
+        logger.debug("Applied {}% discount: {} -> {}", discountPercentage, basePrice, finalPrice);
+        
+        return finalPrice.setScale(2, RoundingMode.HALF_UP);
     }
     
     /**
-     * Fallback method when transfer service is unavailable
+     * Apply seasonal pricing multiplier
+     * 
+     * @param basePrice Base price
+     * @param multiplier Seasonal multiplier (e.g., 1.2 for 20% increase)
+     * @return Price with seasonal adjustment
      */
-    private BigDecimal getTransferServicePriceFallback(Long transferId, Exception e) {
-        System.err.println("Transfer service unavailable, using default fee. Error: " + e.getMessage());
-        return defaultTransferFee;
+    public BigDecimal applySeasonalMultiplier(BigDecimal basePrice, BigDecimal multiplier) {
+        if (basePrice == null || multiplier == null) {
+            return basePrice;
+        }
+        
+        if (multiplier.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Multiplier must be positive");
+        }
+        
+        BigDecimal adjustedPrice = basePrice.multiply(multiplier);
+        
+        logger.debug("Applied seasonal multiplier {}: {} -> {}", multiplier, basePrice, adjustedPrice);
+        
+        return adjustedPrice.setScale(2, RoundingMode.HALF_UP);
     }
     
-    // Inner classes for API responses
-    private static class DoctorResponse {
-        private Double consultationFee;
-        public Double getConsultationFee() { return consultationFee; }
-        public void setConsultationFee(Double consultationFee) { this.consultationFee = consultationFee; }
-    }
-    
-    private static class AccommodationResponse {
-        private BigDecimal pricePerNight;
-        public BigDecimal getPricePerNight() { return pricePerNight; }
-        public void setPricePerNight(BigDecimal pricePerNight) { this.pricePerNight = pricePerNight; }
-    }
-    
-    private static class TransferResponse {
-        private BigDecimal price;
-        public BigDecimal getPrice() { return price; }
-        public void setPrice(BigDecimal price) { this.price = price; }
+    /**
+     * Convert price to different currency
+     * 
+     * @param amount Amount to convert
+     * @param fromCurrency Source currency
+     * @param toCurrency Target currency
+     * @param exchangeRate Exchange rate (toCurrency / fromCurrency)
+     * @return Converted amount
+     */
+    public BigDecimal convertCurrency(
+            BigDecimal amount,
+            String fromCurrency,
+            String toCurrency,
+            BigDecimal exchangeRate) {
+        
+        if (amount == null || exchangeRate == null) {
+            return amount;
+        }
+        
+        if (fromCurrency.equals(toCurrency)) {
+            return amount;
+        }
+        
+        BigDecimal converted = amount.multiply(exchangeRate);
+        
+        logger.debug("Converted {} {} to {} {}: {}", amount, fromCurrency, converted, toCurrency, exchangeRate);
+        
+        return converted.setScale(2, RoundingMode.HALF_UP);
     }
 }

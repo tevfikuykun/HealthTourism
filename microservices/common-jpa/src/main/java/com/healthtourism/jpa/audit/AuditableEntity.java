@@ -1,5 +1,6 @@
 package com.healthtourism.jpa.audit;
 
+import com.healthtourism.jpa.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.envers.Audited;
@@ -12,7 +13,20 @@ import java.time.LocalDateTime;
 /**
  * Base Auditable Entity
  * Hibernate Envers ile otomatik audit
+ * 
+ * @deprecated Use {@link BaseEntity} instead. BaseEntity provides:
+ * - UUID (Sequential) primary keys for better security
+ * - Soft delete functionality (isDeleted flag)
+ * - Complete audit trail (CreatedAt, CreatedBy, UpdatedAt, UpdatedBy)
+ * - Better scalability and security
+ * 
+ * Migration guide:
+ * - Replace "extends AuditableEntity" with "extends BaseEntity"
+ * - Change entity ID type from Long to UUID
+ * - Update repositories to use BaseRepository instead of JpaRepository
+ * - Update service methods to use UUID instead of Long for IDs
  */
+@Deprecated
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @Audited
@@ -41,6 +55,8 @@ public abstract class AuditableEntity {
     @Column(name = "version")
     private Long version; // Optimistic locking
 }
+
+
 
 
 

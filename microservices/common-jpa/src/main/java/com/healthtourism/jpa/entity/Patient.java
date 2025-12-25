@@ -13,9 +13,19 @@ import org.hibernate.envers.Audited;
  * - L2 Cache (Redis)
  * - Dirty Checking
  * - Envers Audit
+ * - Indexed fields for performance (email, national_id, passport_number, phone)
  */
 @Entity
-@Table(name = "patients")
+@Table(
+    name = "patients",
+    indexes = {
+        @Index(name = "idx_patients_email", columnList = "email", unique = true),
+        @Index(name = "idx_patients_national_id", columnList = "national_id"),
+        @Index(name = "idx_patients_passport_number", columnList = "passport_number"),
+        @Index(name = "idx_patients_phone", columnList = "phone"),
+        @Index(name = "idx_patients_email_national_id", columnList = "email,national_id")
+    }
+)
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "patientCache")
 @Audited
@@ -69,6 +79,8 @@ public class Patient extends AuditableEntity {
         MALE, FEMALE, OTHER
     }
 }
+
+
 
 
 

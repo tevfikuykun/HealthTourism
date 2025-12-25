@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +20,7 @@ public class KafkaEventService {
     
     private static final String PAYMENT_TOPIC = "payment-events";
     
-    public void publishPaymentCreated(Long paymentId, Long reservationId, String status, Double amount) {
+    public void publishPaymentCreated(Long paymentId, Long reservationId, String status, BigDecimal amount) {
         Map<String, Object> event = new HashMap<>();
         event.put("eventType", "CREATED");
         event.put("paymentId", paymentId);

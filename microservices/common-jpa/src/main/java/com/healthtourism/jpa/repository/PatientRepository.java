@@ -48,7 +48,24 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     @Query("SELECT p FROM Patient p WHERE p.medicalHistory LIKE %:keyword%")
     @QueryHints(@QueryHint(name = "org.hibernate.cacheable", value = "true"))
     List<Patient> findByMedicalHistoryContaining(@Param("keyword") String keyword);
+    
+    /**
+     * Find by phone
+     */
+    Optional<Patient> findByPhone(String phone);
+    
+    /**
+     * Find by first name
+     */
+    List<Patient> findByFirstName(String firstName);
+    
+    /**
+     * Find by last name
+     */
+    List<Patient> findByLastName(String lastName);
 }
+
+
 
 
 

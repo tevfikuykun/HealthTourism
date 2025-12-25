@@ -2,41 +2,52 @@ package com.healthtourism.reservationservice.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+/**
+ * Reservation Request DTO
+ * 
+ * Request DTO for creating a new reservation.
+ * Validates input data and prevents entity leakage.
+ */
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReservationRequestDTO {
-    @NotNull(message = "User ID is required")
-    @Positive(message = "User ID must be positive")
-    private Long userId;
     
-    @NotNull(message = "Hospital ID is required")
-    @Positive(message = "Hospital ID must be positive")
-    private Long hospitalId;
-    
-    @NotNull(message = "Doctor ID is required")
-    @Positive(message = "Doctor ID must be positive")
-    private Long doctorId;
-    
-    private Long accommodationId;
-    
-    private Long transferId; // Optional transfer service ID
-    
-    @NotNull(message = "Appointment date is required")
-    @Future(message = "Appointment date must be in the future")
+    @NotNull(message = "Randevu tarihi boş olamaz")
+    @Future(message = "Randevu tarihi gelecekte olmalıdır")
     private LocalDateTime appointmentDate;
     
-    @NotNull(message = "Check-in date is required")
+    @NotNull(message = "Check-in tarihi boş olamaz")
     private LocalDateTime checkInDate;
     
-    @NotNull(message = "Check-out date is required")
+    @NotNull(message = "Check-out tarihi boş olamaz")
     private LocalDateTime checkOutDate;
     
-    @Size(max = 1000, message = "Notes cannot exceed 1000 characters")
+    @NotNull(message = "Gece sayısı boş olamaz")
+    @Min(value = 1, message = "Gece sayısı en az 1 olmalıdır")
+    @Max(value = 365, message = "Gece sayısı en fazla 365 olabilir")
+    private Integer numberOfNights;
+    
+    @NotNull(message = "Hastane ID boş olamaz")
+    @Positive(message = "Hastane ID pozitif bir sayı olmalıdır")
+    private Long hospitalId;
+    
+    @NotNull(message = "Doktor ID boş olamaz")
+    private UUID doctorId;
+    
+    private Long accommodationId; // Optional
+    
+    @Size(max = 1000, message = "Notlar en fazla 1000 karakter olabilir")
     private String notes;
+    
+    @Size(max = 50, message = "İletişim tercihi en fazla 50 karakter olabilir")
+    private String contactPreference;
 }
-
