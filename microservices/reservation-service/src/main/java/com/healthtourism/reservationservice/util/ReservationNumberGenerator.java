@@ -2,54 +2,96 @@ package com.healthtourism.reservationservice.util;
 
 import org.springframework.stereotype.Component;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Utility class for generating unique reservation numbers
- * Format: HT-YYYYMM-XXX (e.g., HT-202310-001)
+ * Reservation Number Generator
+ * 
+ * Generates unique, human-readable reservation numbers.
+ * Format: HT-YYYY-MMDD-XXXX
+ * 
+ * Example: HT-2024-0325-A3B7
+ * 
+ * Features:
+ * - Predictable format (HT prefix, year, date)
+ * - Unpredictable suffix (random characters) for security
+ * - Human-readable for customer support
+ * - Unique identifier
  */
 @Component
 public class ReservationNumberGenerator {
     
     private static final String PREFIX = "HT";
-    private static final AtomicInteger counter = new AtomicInteger(1);
-    private static String currentMonth = "";
+    private static final String CHARACTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Excluding confusing chars (0, O, I, 1)
+    private static final int SUFFIX_LENGTH = 4;
+    private static final SecureRandom RANDOM = new SecureRandom();
     
     /**
-     * Generates a unique reservation number
-     * Format: HT-YYYYMM-XXX where XXX is a sequential number resetting each month
+     * Generate a new reservation number
      * 
-     * @return Unique reservation number (e.g., HT-202310-001)
+     * Format: HT-YYYY-MMDD-XXXX
+     * Example: HT-2024-0325-A3B7
+     * 
+     * @return Unique reservation number
      */
-    public synchronized String generateReservationNumber() {
-        String monthKey = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
+    public String generate() {
+        LocalDateTime now = LocalDateTime.now();
         
-        // Reset counter if month changed
-        if (!monthKey.equals(currentMonth)) {
-            currentMonth = monthKey;
-            counter.set(1);
-        }
+        // Format: HT-YYYY-MMDD-XXXX
+        String year = String.valueOf(now.getYear());
+        String month = String.format("%02d", now.getMonthValue());
+        String day = String.format("%02d", now.getDayOfMonth());
         
-        int sequenceNumber = counter.getAndIncrement();
-        String formattedSequence = String.format("%03d", sequenceNumber);
+        String datePart = month + day;
+        String randomSuffix = generateRandomSuffix();
         
-        return String.format("%s-%s-%s", PREFIX, monthKey, formattedSequence);
+        return String.format("%s-%s-%s-%s", PREFIX, year, datePart, randomSuffix);
     }
     
     /**
-     * Generates a reservation number for a specific date
-     * Useful for testing or backdating reservations
-     * 
-     * @param date The date for which to generate the reservation number
-     * @return Unique reservation number
+     * Generate random suffix using alphanumeric characters
+     * Excludes confusing characters (0, O, I, 1) for better readability
      */
-    public synchronized String generateReservationNumber(LocalDateTime date) {
-        String monthKey = date.format(DateTimeFormatter.ofPattern("yyyyMM"));
-        int sequenceNumber = counter.getAndIncrement();
-        String formattedSequence = String.format("%03d", sequenceNumber);
+    private String generateRandomSuffix() {
+        StringBuilder suffix = new StringBuilder(SUFFIX_LENGTH);
+        for (int i = 0; i < SUFFIX_LENGTH; i++) {
+            int index = RANDOM.nextInt(CHARACTERS.length());
+            suffix.append(CHARACTERS.charAt(index));
+        }
+        return suffix.toString();
+    }
+    
+    /**
+     * Validate reservation number format
+     */
+    public boolean isValidFormat(String reservationNumber) {
+        if (reservationNumber == null || reservationNumber.trim().isEmpty()) {
+            return false;
+        }
         
-        return String.format("%s-%s-%s", PREFIX, monthKey, formattedSequence);
+        // Pattern: HT-YYYY-MMDD-XXXX
+        String pattern = "^HT-\\d{4}-\\d{4}-[A-Z2-9]{4}$";
+        return reservationNumber.matches(pattern);
+    }
+    
+    /**
+     * Extract year from reservation number
+     */
+    public Integer extractYear(String reservationNumber) {
+        if (!isValidFormat(reservationNumber)) {
+            return null;
+        }
+        try {
+            // HT-YYYY-MMDD-XXXX
+            String[] parts = reservationNumber.split("-");
+            if (parts.length >= 2) {
+                return Integer.parseInt(parts[1]);
+            }
+        } catch (NumberFormatException e) {
+            // Invalid format
+        }
+        return null;
     }
 }

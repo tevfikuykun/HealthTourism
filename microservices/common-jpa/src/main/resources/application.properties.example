@@ -1,0 +1,47 @@
+# Common JPA Configuration Example
+# Copy this file to application.properties and configure according to your environment
+
+# ============================================
+# Rate Limiting Configuration
+# ============================================
+# Enable/disable rate limiting globally
+security.ratelimit.enabled=true
+# Default requests per minute (if not specified in @RateLimited annotation)
+security.ratelimit.default-requests-per-minute=100
+
+# ============================================
+# Redis Configuration (for Rate Limiting)
+# ============================================
+# Redis is used for distributed rate limiting across multiple service instances
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+spring.data.redis.password=
+spring.data.redis.timeout=2000ms
+spring.data.redis.database=0
+
+# Redis connection pool settings
+spring.data.redis.jedis.pool.max-active=8
+spring.data.redis.jedis.pool.max-idle=8
+spring.data.redis.jedis.pool.min-idle=0
+spring.data.redis.jedis.pool.max-wait=-1ms
+
+# ============================================
+# API Versioning Configuration
+# ============================================
+# API versioning is handled automatically via ApiVersionInterceptor
+# No additional configuration needed
+
+# ============================================
+# Global Exception Handler Configuration
+# ============================================
+# EnhancedGlobalExceptionHandler is automatically registered via @RestControllerAdvice
+# No additional configuration needed
+
+# ============================================
+# Logging Configuration
+# ============================================
+# Log rate limit violations
+logging.level.com.healthtourism.jpa.config.ratelimit=INFO
+# Log API version information
+logging.level.com.healthtourism.jpa.config.versioning=INFO
+

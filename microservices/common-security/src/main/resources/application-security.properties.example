@@ -1,0 +1,37 @@
+# Security Configuration
+# Copy this file to application.properties and update values
+
+# JWT Configuration
+jwt.secret=your-256-bit-secret-key-change-this-in-production-minimum-32-characters-long
+jwt.expiration=86400000
+# JWT expiration: 24 hours (in milliseconds)
+# For production, consider shorter expiration (e.g., 3600000 = 1 hour)
+
+jwt.refresh-expiration=604800000
+# Refresh token expiration: 7 days (in milliseconds)
+
+# CORS Configuration
+app.cors.allowed-origins=https://app.healthtourism.com,https://admin.healthtourism.com,http://localhost:3000,http://localhost:3001
+app.cors.allowed-methods=GET,POST,PUT,PATCH,DELETE,OPTIONS
+app.cors.allowed-headers=Authorization,Content-Type,X-Requested-With,X-API-Key,X-Idempotency-Key
+app.cors.allow-credentials=true
+app.cors.max-age=3600
+
+# Password Encoder Configuration
+spring.security.bcrypt.strength=10
+# BCrypt strength: 10 (2^10 = 1024 rounds)
+# Higher = more secure but slower
+# Recommended: 10-12 for production
+
+# Security Headers
+app.security.headers.enable=true
+app.security.headers.content-security-policy=default-src 'self'
+app.security.headers.x-frame-options=DENY
+app.security.headers.x-content-type-options=nosniff
+app.security.headers.x-xss-protection=1; mode=block
+
+# Rate Limiting (if using)
+app.rate-limit.enabled=true
+app.rate-limit.requests-per-minute=60
+app.rate-limit.requests-per-hour=1000
+

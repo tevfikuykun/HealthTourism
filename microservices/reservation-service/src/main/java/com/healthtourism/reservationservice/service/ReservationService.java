@@ -1,189 +1,213 @@
 package com.healthtourism.reservationservice.service;
 
+import com.healthtourism.jpa.service.IdempotencyService;
+import com.healthtourism.jpa.util.SecurityContextHelper;
 import com.healthtourism.reservationservice.dto.ReservationDTO;
 import com.healthtourism.reservationservice.dto.ReservationRequestDTO;
 import com.healthtourism.reservationservice.entity.Reservation;
-import com.healthtourism.reservationservice.exception.InsufficientCapacityException;
-import com.healthtourism.reservationservice.exception.ResourceNotFoundException;
+import com.healthtourism.reservationservice.entity.ReservationStatus;
+import com.healthtourism.reservationservice.exception.BusinessRuleException;
+import com.healthtourism.reservationservice.exception.ReservationConflictException;
+import com.healthtourism.reservationservice.exception.ReservationNotFoundException;
+import com.healthtourism.reservationservice.mapper.ReservationMapper;
 import com.healthtourism.reservationservice.repository.ReservationRepository;
-import com.healthtourism.reservationservice.service.PriceCalculationService;
-import com.healthtourism.reservationservice.util.ReservationNumberGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.stream.Collectors;
 
+import java.math.BigDecimal;
+import java.util.UUID;
+
+/**
+ * Reservation Service - Professional Enterprise Implementation
+ * 
+ * Best Practices Applied:
+ * - Pagination support (Pageable)
+ * - Idempotency support (prevent duplicate operations)
+ * - MapStruct for Entity-DTO conversion
+ * - Business rule validation
+ * - Custom exceptions
+ * - Transactional methods
+ * - Comprehensive logging
+ */
 @Service
+@RequiredArgsConstructor
+@Slf4j
+@Transactional(readOnly = true)
 public class ReservationService {
-    @Autowired
-    private ReservationRepository reservationRepository;
     
-    @Autowired
-    private KafkaEventService kafkaEventService;
+    private final ReservationRepository reservationRepository;
+    private final ReservationMapper reservationMapper;
+    private final PriceCalculationService priceCalculationService;
+    private final ReservationValidationService validationService;
+    private final ReservationStateMachine stateMachine;
+    private final NotificationService notificationService;
+    private final IdempotencyService idempotencyService;
     
-    @Autowired
-    private EventStoreService eventStoreService;
-    
-    @Autowired
-    private ReservationNumberGenerator reservationNumberGenerator;
-    
-    @Autowired
-    private PriceCalculationService priceCalculationService;
-    
+    /**
+     * Create a new reservation with idempotency support
+     * 
+     * @param request Reservation request
+     * @param userId User ID (from SecurityContext)
+     * @param idempotencyKey Idempotency key (optional)
+     * @return Created reservation DTO
+     */
     @Transactional
-    public ReservationDTO createReservation(ReservationRequestDTO request) {
-        // Validate appointment date is not in the past
-        if (request.getAppointmentDate().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Appointment date cannot be in the past");
+    public ReservationDTO createReservation(ReservationRequestDTO request, UUID userId, String idempotencyKey) {
+        log.info("Creating reservation for user: {} (idempotency key: {})", userId, idempotencyKey);
+        
+        // Idempotency check: If key exists, return cached result
+        if (idempotencyKey != null && !idempotencyKey.trim().isEmpty()) {
+            if (idempotencyService.exists(idempotencyKey)) {
+                log.info("Duplicate request detected (idempotency key: {}). Returning cached result.", idempotencyKey);
+                Object cachedResult = idempotencyService.getCachedResult(idempotencyKey)
+                    .orElseThrow(() -> new BusinessRuleException("Idempotency key exists but no cached result found"));
+                return (ReservationDTO) cachedResult;
+            }
         }
         
-        // Check for appointment conflicts
-        LocalDateTime appointmentEnd = request.getAppointmentDate().plusHours(1);
-        List<Reservation> conflicting = reservationRepository.findConflictingReservations(
-                request.getDoctorId(), request.getAppointmentDate(), appointmentEnd);
-        if (!conflicting.isEmpty()) {
-            throw new InsufficientCapacityException(
-                "Bu saatte başka bir randevu var. Lütfen farklı bir saat seçin.");
+        // Convert DTO to Entity
+        Reservation reservation = reservationMapper.toEntity(request);
+        reservation.setUserId(userId);
+        
+        // Business validations
+        validationService.validateAppointmentTime(reservation.getDoctorId(), reservation.getAppointmentDate(), null);
+        validationService.validateDates(reservation.getCheckInDate(), reservation.getCheckOutDate(), reservation.getAppointmentDate());
+        
+        // Calculate price
+        BigDecimal doctorFee = priceCalculationService.getDoctorConsultationFee(reservation.getDoctorId());
+        BigDecimal accommodationPrice = reservation.getAccommodationId() != null ?
+            priceCalculationService.getAccommodationPricePerNight(reservation.getAccommodationId()) : null;
+        
+        reservation.calculateTotal(doctorFee, accommodationPrice);
+        reservation.setStatus(ReservationStatus.PENDING);
+        
+        Reservation savedReservation = reservationRepository.save(reservation);
+        
+        // Store idempotency key with result
+        if (idempotencyKey != null && !idempotencyKey.trim().isEmpty()) {
+            ReservationDTO resultDTO = reservationMapper.toDTO(savedReservation);
+            idempotencyService.store(idempotencyKey, resultDTO);
         }
         
-        // Calculate number of nights
-        long nights = ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate());
-        if (nights <= 0) {
-            throw new IllegalArgumentException("Geçersiz konaklama tarihleri. Check-out tarihi check-in tarihinden sonra olmalıdır.");
-        }
+        log.info("Reservation created successfully: {}", savedReservation.getReservationNumber());
         
-        // Validate check-in date is not before appointment date
-        if (request.getCheckInDate().isBefore(request.getAppointmentDate().toLocalDate().atStartOfDay())) {
-            throw new IllegalArgumentException("Check-in tarihi randevu tarihinden önce olamaz.");
-        }
-        
-        // Generate unique reservation number
-        String reservationNumber = reservationNumberGenerator.generateReservationNumber();
-        
-        // Calculate total price using PriceCalculationService
-        BigDecimal totalPrice = priceCalculationService.calculateTotalPrice(
-            request.getDoctorId(),
-            request.getAccommodationId(),
-            (int) nights,
-            request.getTransferId()
-        );
-        
-        // Create reservation entity
-        Reservation reservation = new Reservation();
-        reservation.setReservationNumber(reservationNumber);
-        reservation.setUserId(request.getUserId());
-        reservation.setHospitalId(request.getHospitalId());
-        reservation.setDoctorId(request.getDoctorId());
-        reservation.setAccommodationId(request.getAccommodationId());
-        reservation.setAppointmentDate(request.getAppointmentDate());
-        reservation.setCheckInDate(request.getCheckInDate());
-        reservation.setCheckOutDate(request.getCheckOutDate());
-        reservation.setNumberOfNights((int) nights);
-        reservation.setTotalPrice(totalPrice);
-        reservation.setStatus("PENDING");
-        reservation.setNotes(request.getNotes());
-        reservation.setCreatedAt(LocalDateTime.now());
-        
-        Reservation saved = reservationRepository.save(reservation);
-        
-        // Save event to event store
-        com.healthtourism.reservationservice.event.ReservationEvent event = 
-            new com.healthtourism.reservationservice.event.ReservationEvent();
-        event.setEventType("RESERVATION_CREATED");
-        event.setReservationId(saved.getId());
-        event.setReservationNumber(saved.getReservationNumber());
-        event.setUserId(saved.getUserId());
-        event.setHospitalId(saved.getHospitalId());
-        event.setDoctorId(saved.getDoctorId());
-        event.setAccommodationId(saved.getAccommodationId());
-        event.setAppointmentDate(saved.getAppointmentDate());
-        event.setCheckInDate(saved.getCheckInDate());
-        event.setCheckOutDate(saved.getCheckOutDate());
-        event.setNumberOfNights(saved.getNumberOfNights());
-        event.setTotalPrice(saved.getTotalPrice());
-        event.setStatus(saved.getStatus());
-        event.setNotes(saved.getNotes());
-        event.setEventTimestamp(java.time.LocalDateTime.now());
-        event.setEventId(java.util.UUID.randomUUID().toString());
-        
-        eventStoreService.saveEvent("RESERVATION_CREATED", saved.getId(), event, 1L);
-        
-        // Publish event to Kafka
-        kafkaEventService.publishReservationCreated(saved.getId(), saved.getUserId(), saved.getHospitalId());
-        
-        return convertToDTO(saved);
+        return reservationMapper.toDTO(savedReservation);
     }
     
-    public List<ReservationDTO> getReservationsByUser(Long userId) {
-        return reservationRepository.findByUserIdOrderByCreatedAtDesc(userId)
-                .stream().map(this::convertToDTO).collect(Collectors.toList());
+    /**
+     * Get reservations by user ID with pagination
+     * 
+     * @param userId User ID
+     * @param pageable Pagination and sorting parameters
+     * @return Page of reservation DTOs
+     */
+    public Page<ReservationDTO> getReservationsByUserId(UUID userId, Pageable pageable) {
+        log.debug("Fetching reservations for user: {} (page: {}, size: {})", 
+            userId, pageable.getPageNumber(), pageable.getPageSize());
+        
+        Page<Reservation> reservations = reservationRepository.findByUserId(userId, pageable);
+        return reservations.map(reservationMapper::toDTO);
     }
     
-    public ReservationDTO getReservationByNumber(String reservationNumber) {
-        Reservation reservation = reservationRepository.findByReservationNumber(reservationNumber)
-                .orElseThrow(() -> new ResourceNotFoundException("Rezervasyon bulunamadı: " + reservationNumber));
-        return convertToDTO(reservation);
-    }
-    
-    public ReservationDTO getReservationById(Long id) {
+    /**
+     * Get reservation by ID with ownership verification
+     * 
+     * @param id Reservation ID
+     * @param userId User ID (for ownership check)
+     * @return Reservation DTO
+     */
+    public ReservationDTO getReservationById(UUID id, UUID userId) {
+        log.debug("Fetching reservation: {} for user: {}", id, userId);
+        
         Reservation reservation = reservationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Rezervasyon bulunamadı: " + id));
-        return convertToDTO(reservation);
+            .orElseThrow(() -> new ReservationNotFoundException(id));
+        
+        // Ownership verification
+        if (!reservation.getUserId().equals(userId) && !SecurityContextHelper.hasRole("ADMIN")) {
+            throw new BusinessRuleException("Bu rezervasyona erişim yetkiniz yok");
+        }
+        
+        return reservationMapper.toDTO(reservation);
     }
     
+    /**
+     * Cancel reservation with ownership verification
+     * 
+     * @param id Reservation ID
+     * @param userId User ID (for ownership check)
+     * @return Cancelled reservation DTO
+     */
     @Transactional
-    public ReservationDTO updateReservationStatus(Long id, String status) {
+    public ReservationDTO cancelReservation(UUID id, UUID userId) {
+        log.info("Cancelling reservation: {} by user: {}", id, userId);
+        
         Reservation reservation = reservationRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Rezervasyon bulunamadı: " + id));
+            .orElseThrow(() -> new ReservationNotFoundException(id));
+        
+        // Ownership verification
+        if (!reservation.getUserId().equals(userId)) {
+            throw new BusinessRuleException("Bu rezervasyonu iptal etme yetkiniz yok");
+        }
+        
+        // Business rule: Check if can be cancelled
+        if (!reservation.canBeCancelled()) {
+            throw new BusinessRuleException("Bu rezervasyon iptal edilemez (durum: " + reservation.getStatus() + ")");
+        }
+        
+        reservation.cancel();
+        Reservation savedReservation = reservationRepository.save(reservation);
+        
+        log.info("Reservation cancelled successfully: {}", savedReservation.getReservationNumber());
+        
+        return reservationMapper.toDTO(savedReservation);
+    }
+    
+    /**
+     * Confirm reservation (admin only)
+     * 
+     * @param id Reservation ID
+     * @return Confirmed reservation DTO
+     */
+    @Transactional
+    public ReservationDTO confirmReservation(UUID id) {
+        log.info("Confirming reservation: {}", id);
+        
+        Reservation reservation = reservationRepository.findById(id)
+            .orElseThrow(() -> new ReservationNotFoundException(id));
+        
+        reservation.confirm();
+        Reservation savedReservation = reservationRepository.save(reservation);
+        
+        log.info("Reservation confirmed successfully: {}", savedReservation.getReservationNumber());
+        
+        return reservationMapper.toDTO(savedReservation);
+    }
+    
+    /**
+     * Update reservation status (admin only)
+     * 
+     * @param id Reservation ID
+     * @param status New status
+     * @return Updated reservation DTO
+     */
+    @Transactional
+    public ReservationDTO updateReservationStatus(UUID id, ReservationStatus status) {
+        log.info("Updating reservation status: {} to {}", id, status);
+        
+        Reservation reservation = reservationRepository.findById(id)
+            .orElseThrow(() -> new ReservationNotFoundException(id));
+        
+        stateMachine.validateTransition(reservation.getStatus(), status);
         reservation.setStatus(status);
-        Reservation saved = reservationRepository.save(reservation);
         
-        // Save event to event store
-        com.healthtourism.reservationservice.event.ReservationEvent event = 
-            new com.healthtourism.reservationservice.event.ReservationEvent();
-        event.setEventType("RESERVATION_UPDATED");
-        event.setReservationId(saved.getId());
-        event.setReservationNumber(saved.getReservationNumber());
-        event.setStatus(saved.getStatus());
-        event.setEventTimestamp(java.time.LocalDateTime.now());
-        event.setEventId(java.util.UUID.randomUUID().toString());
+        Reservation savedReservation = reservationRepository.save(reservation);
         
-        // Get current version from event store
-        java.util.List<com.healthtourism.reservationservice.entity.ReservationEventStore> events = 
-            eventStoreService.getEventsByReservationId(saved.getId());
-        Long version = events.stream()
-            .mapToLong(e -> e.getAggregateVersion())
-            .max()
-            .orElse(0L) + 1;
-        eventStoreService.saveEvent("RESERVATION_UPDATED", saved.getId(), event, version);
+        log.info("Reservation status updated successfully: {}", savedReservation.getReservationNumber());
         
-        // Publish event to Kafka
-        kafkaEventService.publishReservationUpdated(saved.getId(), saved.getStatus());
-        
-        return convertToDTO(saved);
-    }
-    
-    private ReservationDTO convertToDTO(Reservation reservation) {
-        ReservationDTO dto = new ReservationDTO();
-        dto.setId(reservation.getId());
-        dto.setReservationNumber(reservation.getReservationNumber());
-        dto.setAppointmentDate(reservation.getAppointmentDate());
-        dto.setCheckInDate(reservation.getCheckInDate());
-        dto.setCheckOutDate(reservation.getCheckOutDate());
-        dto.setNumberOfNights(reservation.getNumberOfNights());
-        dto.setTotalPrice(reservation.getTotalPrice());
-        dto.setStatus(reservation.getStatus());
-        dto.setNotes(reservation.getNotes());
-        dto.setCreatedAt(reservation.getCreatedAt());
-        dto.setUserId(reservation.getUserId());
-        dto.setHospitalId(reservation.getHospitalId());
-        dto.setDoctorId(reservation.getDoctorId());
-        dto.setAccommodationId(reservation.getAccommodationId());
-        return dto;
+        return reservationMapper.toDTO(savedReservation);
     }
 }
-

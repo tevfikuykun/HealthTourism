@@ -21,7 +21,7 @@ import java.util.Map;
  * L1/L2 Caching, Dirty Checking, Envers Audit
  */
 @Configuration
-@EnableJpaAuditing
+@EnableJpaAuditing(auditorAwareRef = "jpaAuditorAware")
 @EnableJpaRepositories(basePackages = "com.healthtourism.jpa.repository")
 @EnableTransactionManagement
 public class HibernateConfig {
@@ -85,6 +85,15 @@ public class HibernateConfig {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(emf);
         return transactionManager;
+    }
+    
+    /**
+     * AuditorAware bean for automatic audit field population
+     * Provides current user information for CreatedBy and UpdatedBy fields
+     */
+    @Bean
+    public JpaAuditorAware jpaAuditorAware() {
+        return new JpaAuditorAware();
     }
 }
 

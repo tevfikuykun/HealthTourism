@@ -208,7 +208,7 @@ const DigitalTwin = () => {
         <header className="mb-12 flex justify-between items-end border-b border-white/5 pb-8">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <h1 className="text-6xl font-black text-white tracking-tighter italic uppercase">
-              Digital<span className="text-indigo-500 underline decoration-indigo-500/20">Twin</span>
+              DIGITALTWIN
             </h1>
             <p className="text-indigo-400 font-bold tracking-[6px] text-[10px] mt-3 uppercase opacity-70">
               Biometric Scan • Raycaster Engine v2.0

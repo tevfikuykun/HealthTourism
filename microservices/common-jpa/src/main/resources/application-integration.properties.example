@@ -1,0 +1,49 @@
+# Integration Services Configuration Example
+# Copy this file to application.properties or include it in your service configuration
+
+# ============================================
+# Email Service Configuration (SendGrid)
+# ============================================
+sendgrid.enabled=true
+sendgrid.api.key=${SENDGRID_API_KEY:your_sendgrid_api_key}
+sendgrid.from.email=${SENDGRID_FROM_EMAIL:noreply@healthtourism.com}
+sendgrid.from.name=${SENDGRID_FROM_NAME:Health Tourism}
+
+# ============================================
+# SMS Service Configuration (Twilio)
+# ============================================
+twilio.enabled=true
+twilio.account.sid=${TWILIO_ACCOUNT_SID:your_twilio_account_sid}
+twilio.auth.token=${TWILIO_AUTH_TOKEN:your_twilio_auth_token}
+twilio.phone.number=${TWILIO_PHONE_NUMBER:+1234567890}
+
+# ============================================
+# File Storage Configuration - Azure Blob Storage
+# ============================================
+azure.storage.enabled=false
+azure.storage.connection-string=${AZURE_STORAGE_CONNECTION_STRING:your_azure_connection_string}
+azure.storage.container-name=healthtourism-documents
+
+# ============================================
+# File Storage Configuration - AWS S3
+# ============================================
+aws.s3.enabled=false
+aws.s3.region=${AWS_REGION:us-east-1}
+aws.s3.bucket-name=${AWS_S3_BUCKET_NAME:healthtourism-documents}
+aws.s3.access-key-id=${AWS_ACCESS_KEY_ID:your_aws_access_key_id}
+aws.s3.secret-access-key=${AWS_SECRET_ACCESS_KEY:your_aws_secret_access_key}
+
+# Note: Only enable one file storage service at a time (Azure OR AWS S3)
+
+# ============================================
+# Environment Variables (Recommended for Production)
+# ============================================
+# Set these as environment variables or in your secret management system:
+# - SENDGRID_API_KEY
+# - TWILIO_ACCOUNT_SID
+# - TWILIO_AUTH_TOKEN
+# - TWILIO_PHONE_NUMBER
+# - AZURE_STORAGE_CONNECTION_STRING (if using Azure)
+# - AWS_ACCESS_KEY_ID (if using AWS S3)
+# - AWS_SECRET_ACCESS_KEY (if using AWS S3)
+
