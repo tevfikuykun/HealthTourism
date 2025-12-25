@@ -32,13 +32,14 @@ public enum AuthErrorCode {
     // Password Reset Errors
     PASSWORD_RESET_REQUEST_LIMIT_EXCEEDED("AUTH_4014", "Too many password reset requests. Please try again later"),
     INVALID_RESET_TOKEN("AUTH_4015", "Invalid or expired password reset token"),
-    RESET_TOKEN_ALREADY_USED("AUTH_4016", "Password reset token has already been used"),
-    SAME_PASSWORD("AUTH_4017", "New password must be different from current password"),
+    RESET_TOKEN_EXPIRED("AUTH_4016", "Password reset token has expired"),
+    RESET_TOKEN_ALREADY_USED("AUTH_4017", "Password reset token has already been used"),
+    SAME_PASSWORD("AUTH_4018", "New password must be different from current password"),
     
     // Email Verification Errors
-    INVALID_VERIFICATION_TOKEN("AUTH_4018", "Invalid or expired verification token"),
-    EMAIL_ALREADY_VERIFIED("AUTH_4019", "Email is already verified"),
-    VERIFICATION_TOKEN_EXPIRED("AUTH_4020", "Verification token has expired"),
+    INVALID_VERIFICATION_TOKEN("AUTH_4019", "Invalid or expired verification token"),
+    EMAIL_ALREADY_VERIFIED("AUTH_4020", "Email is already verified"),
+    VERIFICATION_TOKEN_EXPIRED("AUTH_4021", "Verification token has expired"),
     
     // General Errors
     UNAUTHORIZED("AUTH_401", "Unauthorized access"),

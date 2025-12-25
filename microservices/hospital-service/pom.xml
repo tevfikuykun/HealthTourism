@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.0</version>
+        <version>3.2.0</version>
         <relativePath/>
     </parent>
     <groupId>com.healthtourism</groupId>
@@ -15,7 +15,7 @@
     <version>1.0.0</version>
     <name>Hospital Service</name>
     <properties>
-        <java.version>25</java.version>
+        <java.version>17</java.version>
         <spring-cloud.version>2023.0.0</spring-cloud.version>
     </properties>
     <dependencies>

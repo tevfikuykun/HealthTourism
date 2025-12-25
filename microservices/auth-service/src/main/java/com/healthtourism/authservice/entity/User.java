@@ -38,15 +38,19 @@ public class User {
     @Column(nullable = false)
     private String role; // USER, ADMIN, DOCTOR
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "is_active")
     private Boolean isActive;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "email_verified")
     private Boolean emailVerified;
 
+    @Column(name = "verification_token")
     private String verificationToken;
+    
+    @Column(name = "verification_token_expiry")
     private LocalDateTime verificationTokenExpiry;
 
+    @Column(name = "last_login")
     private LocalDateTime lastLogin;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

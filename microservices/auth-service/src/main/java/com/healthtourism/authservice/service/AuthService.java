@@ -323,7 +323,7 @@ public class AuthService {
         
         // Check if token is expired
         if (resetToken.isExpired()) {
-            throw new AuthException(AuthErrorCode.RESET_TOKEN_ALREADY_USED);
+            throw new AuthException(AuthErrorCode.RESET_TOKEN_EXPIRED);
         }
         
         // Validate new password strength
