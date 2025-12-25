@@ -20,13 +20,13 @@ public class RefreshToken {
     @Column(nullable = false, unique = true)
     private String token;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "user_id")
     private Long userId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "expiry_date")
     private LocalDateTime expiryDate;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "is_revoked")
     private Boolean isRevoked;
 
     private LocalDateTime createdAt;
