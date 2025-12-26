@@ -269,6 +269,37 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     long countByUserIdAndStatus(Long userId, String status);
     
     /**
+     * Review Verification: Checks if user has a completed reservation for a doctor.
+     * Security requirement: Only users with completed appointments can review.
+     * 
+     * @param userId User ID
+     * @param doctorId Doctor ID
+     * @return true if user has completed reservation with this doctor
+     */
+    @Query("SELECT COUNT(r) > 0 FROM Reservation r " +
+           "WHERE r.user.id = :userId " +
+           "AND r.doctor.id = :doctorId " +
+           "AND r.status = 'COMPLETED'")
+    boolean existsByUserIdAndDoctorIdAndStatusCompleted(
+            @Param("userId") Long userId, 
+            @Param("doctorId") Long doctorId);
+    
+    /**
+     * Review Verification: Checks if user has a completed reservation for a hospital.
+     * 
+     * @param userId User ID
+     * @param hospitalId Hospital ID
+     * @return true if user has completed reservation at this hospital
+     */
+    @Query("SELECT COUNT(r) > 0 FROM Reservation r " +
+           "WHERE r.user.id = :userId " +
+           "AND r.hospital.id = :hospitalId " +
+           "AND r.status = 'COMPLETED'")
+    boolean existsByUserIdAndHospitalIdAndStatusCompleted(
+            @Param("userId") Long userId, 
+            @Param("hospitalId") Long hospitalId);
+    
+    /**
      * Hastane için toplam ciro (CONFIRMED rezervasyonlar).
      */
     @Query("SELECT COALESCE(SUM(r.totalPrice), 0) FROM Reservation r " +
