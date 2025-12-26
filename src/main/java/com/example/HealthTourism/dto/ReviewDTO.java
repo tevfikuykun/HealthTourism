@@ -21,5 +21,17 @@ public class ReviewDTO {
     private Long hospitalId;
     private String hospitalName;
     private String reviewType; // DOCTOR, HOSPITAL
+    
+    /**
+     * Moderasyon flag'i: Yorum onaylanmış mı?
+     * false: Onay bekliyor (PENDING)
+     * true: Onaylanmış ve yayında (APPROVED)
+     */
+    private Boolean isApproved;
+    
+    /**
+     * Yorum statüsü: PENDING, APPROVED, REJECTED
+     */
+    private String status;
 }
 

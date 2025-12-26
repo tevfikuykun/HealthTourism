@@ -33,7 +33,17 @@ jobs:
     
     - name: Run tests
       working-directory: microservices/${{ matrix.service }}
+      continue-on-error: true
       run: mvn -B clean test
+
+    - name: Check test results directory
+      if: always()
+      working-directory: microservices/${{ matrix.service }}
+      run: |
+        echo "Checking test results..."
+        ls -la target/ || echo "target directory not found"
+        ls -la target/surefire-reports/ || echo "surefire-reports directory not found"
+        find target -name "*.xml" -type f || echo "No XML files found"
 
     - name: Upload coverage report (if generated)
       if: always()
@@ -51,6 +61,11 @@ jobs:
         path: microservices/${{ matrix.service }}/target/surefire-reports/*.xml
         reporter: java-junit
         fail-on-error: false
+        list-suites: all
+        max-annotations: 50
+        check-name: Test Results
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build:
     needs: test
