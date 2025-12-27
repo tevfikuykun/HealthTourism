@@ -286,11 +286,16 @@ function AppContent() {
         // 🚨 Providerlar ile Sarma 🚨
         <QueryClientProvider client={queryClient}>
             <Provider store={store}>
-                <WagmiProvider config={wagmiConfig}>
+                <WagmiProvider config={wagmiConfig} reconnectOnMount={false}>
                     <RainbowKitProvider>
                         <ThemeProvider theme={theme}>
                             <CssBaseline />
-                            <Router>
+                            <Router
+                                future={{
+                                    v7_startTransition: true,
+                                    v7_relativeSplatPath: true,
+                                }}
+                            >
                     <Box sx={{ 
                       display: 'flex', 
                       flexDirection: 'column', 
