@@ -1,8 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Box, Typography, Container, Grid, Link,
   Divider, IconButton, useTheme, Chip,
+  TextField, Button, InputAdornment,
 } from '@mui/material';
+import { Send, CheckCircle } from '@mui/icons-material';
+import { toast } from 'react-toastify';
 import {
   Facebook, Twitter, Instagram, LinkedIn,
   Email, Phone, LocationOn, Verified,
@@ -20,6 +23,42 @@ import { fadeInUp, staggerContainer, staggerItem } from '../utils/ui-helpers';
 function Footer() {
   const { t } = useTranslation();
   const theme = useTheme();
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleNewsletterSubmit = async (e) => {
+    e.preventDefault();
+    if (!newsletterEmail || !newsletterEmail.includes('@')) {
+      toast.error(t('footer.invalidEmail', 'Lütfen geçerli bir e-posta adresi girin'));
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // TODO: Backend API'ye newsletter kaydı gönder
+      // await api.post('/newsletter/subscribe', { email: newsletterEmail });
+      
+      // Şimdilik local storage'a kaydet veya mock response
+      const existingSubscriptions = JSON.parse(localStorage.getItem('newsletter_subscriptions') || '[]');
+      if (!existingSubscriptions.includes(newsletterEmail)) {
+        existingSubscriptions.push(newsletterEmail);
+        localStorage.setItem('newsletter_subscriptions', JSON.stringify(existingSubscriptions));
+      }
+      
+      toast.success(t('footer.newsletterSuccess', 'Bülten kaydınız başarıyla oluşturuldu!'));
+      setIsSubmitted(true);
+      setNewsletterEmail('');
+      
+      setTimeout(() => {
+        setIsSubmitted(false);
+      }, 3000);
+    } catch (error) {
+      toast.error(t('footer.newsletterError', 'Bir hata oluştu. Lütfen tekrar deneyin.'));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   
   const companyLinks = useMemo(() => [
     { title: t('about', 'Hakkımızda'), to: '/about' },
@@ -294,8 +333,8 @@ function Footer() {
             </Grid>
 
             {/* Kolon 4: Sosyal Medya - Material-UI + Tailwind + Framer Motion + Lucide-React */}
-            <Grid item xs={12} sm={4} md={3}>
-              <motion.div variants={staggerItem}>
+            <Grid item xs={12} sm={4} md={3} sx={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
+              <motion.div variants={staggerItem} style={{ width: '100%', maxWidth: '100%' }}>
                 <Typography 
                   variant="h6" 
                   className="font-bold mb-4 text-indigo-400"
@@ -340,13 +379,116 @@ function Footer() {
                 </Box>
 
                 {/* Newsletter Subscription */}
-                <Box className="mt-6 p-4 bg-slate-800/50 rounded-2xl border border-slate-700" sx={{ mt: 4, p: 2, bgcolor: 'rgba(30, 41, 59, 0.5)', borderRadius: 4, border: '1px solid #334155' }}>
-                  <Typography variant="subtitle2" className="font-bold mb-2 text-white" sx={{ fontWeight: 700, mb: 1, color: 'white' }}>
+                <Box
+                  sx={{
+                    mt: 4,
+                    p: 2.5,
+                    bgcolor: 'rgba(30, 41, 59, 0.5)',
+                    borderRadius: 3,
+                    border: '1px solid #334155',
+                    width: '100%',
+                    maxWidth: '100%',
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      fontWeight: 700,
+                      mb: 1,
+                      color: 'white',
+                      fontSize: '0.875rem',
+                    }}
+                  >
                     {t('footer.newsletter', 'Bülten')}
                   </Typography>
-                  <Typography variant="caption" className="text-slate-400 text-xs" sx={{ color: '#94a3b8', fontSize: '0.75rem' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: '#94a3b8',
+                      fontSize: '0.75rem',
+                      mb: 2,
+                      display: 'block',
+                      lineHeight: 1.4,
+                    }}
+                  >
                     {t('footer.newsletterDesc', 'Yeni hizmetler ve kampanyalardan haberdar olun')}
                   </Typography>
+
+                  {isSubmitted ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#86efac' }}>
+                      <CheckCircle fontSize="small" />
+                      <Typography variant="caption" sx={{ color: '#86efac', fontSize: '0.75rem' }}>
+                        {t('footer.subscribed', 'Kayıt başarılı!')}
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Box component="form" onSubmit={handleNewsletterSubmit} sx={{ width: '100%' }}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        type="email"
+                        placeholder={t('footer.emailPlaceholder', 'E-posta adresiniz')}
+                        value={newsletterEmail}
+                        onChange={(e) => setNewsletterEmail(e.target.value)}
+                        disabled={isSubmitting}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <Button
+                                type="submit"
+                                size="small"
+                                variant="contained"
+                                disabled={isSubmitting || !newsletterEmail}
+                                sx={{
+                                  minWidth: '36px',
+                                  width: '36px',
+                                  height: '36px',
+                                  p: 0,
+                                  bgcolor: 'primary.main',
+                                  borderRadius: '8px',
+                                  '&:hover': {
+                                    bgcolor: 'primary.dark',
+                                  },
+                                  '&:disabled': {
+                                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                                  },
+                                }}
+                              >
+                                <Send sx={{ fontSize: '18px' }} />
+                              </Button>
+                            </InputAdornment>
+                          ),
+                        }}
+                        sx={{
+                          width: '100%',
+                          '& .MuiOutlinedInput-root': {
+                            bgcolor: 'rgba(15, 23, 42, 0.5)',
+                            color: 'white',
+                            fontSize: '0.875rem',
+                            '& fieldset': {
+                              borderColor: '#334155',
+                            },
+                            '&:hover fieldset': {
+                              borderColor: '#475569',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: '#818cf8',
+                            },
+                            '& input': {
+                              py: 1,
+                              fontSize: '0.875rem',
+                              '&::placeholder': {
+                                color: '#64748b',
+                                opacity: 1,
+                                fontSize: '0.875rem',
+                              },
+                            },
+                          },
+                        }}
+                      />
+                    </Box>
+                  )}
                 </Box>
               </motion.div>
             </Grid>

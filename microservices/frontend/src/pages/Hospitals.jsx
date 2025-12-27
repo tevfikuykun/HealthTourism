@@ -5,95 +5,181 @@ import { hospitalService } from '../services/api';
 import { 
     Container, Box, Typography, Grid, Card, CardContent, CardMedia, 
     TextField, Button, FormControl, InputLabel, Select, MenuItem,
-    Rating, Paper, useTheme, Chip, Divider, IconButton
+    Rating, Paper, useTheme, Chip, Divider, IconButton, Avatar, Tooltip
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import StarIcon from '@mui/icons-material/Star';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import SecurityIcon from '@mui/icons-material/Security';
+import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import FavoriteButton from '../components/FavoriteButton';
 import Pagination from '../components/Pagination';
-import Loading from '../components/Loading';
+import { HospitalCardSkeleton } from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const specialties = ['Kardiyoloji', 'Estetik', 'Diş Hekimliği', 'Onkoloji', 'Ortopedi', 'Göz Hastalıkları', 'Genel Cerrahi'];
 const cities = ['İstanbul', 'Ankara', 'İzmir', 'Antalya', 'Bursa', 'Muğla', 'Adana'];
+
+// Accreditation badge icons mapping
+const accreditationIcons = {
+    'JCI': VerifiedIcon,
+    'ISO 9001:2015': SecurityIcon,
+    'WHO': MedicalServicesIcon,
+    'CE': CheckCircleIcon,
+    'Default': CheckCircleIcon,
+};
+
+const getAccreditationIcon = (acc) => {
+    const Icon = accreditationIcons[acc] || accreditationIcons['Default'];
+    return Icon;
+};
 
 
 // --- BİLEŞEN: HospitalCard ---
 const HospitalCard = ({ hospital }) => {
     const { t } = useTranslation();
     const theme = useTheme();
+    
     return (
-        <Card
-            sx={{
-                borderRadius: 2,
-                boxShadow: theme.shadows[3],
-                transition: '0.3s',
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                '&:hover': { boxShadow: theme.shadows[8] }
-            }}
+        <motion.div
+            layout
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3 }}
+            style={{ height: '100%' }}
         >
-            <Box sx={{ position: 'relative' }}>
-                <CardMedia
-                    component="img"
-                    height="180"
-                    image={hospital.image}
-                    alt={hospital.name}
-                    sx={{ objectFit: 'cover' }}
-                />
-                <Chip
-                    label={hospital.specialty}
-                    size="small"
-                    color="primary"
-                    sx={{
-                        position: 'absolute',
-                        top: 10,
-                        left: 10,
-                        fontWeight: 'bold'
-                    }}
-                />
-                <Box sx={{ position: 'absolute', top: 10, right: 10 }}>
-                    <FavoriteButton itemId={hospital.id} itemType="hospital" />
+            <Card
+                component={motion.div}
+                whileHover={{ 
+                    scale: 1.02,
+                    transition: { duration: 0.2 }
+                }}
+                sx={{
+                    borderRadius: 2,
+                    boxShadow: theme.shadows[3],
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                    '&:hover': { 
+                        boxShadow: theme.shadows[8],
+                        '& .hospital-image': {
+                            transform: 'scale(1.05)',
+                        }
+                    }
+                }}
+            >
+                <Box sx={{ position: 'relative', overflow: 'hidden' }}>
+                    <CardMedia
+                        component="img"
+                        height="180"
+                        image={hospital.image}
+                        alt={hospital.name}
+                        className="hospital-image"
+                        sx={{ 
+                            objectFit: 'cover',
+                            transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                        }}
+                    />
+                    <Chip
+                        label={hospital.specialty}
+                        size="small"
+                        color="primary"
+                        sx={{
+                            position: 'absolute',
+                            top: 10,
+                            left: 10,
+                            fontWeight: 'bold',
+                            backdropFilter: 'blur(10px)',
+                            bgcolor: 'rgba(79, 70, 229, 0.9)',
+                        }}
+                    />
+                    <Box sx={{ position: 'absolute', top: 10, right: 10 }}>
+                        <FavoriteButton itemId={hospital.id} itemType="hospital" />
+                    </Box>
                 </Box>
-            </Box>
-            <CardContent sx={{ flexGrow: 1 }}>
-                <Typography gutterBottom variant="h6" component="div" sx={{ fontWeight: 700 }}>
-                    {hospital.name}
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <LocationOnIcon fontSize="small" color="action" sx={{ mr: 0.5 }} />
-                    <Typography variant="body2" color="text.secondary">{hospital.city}, {t('turkey', 'Türkiye')}</Typography>
-                </Box>
+                <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                    <Typography gutterBottom variant="h6" component="div" sx={{ fontWeight: 700, mb: 1 }}>
+                        {hospital.name}
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+                        <LocationOnIcon fontSize="small" color="action" sx={{ mr: 0.5 }} />
+                        <Typography variant="body2" color="text.secondary">
+                            {hospital.city}, {t('turkey', 'Türkiye')}
+                        </Typography>
+                    </Box>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <Rating name="read-only" value={hospital.rating} readOnly precision={0.1} size="small" icon={<StarIcon color="warning" />} />
-                    <Typography variant="body2" sx={{ ml: 1, fontWeight: 'bold', color: theme.palette.warning.main }}>{hospital.rating}</Typography>
-                    <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
-                    <Typography variant="body2" color="text.secondary">{hospital.treatments}+ {t('treatments', 'Tedavi')}</Typography>
-                </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <Rating 
+                            name="read-only" 
+                            value={hospital.rating} 
+                            readOnly 
+                            precision={0.1} 
+                            size="small" 
+                            icon={<StarIcon sx={{ color: theme.palette.warning.main }} />}
+                            emptyIcon={<StarIcon sx={{ color: theme.palette.action.disabled }} />}
+                        />
+                        <Typography variant="body2" sx={{ ml: 1, fontWeight: 'bold', color: theme.palette.warning.main }}>
+                            {hospital.rating}
+                        </Typography>
+                        <Divider orientation="vertical" flexItem sx={{ mx: 1.5, height: 16 }} />
+                        <Typography variant="body2" color="text.secondary">
+                            {hospital.treatments}+ {t('treatments', 'Tedavi')}
+                        </Typography>
+                    </Box>
 
-                <Box sx={{ mt: 1, mb: 2 }}>
-                    {hospital.accreditations.map(acc => (
-                        <Chip key={acc} label={acc} size="small" color="primary" variant="outlined" sx={{ mr: 0.5, mb: 0.5 }} />
-                    ))}
-                </Box>
+                    {/* Accreditation Badges with Icons */}
+                    <Box sx={{ mt: 1, mb: 2, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {hospital.accreditations.map(acc => {
+                            const Icon = getAccreditationIcon(acc);
+                            return (
+                                <Tooltip key={acc} title={acc} arrow>
+                                    <Chip
+                                        icon={<Icon sx={{ fontSize: '16px !important' }} />}
+                                        label={acc}
+                                        size="small"
+                                        color="primary"
+                                        variant="outlined"
+                                        sx={{
+                                            fontWeight: 600,
+                                            '& .MuiChip-icon': {
+                                                color: theme.palette.primary.main,
+                                            },
+                                            '&:hover': {
+                                                bgcolor: `${theme.palette.primary.main}15`,
+                                                borderColor: theme.palette.primary.main,
+                                            }
+                                        }}
+                                    />
+                                </Tooltip>
+                            );
+                        })}
+                    </Box>
 
-                <Button
-                    variant="contained"
-                    color="secondary"
-                    fullWidth
-                    component={RouterLink}
-                    to={`/hospitals/${hospital.slug}`}
-                    sx={{ mt: 'auto' }} // Butonun daima en altta olmasını sağlar
-                >
-                    {t('viewDetails', 'Detaylı İncele')}
-                </Button>
-            </CardContent>
-        </Card>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        fullWidth
+                        component={RouterLink}
+                        to={`/hospitals/${hospital.slug}`}
+                        sx={{ 
+                            mt: 'auto',
+                            fontWeight: 600,
+                            textTransform: 'none',
+                        }}
+                    >
+                        {t('viewDetails', 'Detaylı İncele')}
+                    </Button>
+                </CardContent>
+            </Card>
+        </motion.div>
     );
 };
 // --- BİLEŞEN SONU: HospitalCard ---
@@ -104,13 +190,30 @@ export { HospitalCard };
 
 function Hospitals() {
     const { t } = useTranslation();
+    const [searchParams] = useSearchParams();
+    
+    // Initialize filters from URL params
     const [filters, setFilters] = useState({
-        search: '',
-        city: '',
-        specialty: '',
+        search: searchParams.get('search') || '',
+        city: searchParams.get('city') || '',
+        specialty: searchParams.get('specialty') || '',
     });
-    const [page, setPage] = useState(1);
+    
+    const [page, setPage] = useState(parseInt(searchParams.get('page')) || 1);
     const itemsPerPage = 12;
+
+    // Sync URL params when filters or page change
+    useEffect(() => {
+        const params = new URLSearchParams();
+        if (filters.search) params.set('search', filters.search);
+        if (filters.city) params.set('city', filters.city);
+        if (filters.specialty) params.set('specialty', filters.specialty);
+        if (page > 1) params.set('page', page.toString());
+        
+        // Update URL without page reload
+        const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+    }, [filters, page]);
 
     // Backend API entegrasyonu
     const { data, isLoading, error } = useQuery({
@@ -205,7 +308,20 @@ function Hospitals() {
             </Paper>
 
             {isLoading ? (
-                <Loading message={t('loadingHospitals')} />
+                <>
+                    <Box sx={{ mb: 3 }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                            {t('loadingHospitals', 'Yükleniyor...')}
+                        </Typography>
+                    </Box>
+                    <Grid container spacing={4}>
+                        {Array.from({ length: itemsPerPage }).map((_, index) => (
+                            <Grid item xs={12} sm={6} lg={4} key={index}>
+                                <HospitalCardSkeleton />
+                            </Grid>
+                        ))}
+                    </Grid>
+                </>
             ) : error ? (
                 <EmptyState
                     title="Hata oluştu"
@@ -222,13 +338,15 @@ function Hospitals() {
                     {/* Hastane Listesi */}
                     {hospitals.length > 0 ? (
                         <>
-                            <Grid container spacing={4}>
-                                {hospitals.map(hospital => (
-                                    <Grid item xs={12} sm={6} lg={4} key={hospital.id}>
-                                        <HospitalCard hospital={hospital} />
-                                    </Grid>
-                                ))}
-                            </Grid>
+                            <AnimatePresence mode="wait">
+                                <Grid container spacing={4}>
+                                    {hospitals.map(hospital => (
+                                        <Grid item xs={12} sm={6} lg={4} key={hospital.id}>
+                                            <HospitalCard hospital={hospital} />
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                            </AnimatePresence>
                             <Pagination
                                 currentPage={page}
                                 totalPages={totalPages}

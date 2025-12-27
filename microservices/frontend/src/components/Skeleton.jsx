@@ -18,19 +18,40 @@ export function Skeleton({ variant = 'text', ...props }) {
   return <MuiSkeleton variant={variant} {...props} />;
 }
 
-// Hospital Card Skeleton
+// Hospital Card Skeleton - Enhanced version
 export function HospitalCardSkeleton() {
   return (
-    <Card>
-      <MuiSkeleton variant="rectangular" height={180} />
-      <CardContent>
-        <MuiSkeleton variant="text" width="80%" height={32} />
-        <MuiSkeleton variant="text" width="60%" height={24} sx={{ mt: 1 }} />
-        <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-          <MuiSkeleton variant="rectangular" width={60} height={24} />
-          <MuiSkeleton variant="rectangular" width={60} height={24} />
+    <Card
+      sx={{
+        borderRadius: 2,
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <MuiSkeleton variant="rectangular" height={180} sx={{ borderRadius: '8px 8px 0 0' }} />
+      <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+        {/* Title */}
+        <MuiSkeleton variant="text" width="80%" height={28} sx={{ mb: 1.5 }} />
+        {/* Location */}
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+          <MuiSkeleton variant="circular" width={16} height={16} sx={{ mr: 0.5 }} />
+          <MuiSkeleton variant="text" width="60%" height={20} />
         </Box>
-        <MuiSkeleton variant="text" width="40%" height={20} sx={{ mt: 2 }} />
+        {/* Rating & Treatments */}
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
+          <MuiSkeleton variant="text" width={80} height={20} />
+          <MuiSkeleton variant="text" width={1} height={16} />
+          <MuiSkeleton variant="text" width={60} height={20} />
+        </Box>
+        {/* Accreditation badges */}
+        <Box sx={{ display: 'flex', gap: 0.5, mb: 2, flexWrap: 'wrap' }}>
+          <MuiSkeleton variant="rectangular" width={50} height={24} sx={{ borderRadius: 1 }} />
+          <MuiSkeleton variant="rectangular" width={45} height={24} sx={{ borderRadius: 1 }} />
+          <MuiSkeleton variant="rectangular" width={40} height={24} sx={{ borderRadius: 1 }} />
+        </Box>
+        {/* Button */}
+        <MuiSkeleton variant="rectangular" width="100%" height={40} sx={{ borderRadius: 1, mt: 'auto' }} />
       </CardContent>
     </Card>
   );
