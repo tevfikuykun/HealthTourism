@@ -5,7 +5,7 @@
     "hospitals": "Hastaneler",
     "doctors": "Doktorlar",
     "accommodations": "Konaklama",
-    "packages": "Paketler",
+    "packages": "Sağlık Paketleri",
     "reservations": "Rezervasyonlar",
     "payments": "Ödemeler",
     "contact": "İletişim",
@@ -147,6 +147,7 @@
     "dashboard": "Dashboard",
     "journey": "Yolculuk",
     "wallet": "Cüzdan",
+    "packages": "Sağlık Paketleri",
     "aiAssistant": "AI Asistan"
   },
   "status": {
@@ -487,6 +488,22 @@
     "description": "Açıklama",
     "result": "Sonuç",
     "responseTime": "Yanıt Süresi"
+  },
+  "wallet": {
+    "connectTitle": "Cüzdanınızı Bağlayın",
+    "connectDescription": "Blockchain tabanlı sağlık verilerinize erişmek için cüzdanınızı bağlayın.",
+    "connected": "Cüzdan Bağlandı!",
+    "redirecting": "Yönlendiriliyor...",
+    "connect": "Cüzdan Bağla",
+    "whyConnect": "Neden Cüzdan Bağlamalıyım?",
+    "connectReason1": "• Blockchain tabanlı sağlık verilerinize güvenli erişim",
+    "connectReason2": "• Sağlık belgelerinizi QR kod ile paylaşabilme",
+    "connectReason3": "• Tedavi geçmişinizin şeffaf ve güvenli saklanması",
+    "connectHelp": "Cüzdanınız yok mu? MetaMask, WalletConnect veya Coinbase Wallet gibi cüzdanlardan birini kurabilirsiniz.",
+    "noWalletFound": "Cüzdan bulunamadı. Lütfen MetaMask veya benzeri bir cüzdan yükleyin.",
+    "connectionError": "Cüzdan bağlantısı başarısız oldu. Lütfen tekrar deneyin.",
+    "addressCopied": "Cüzdan adresi kopyalandı",
+    "addressError": "Adres formatı geçersiz"
   },
   "home": {
     "services": "HİZMETLERİMİZ",

@@ -434,19 +434,30 @@ function Footer() {
                         disabled={isSubmitting}
                         InputProps={{
                           endAdornment: (
-                            <InputAdornment position="end">
+                            <InputAdornment 
+                              position="end" 
+                              sx={{ 
+                                margin: 0, 
+                                marginLeft: '4px',
+                                marginRight: 0,
+                                padding: 0,
+                                height: '100%',
+                                maxHeight: 'none',
+                              }}
+                            >
                               <Button
                                 type="submit"
                                 size="small"
                                 variant="contained"
                                 disabled={isSubmitting || !newsletterEmail}
                                 sx={{
-                                  minWidth: '36px',
-                                  width: '36px',
-                                  height: '36px',
+                                  minWidth: '32px',
+                                  width: '32px',
+                                  height: '32px',
                                   p: 0,
+                                  m: 0,
                                   bgcolor: 'primary.main',
-                                  borderRadius: '8px',
+                                  borderRadius: '6px',
                                   '&:hover': {
                                     bgcolor: 'primary.dark',
                                   },
@@ -455,7 +466,7 @@ function Footer() {
                                   },
                                 }}
                               >
-                                <Send sx={{ fontSize: '18px' }} />
+                                <Send sx={{ fontSize: '16px' }} />
                               </Button>
                             </InputAdornment>
                           ),
@@ -466,6 +477,12 @@ function Footer() {
                             bgcolor: 'rgba(15, 23, 42, 0.5)',
                             color: 'white',
                             fontSize: '0.875rem',
+                            paddingRight: '4px',
+                            '& .MuiInputAdornment-root': {
+                              marginLeft: '4px',
+                              marginRight: 0,
+                              padding: 0,
+                            },
                             '& fieldset': {
                               borderColor: '#334155',
                             },
@@ -477,6 +494,7 @@ function Footer() {
                             },
                             '& input': {
                               py: 1,
+                              pr: '4px',
                               fontSize: '0.875rem',
                               '&::placeholder': {
                                 color: '#64748b',

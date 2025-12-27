@@ -36,7 +36,6 @@
 }
 
 html {
-  overflow-y: auto !important;
   overflow-x: hidden !important;
   height: 100%;
   -webkit-overflow-scrolling: touch;
@@ -51,24 +50,224 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   letter-spacing: -0.01em; /* Premium typography - tighter letter spacing */
-  overflow-y: auto !important;
   overflow-x: hidden !important;
-  height: auto;
+  height: 100%;
   min-height: 100%;
   position: relative;
 }
 
 #root {
   min-height: 100vh;
-  height: auto;
-  overflow-y: visible !important;
+  height: 100%;
+  overflow-y: auto !important;
   overflow-x: hidden !important;
   position: relative;
   display: block;
 }
 
+/* Ensure MUI Select dropdowns render above all content */
+.MuiPopover-root,
+.MuiMenu-root {
+  z-index: 1300 !important;
+}
+
+.MuiPaper-root.MuiMenu-paper,
+.MuiPopover-paper,
+.MuiMenu-paper,
+div[role="presentation"][class*="MuiPopover"],
+div[role="presentation"][class*="MuiMenu"] {
+  z-index: 1300 !important;
+  position: fixed !important;
+  max-height: 300px !important;
+  overflow-y: auto !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure MenuList is visible and clickable */
+.MuiMenu-list,
+.MuiMenu-list-root,
+.MuiMenu-paper .MuiList-root {
+  z-index: 1300 !important;
+  display: block !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure MenuItem is clickable */
+.MuiMenuItem-root {
+  pointer-events: auto !important;
+  z-index: 1301 !important;
+  position: relative !important;
+}
+
+/* Force Portal rendering - ensure menus are in body */
+body > div[role="presentation"].MuiPopover-root,
+body > div[role="presentation"].MuiMenu-root {
+  z-index: 1300 !important;
+  pointer-events: auto !important;
+}
+
+/* Select menu specific fixes */
+.MuiSelect-root[aria-expanded="true"] + * .MuiMenu-paper,
+.MuiSelect-root[aria-expanded="true"] ~ .MuiPopover-root .MuiMenu-paper {
+  z-index: 1300 !important;
+  display: block !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure backdrop doesn't block clicks */
+.MuiBackdrop-root {
+  pointer-events: auto !important;
+  z-index: 1299 !important;
+}
+
+/* Hide third-party chat widget (t-qd classes) */
+[class*="t-qd-"],
+[class*="qd-"],
+[id*="tidio"],
+[class*="tidio"],
+div[id^="menu-"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* High Contrast Mode - Accessibility Feature */
+body.high-contrast {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  filter: contrast(1.5);
+}
+
+body.high-contrast * {
+  background-color: transparent !important;
+  color: #FFFFFF !important;
+}
+
+body.high-contrast a,
+body.high-contrast button,
+body.high-contrast [role="button"] {
+  border: 2px solid #FFFFFF !important;
+  color: #FFFFFF !important;
+  background-color: #000000 !important;
+  text-decoration: underline !important;
+}
+
+body.high-contrast a:hover,
+body.high-contrast button:hover,
+body.high-contrast [role="button"]:hover {
+  background-color: #FFFFFF !important;
+  color: #000000 !important;
+  border-color: #FFFFFF !important;
+}
+
+body.high-contrast input,
+body.high-contrast textarea,
+body.high-contrast select {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  border: 2px solid #FFFFFF !important;
+}
+
+body.high-contrast input::placeholder,
+body.high-contrast textarea::placeholder {
+  color: #CCCCCC !important;
+}
+
+body.high-contrast .MuiPaper-root,
+body.high-contrast .MuiCard-root,
+body.high-contrast .MuiBox-root {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  border: 2px solid #FFFFFF !important;
+}
+
+body.high-contrast .MuiButton-root {
+  border: 2px solid #FFFFFF !important;
+  color: #FFFFFF !important;
+  background-color: #000000 !important;
+}
+
+body.high-contrast .MuiButton-root:hover {
+  background-color: #FFFFFF !important;
+  color: #000000 !important;
+}
+
+body.high-contrast .MuiTextField-root .MuiOutlinedInput-root {
+  border: 2px solid #FFFFFF !important;
+  color: #FFFFFF !important;
+}
+
+body.high-contrast .MuiTextField-root .MuiOutlinedInput-root fieldset {
+  border-color: #FFFFFF !important;
+  border-width: 2px !important;
+}
+
+body.high-contrast .MuiChip-root {
+  border: 2px solid #FFFFFF !important;
+  color: #FFFFFF !important;
+  background-color: #000000 !important;
+}
+
+body.high-contrast img {
+  filter: contrast(1.5) brightness(1.2);
+  border: 2px solid #FFFFFF !important;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* RainbowKit Modal Scroll Fix */
+/* Target all possible RainbowKit modal containers */
+div[role="dialog"],
+body > div[id^="rk"],
+body > div[class*="rk"] {
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* RainbowKit Modal Content - Target nested divs */
+div[role="dialog"] > div,
+div[role="dialog"] > div > div,
+div[role="dialog"] > div > div > div,
+div[role="dialog"] > div > div > div > div {
+  max-height: none !important;
+  overflow-y: visible !important;
+}
+
+/* RainbowKit Modal Scrollable Content */
+div[role="dialog"] section,
+div[role="dialog"] ul,
+div[role="dialog"] [role="listbox"],
+div[role="dialog"] [role="menu"],
+div[role="dialog"] article,
+div[role="dialog"] > div > div:last-child {
+  max-height: calc(90vh - 200px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* Ensure the dialog itself is scrollable */
+div[role="dialog"] {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+div[role="dialog"] > div:first-child {
+  flex-shrink: 0 !important;
+}
+
+div[role="dialog"] > div:last-child,
+div[role="dialog"] > div > div:last-child {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  min-height: 0 !important;
 }
 

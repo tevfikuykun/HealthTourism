@@ -5,7 +5,7 @@ import {
   Popover, List, ListItem, ListItemIcon, ListItemText,
   TextField, InputAdornment, Select, FormControl, Switch,
   FormControlLabel, Tooltip, LinearProgress, useScrollTrigger,
-  Slide,
+  Slide, Alert,
 } from '@mui/material';
 import {
   LocalHospital, Dashboard, Timeline, AccountBalanceWallet,
@@ -13,8 +13,12 @@ import {
   Translate, AccountBalance, CloudSync, CheckCircle, Warning,
   Sync, SyncDisabled, AccountTree, CurrencyExchange, Wallet,
   Web, Close, Menu as MenuIcon, FlightTakeoff, DirectionsCar,
+  SupervisorAccount, QrCode2, AccountTree as NetworkIcon,
+  PhotoLibrary, MenuBook, VideoLibrary, TravelExplore,
+  AutoAwesome, Psychology, Assessment, People, Article, Forum as ForumIcon,
+  Favorite, Badge as BadgeIcon,
 } from '@mui/icons-material';
-import { Search as SearchIcon, Bell, Wallet as WalletIcon, User, Menu as MenuIconLucide, X, Command, Cpu, Sparkles } from 'lucide-react';
+import { Search as SearchIcon, Bell, Wallet as WalletIcon, User, Menu as MenuIconLucide, X, Command, Cpu, Sparkles, AlertTriangle as EmergencyIcon, QrCode } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from '../../i18n';
@@ -51,10 +55,36 @@ const EnhancedHeader = () => {
   const [notificationAnchor, setNotificationAnchor] = useState(null);
   const [tenantMenuAnchor, setTenantMenuAnchor] = useState(null);
   const [travelMenuAnchor, setTravelMenuAnchor] = useState(null);
+  const [healthSolutionsMenuAnchor, setHealthSolutionsMenuAnchor] = useState(null);
+  const [logisticsMenuAnchor, setLogisticsMenuAnchor] = useState(null);
+  const [aiToolsMenuAnchor, setAiToolsMenuAnchor] = useState(null);
+  const [communityMenuAnchor, setCommunityMenuAnchor] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [translationEnabled, setTranslationEnabled] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [selectedTenant, setSelectedTenant] = useState(null);
+  const [selectedNetwork, setSelectedNetwork] = useState('polygon');
+  const [qrCodeAnchor, setQrCodeAnchor] = useState(null);
+  const [qrCodeData, setQrCodeData] = useState(null);
+
+  // Role-specific color schemes (for display only)
+  const roleColors = {
+    USER: {
+      bg: 'rgba(79, 70, 229, 0.1)',
+      color: '#4f46e5',
+      border: 'rgba(79, 70, 229, 0.2)',
+    },
+    DOCTOR: {
+      bg: 'rgba(16, 185, 129, 0.1)',
+      color: '#10b981',
+      border: 'rgba(16, 185, 129, 0.2)',
+    },
+    ADMIN: {
+      bg: 'rgba(244, 63, 94, 0.1)',
+      color: '#f43f5e',
+      border: 'rgba(244, 63, 94, 0.2)',
+    }
+  };
 
   // Blockchain status
   const { data: blockchainStatus } = useQuery({
@@ -105,6 +135,36 @@ const EnhancedHeader = () => {
     enabled: isAuthenticated,
   });
 
+  // Health ID QR Code - Only for Patients
+  const { data: healthWallet } = useQuery({
+    queryKey: ['health-wallet'],
+    queryFn: async () => {
+      try {
+        const response = await api.get('/health-wallet/me');
+        return response.data;
+      } catch (error) {
+        return null;
+      }
+    },
+    enabled: isAuthenticated && user?.role === 'USER',
+  });
+
+  useEffect(() => {
+    if (healthWallet?.qrCodeHash) {
+      // Generate QR code data URL from wallet hash
+      const qrData = `healthid://healthtourism.com/wallet/${healthWallet.qrCodeHash}`;
+      setQrCodeData(qrData);
+    } else if (user?.id) {
+      // Fallback: Use user ID if healthWallet is not available
+      const qrData = `healthid://healthtourism.com/user/${user.id}`;
+      setQrCodeData(qrData);
+    } else if (isAuthenticated && user?.role === 'USER') {
+      // Final fallback: Use email or a default identifier
+      const qrData = `healthid://healthtourism.com/user/${user.email || 'user'}`;
+      setQrCodeData(qrData);
+    }
+  }, [healthWallet, user, isAuthenticated]);
+
   // AI notifications
   const { data: aiNotifications } = useQuery({
     queryKey: ['ai-notifications'],
@@ -151,6 +211,32 @@ const EnhancedHeader = () => {
   const handleTenantMenuClose = () => setTenantMenuAnchor(null);
   const handleTravelMenuOpen = (event) => setTravelMenuAnchor(event.currentTarget);
   const handleTravelMenuClose = () => setTravelMenuAnchor(null);
+  const handleHealthSolutionsMenuOpen = (event) => setHealthSolutionsMenuAnchor(event.currentTarget);
+  const handleHealthSolutionsMenuClose = () => setHealthSolutionsMenuAnchor(null);
+  const handleLogisticsMenuOpen = (event) => setLogisticsMenuAnchor(event.currentTarget);
+  const handleLogisticsMenuClose = () => setLogisticsMenuAnchor(null);
+  const handleAiToolsMenuOpen = (event) => setAiToolsMenuAnchor(event.currentTarget);
+  const handleAiToolsMenuClose = () => setAiToolsMenuAnchor(null);
+  const handleCommunityMenuOpen = (event) => setCommunityMenuAnchor(event.currentTarget);
+  const handleCommunityMenuClose = () => setCommunityMenuAnchor(null);
+  const handleQrCodeOpen = (event) => {
+    setQrCodeAnchor(event.currentTarget);
+    // Ensure QR code data is set when opening popover
+    if (!qrCodeData) {
+      if (healthWallet?.qrCodeHash) {
+        const qrData = `healthid://healthtourism.com/wallet/${healthWallet.qrCodeHash}`;
+        setQrCodeData(qrData);
+      } else if (user?.id) {
+        const qrData = `healthid://healthtourism.com/user/${user.id}`;
+        setQrCodeData(qrData);
+      } else if (user?.email) {
+        const qrData = `healthid://healthtourism.com/user/${user.email}`;
+        setQrCodeData(qrData);
+      }
+    }
+  };
+  const handleQrCodeClose = () => setQrCodeAnchor(null);
+  const handleEmergencyClick = () => navigate('/emergency-help');
 
   const handleLogout = () => {
     logout();
@@ -190,15 +276,17 @@ const EnhancedHeader = () => {
           background: isScrolled 
             ? 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.98) 100%)'
             : 'transparent',
-          backdropFilter: isScrolled ? 'blur(20px) saturate(180%)' : 'none',
-          WebkitBackdropFilter: isScrolled ? 'blur(20px) saturate(180%)' : 'none',
+          backdropFilter: isScrolled ? 'blur(20px) saturate(150%)' : 'none',
+          WebkitBackdropFilter: isScrolled ? 'blur(20px) saturate(150%)' : 'none',
           borderBottom: isScrolled ? '1px solid rgba(0,0,0,0.08)' : 'none',
           boxShadow: isScrolled ? '0 4px 24px rgba(0,0,0,0.06)' : 'none',
           transition: 'all 0.3s ease',
+          overflow: 'visible',
+          zIndex: 1100,
         }}
       >
-        <Container maxWidth="xl">
-          <Toolbar disableGutters sx={{ py: { xs: 1.5, md: 2 }, minHeight: { xs: 64, md: 72 } }}>
+        <Container maxWidth="xl" sx={{ overflow: 'visible', position: 'relative' }}>
+          <Toolbar disableGutters sx={{ py: { xs: 1.5, md: 2 }, minHeight: { xs: 64, md: 72 }, overflow: 'visible', position: 'relative' }}>
             {/* LEFT: Brand Logo - Material-UI + Tailwind + Framer Motion */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -303,11 +391,11 @@ const EnhancedHeader = () => {
             <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: { xs: 1, md: 2 }, justifyContent: 'center' }}>
               {/* Desktop Navigation */}
               <Box sx={{ display: { xs: 'none', lg: 'flex' }, gap: 0.5, flexWrap: 'wrap' }}>
-                {/* Ana Sayfalar - Herkese Açık */}
+                {/* Sağlık Çözümleri Dropdown */}
                 <motion.div whileHover="hover" variants={hoverLift}>
                   <Button 
-                    component={RouterLink} 
-                    to="/hospitals"
+                    onClick={handleHealthSolutionsMenuOpen}
+                    endIcon={<LocalHospital />}
                     sx={{
                       px: 2,
                       py: 1,
@@ -315,8 +403,8 @@ const EnhancedHeader = () => {
                       textTransform: 'none',
                       fontWeight: 600,
                       fontSize: '0.875rem',
-                      color: location.pathname === '/hospitals' ? 'primary.main' : 'text.primary',
-                      bgcolor: location.pathname === '/hospitals' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
+                      color: ['/hospitals', '/doctors', '/packages'].some(path => location.pathname.startsWith(path)) ? 'primary.main' : 'text.primary',
+                      bgcolor: ['/hospitals', '/doctors', '/packages'].some(path => location.pathname.startsWith(path)) ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
                       transition: 'all 0.2s ease',
                       '&:hover': {
                         bgcolor: 'rgba(79, 70, 229, 0.08)',
@@ -324,86 +412,14 @@ const EnhancedHeader = () => {
                       }
                     }}
                   >
-                    {t('nav.hospitals', 'Hastaneler')}
+                    {t('nav.healthSolutions', 'Sağlık Çözümleri')}
                   </Button>
                 </motion.div>
                 
+                {/* Seyahat & Planlama Dropdown */}
                 <motion.div whileHover="hover" variants={hoverLift}>
                   <Button 
-                    component={RouterLink} 
-                    to="/doctors"
-                    sx={{
-                      px: 2,
-                      py: 1,
-                      borderRadius: 3,
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      fontSize: '0.875rem',
-                      color: location.pathname === '/doctors' ? 'primary.main' : 'text.primary',
-                      bgcolor: location.pathname === '/doctors' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        bgcolor: 'rgba(79, 70, 229, 0.08)',
-                        transform: 'translateY(-1px)',
-                      }
-                    }}
-                  >
-                    {t('nav.doctors', 'Doktorlar')}
-                  </Button>
-                </motion.div>
-                
-                <motion.div whileHover="hover" variants={hoverLift}>
-                  <Button 
-                    component={RouterLink} 
-                    to="/accommodations"
-                    sx={{
-                      px: 2,
-                      py: 1,
-                      borderRadius: 3,
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      fontSize: '0.875rem',
-                      color: location.pathname === '/accommodations' ? 'primary.main' : 'text.primary',
-                      bgcolor: location.pathname === '/accommodations' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        bgcolor: 'rgba(79, 70, 229, 0.08)',
-                        transform: 'translateY(-1px)',
-                      }
-                    }}
-                  >
-                    {t('nav.accommodations', 'Konaklama')}
-                  </Button>
-                </motion.div>
-                
-                <motion.div whileHover="hover" variants={hoverLift}>
-                  <Button 
-                    component={RouterLink} 
-                    to="/packages"
-                    sx={{
-                      px: 2,
-                      py: 1,
-                      borderRadius: 3,
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      fontSize: '0.875rem',
-                      color: location.pathname === '/packages' ? 'primary.main' : 'text.primary',
-                      bgcolor: location.pathname === '/packages' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        bgcolor: 'rgba(79, 70, 229, 0.08)',
-                        transform: 'translateY(-1px)',
-                      }
-                    }}
-                  >
-                    {t('nav.packages', 'Paketler')}
-                  </Button>
-                </motion.div>
-                
-                {/* Seyahat Dropdown */}
-                <motion.div whileHover="hover" variants={hoverLift}>
-                  <Button 
-                    onClick={handleTravelMenuOpen}
+                    onClick={handleLogisticsMenuOpen}
                     endIcon={<FlightTakeoff />}
                     sx={{
                       px: 2,
@@ -412,8 +428,8 @@ const EnhancedHeader = () => {
                       textTransform: 'none',
                       fontWeight: 600,
                       fontSize: '0.875rem',
-                      color: ['/flights', '/transfers', '/car-rentals'].some(path => location.pathname.startsWith(path)) ? 'primary.main' : 'text.primary',
-                      bgcolor: ['/flights', '/transfers', '/car-rentals'].some(path => location.pathname.startsWith(path)) ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
+                      color: ['/accommodations', '/flights', '/transfers', '/car-rentals', '/travel-planner', '/cultural-guide'].some(path => location.pathname.startsWith(path)) ? 'primary.main' : 'text.primary',
+                      bgcolor: ['/accommodations', '/flights', '/transfers', '/car-rentals', '/travel-planner', '/cultural-guide'].some(path => location.pathname.startsWith(path)) ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
                       transition: 'all 0.2s ease',
                       '&:hover': {
                         bgcolor: 'rgba(79, 70, 229, 0.08)',
@@ -421,158 +437,63 @@ const EnhancedHeader = () => {
                       }
                     }}
                   >
-                    {t('nav.travel', 'Seyahat')}
+                    {t('nav.logistics', 'Seyahat & Planlama')}
                   </Button>
                 </motion.div>
 
-                {/* Giriş Yapıldıktan Sonra Görünür Sayfalar */}
-                {isAuthenticated && (
-                  <>
-                    <motion.div whileHover="hover" variants={hoverLift}>
-                      <Button 
-                        component={RouterLink} 
-                        to="/dashboard"
-                        sx={{
-                          px: 2,
-                          py: 1,
-                          borderRadius: 3,
-                          textTransform: 'none',
-                          fontWeight: 600,
-                          fontSize: '0.875rem',
-                          color: location.pathname === '/dashboard' ? 'primary.main' : 'text.primary',
-                          bgcolor: location.pathname === '/dashboard' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
-                          transition: 'all 0.2s ease',
-                          '&:hover': {
-                            bgcolor: 'rgba(79, 70, 229, 0.08)',
-                            transform: 'translateY(-1px)',
-                          }
-                        }}
-                      >
-                        {t('nav.dashboard', 'Dashboard')}
-                      </Button>
-                    </motion.div>
-                    
-                    <motion.div whileHover="hover" variants={hoverLift}>
-                      <Button 
-                        component={RouterLink} 
-                        to="/patient-journey"
-                        sx={{
-                          px: 2,
-                          py: 1,
-                          borderRadius: 3,
-                          textTransform: 'none',
-                          fontWeight: 600,
-                          fontSize: '0.875rem',
-                          color: location.pathname === '/patient-journey' ? 'primary.main' : 'text.primary',
-                          bgcolor: location.pathname === '/patient-journey' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
-                          transition: 'all 0.2s ease',
-                          '&:hover': {
-                            bgcolor: 'rgba(79, 70, 229, 0.08)',
-                            transform: 'translateY(-1px)',
-                          }
-                        }}
-                      >
-                        {t('nav.journey', 'Yolculuk')}
-                      </Button>
-                    </motion.div>
-                    
-                    <motion.div whileHover="hover" variants={hoverLift}>
-                      <Button 
-                        component={RouterLink} 
-                        to="/health-wallet"
-                        sx={{
-                          px: 2,
-                          py: 1,
-                          borderRadius: 3,
-                          textTransform: 'none',
-                          fontWeight: 600,
-                          fontSize: '0.875rem',
-                          color: location.pathname === '/health-wallet' ? 'primary.main' : 'text.primary',
-                          bgcolor: location.pathname === '/health-wallet' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
-                          transition: 'all 0.2s ease',
-                          '&:hover': {
-                            bgcolor: 'rgba(79, 70, 229, 0.08)',
-                            transform: 'translateY(-1px)',
-                          }
-                        }}
-                      >
-                        {t('nav.wallet', 'Cüzdan')}
-                      </Button>
-                    </motion.div>
-                    
-                    <motion.div whileHover="hover" variants={hoverLift}>
-                      <Button 
-                        component={RouterLink} 
-                        to="/reservations"
-                        sx={{
-                          px: 2,
-                          py: 1,
-                          borderRadius: 3,
-                          textTransform: 'none',
-                          fontWeight: 600,
-                          fontSize: '0.875rem',
-                          color: location.pathname.startsWith('/reservations') ? 'primary.main' : 'text.primary',
-                          bgcolor: location.pathname.startsWith('/reservations') ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
-                          transition: 'all 0.2s ease',
-                          '&:hover': {
-                            bgcolor: 'rgba(79, 70, 229, 0.08)',
-                            transform: 'translateY(-1px)',
-                          }
-                        }}
-                      >
-                        {t('nav.reservations', 'Rezervasyonlar')}
-                      </Button>
-                    </motion.div>
-                    
-                    <motion.div whileHover="hover" variants={hoverLift}>
-                      <Button 
-                        component={RouterLink} 
-                        to="/digital-twin"
-                        sx={{
-                          px: 2,
-                          py: 1,
-                          borderRadius: 3,
-                          textTransform: 'none',
-                          fontWeight: 600,
-                          fontSize: '0.875rem',
-                          color: location.pathname === '/digital-twin' ? 'primary.main' : 'text.primary',
-                          bgcolor: location.pathname === '/digital-twin' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
-                          transition: 'all 0.2s ease',
-                          '&:hover': {
-                            bgcolor: 'rgba(79, 70, 229, 0.08)',
-                            transform: 'translateY(-1px)',
-                          }
-                        }}
-                      >
-                        {t('nav.digitalTwin', 'Dijital İkiz')}
-                      </Button>
-                    </motion.div>
-                    
-                    <motion.div whileHover="hover" variants={hoverLift}>
-                      <Button 
-                        component={RouterLink} 
-                        to="/favorites"
-                        sx={{
-                          px: 2,
-                          py: 1,
-                          borderRadius: 3,
-                          textTransform: 'none',
-                          fontWeight: 600,
-                          fontSize: '0.875rem',
-                          color: location.pathname === '/favorites' ? 'primary.main' : 'text.primary',
-                          bgcolor: location.pathname === '/favorites' ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
-                          transition: 'all 0.2s ease',
-                          '&:hover': {
-                            bgcolor: 'rgba(79, 70, 229, 0.08)',
-                            transform: 'translateY(-1px)',
-                          }
-                        }}
-                      >
-                        {t('nav.favorites', 'Favoriler')}
-                      </Button>
-                    </motion.div>
-                  </>
-                )}
+                {/* AI & Akıllı Araçlar Dropdown */}
+                <motion.div whileHover="hover" variants={hoverLift}>
+                  <Button 
+                    onClick={handleAiToolsMenuOpen}
+                    endIcon={<AutoAwesome />}
+                    sx={{
+                      px: 2,
+                      py: 1,
+                      borderRadius: 3,
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      fontSize: '0.875rem',
+                      color: ['/super-app', '/ai-health-companion', '/patient-risk-scoring', '/digital-twin'].some(path => location.pathname.startsWith(path)) ? 'primary.main' : 'text.primary',
+                      bgcolor: ['/super-app', '/ai-health-companion', '/patient-risk-scoring', '/digital-twin'].some(path => location.pathname.startsWith(path)) ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
+                      transition: 'all 0.2s ease',
+                      background: ['/super-app', '/ai-health-companion', '/patient-risk-scoring', '/digital-twin'].some(path => location.pathname.startsWith(path)) 
+                        ? 'linear-gradient(135deg, rgba(79, 70, 229, 0.12) 0%, rgba(124, 58, 237, 0.12) 100%)' 
+                        : 'transparent',
+                      '&:hover': {
+                        bgcolor: 'rgba(79, 70, 229, 0.08)',
+                        background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.12) 0%, rgba(124, 58, 237, 0.12) 100%)',
+                        transform: 'translateY(-1px)',
+                      }
+                    }}
+                  >
+                    AI & Akıllı Araçlar
+                  </Button>
+                </motion.div>
+
+                {/* Topluluk Dropdown */}
+                <motion.div whileHover="hover" variants={hoverLift}>
+                  <Button 
+                    onClick={handleCommunityMenuOpen}
+                    endIcon={<People />}
+                    sx={{
+                      px: 2,
+                      py: 1,
+                      borderRadius: 3,
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      fontSize: '0.875rem',
+                      color: ['/blog', '/forum', '/why-us'].some(path => location.pathname.startsWith(path)) ? 'primary.main' : 'text.primary',
+                      bgcolor: ['/blog', '/forum', '/why-us'].some(path => location.pathname.startsWith(path)) ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        bgcolor: 'rgba(79, 70, 229, 0.08)',
+                        transform: 'translateY(-1px)',
+                      }
+                    }}
+                  >
+                    Topluluk
+                  </Button>
+                </motion.div>
               </Box>
 
               {/* Global Search - Material-UI + Tailwind + Lucide-React */}
@@ -580,11 +501,34 @@ const EnhancedHeader = () => {
                 component="form" 
                 onSubmit={handleSearch} 
                 className="flex-1 max-w-md"
-                sx={{ flexGrow: 1, maxWidth: { xs: 200, md: 400 } }}
+                sx={{ 
+                  flexGrow: 1, 
+                  maxWidth: { xs: 200, md: 400 }, 
+                  position: 'relative',
+                  '&:hover .ai-shimmer': {
+                    opacity: 1,
+                  },
+                }}
               >
+                {/* AI Shimmer Effect */}
+                <Box
+                  className="ai-shimmer"
+                  sx={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'linear-gradient(90deg, rgba(79, 70, 229, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%)',
+                    borderRadius: 3,
+                    opacity: 0,
+                    transition: 'opacity 0.5s ease',
+                    pointerEvents: 'none',
+                    filter: 'blur(12px)',
+                    zIndex: 0,
+                  }}
+                />
                 <motion.div
                   whileFocus={{ scale: 1.02 }}
-                  className="relative group"
+                  className="relative"
+                  style={{ position: 'relative', zIndex: 1 }}
                 >
                   <TextField
                     fullWidth
@@ -637,15 +581,80 @@ const EnhancedHeader = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0, position: 'relative' }}>
               {isAuthenticated && (
                 <>
+                  {/* Emergency/SOS Button - Only for Patients */}
+                  {user?.role === 'USER' && (
+                    <Tooltip title={t('header.emergencyHelp', 'Acil Yardım')}>
+                      <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <IconButton
+                          onClick={handleEmergencyClick}
+                          size="small"
+                          sx={{
+                            bgcolor: 'error.main',
+                            color: 'white',
+                            borderRadius: 3,
+                            width: 40,
+                            height: 40,
+                            boxShadow: '0 4px 12px rgba(244, 67, 54, 0.4)',
+                            animation: 'pulse 2s infinite',
+                            '&:hover': {
+                              bgcolor: 'error.dark',
+                              boxShadow: '0 6px 16px rgba(244, 67, 54, 0.6)',
+                            },
+                          }}
+                        >
+                          <EmergencyIcon size={20} strokeWidth={2.5} />
+                        </IconButton>
+                      </motion.div>
+                    </Tooltip>
+                  )}
+
+                  {/* Network Switcher (Blockchain) */}
+                  <Tooltip title={t('header.switchNetwork', 'Blockchain Ağını Değiştir')}>
+                    <FormControl size="small" sx={{ minWidth: 100, display: { xs: 'none', md: 'block' } }}>
+                      <Select
+                        value={selectedNetwork}
+                        onChange={(e) => setSelectedNetwork(e.target.value)}
+                        className="rounded-xl"
+                        startAdornment={<NetworkIcon sx={{ fontSize: 16, mr: 0.5, color: 'text.secondary' }} />}
+                        sx={{ 
+                          height: 32,
+                          borderRadius: 3,
+                          fontSize: '0.75rem',
+                        }}
+                        MenuProps={{
+                          disablePortal: false,
+                          container: typeof document !== 'undefined' ? document.body : undefined,
+                          PaperProps: {
+                            style: {
+                              maxHeight: 300,
+                              zIndex: 1300,
+                            },
+                            sx: {
+                              zIndex: '1300 !important',
+                            },
+                          },
+                        }}
+                      >
+                        <MenuItem value="polygon">Polygon</MenuItem>
+                        <MenuItem value="ethereum">Ethereum</MenuItem>
+                        <MenuItem value="bsc">BSC</MenuItem>
+                        <MenuItem value="arbitrum">Arbitrum</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Tooltip>
+
                   {/* Blockchain Status */}
-                  <Tooltip title={blockchainStatus?.connected ? 'Polygon Mainnet - Connected' : 'Blockchain Disconnected'}>
+                  <Tooltip title={blockchainStatus?.connected ? `${selectedNetwork} Mainnet - Connected` : 'Blockchain Disconnected'}>
                     <motion.div
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
                     >
                       <Chip
                         icon={blockchainStatus?.connected ? <CheckCircle fontSize="small" /> : <Warning fontSize="small" />}
-                        label={blockchainStatus?.network || 'Polygon'}
+                        label={blockchainStatus?.network || selectedNetwork}
                         size="small"
                         color={blockchainStatus?.connected ? 'success' : 'error'}
                         className="hidden lg:flex rounded-xl font-bold"
@@ -729,6 +738,27 @@ const EnhancedHeader = () => {
                     </motion.div>
                   </Tooltip>
 
+                  {/* User Role Display (Read-only) */}
+                  {user?.role && (
+                    <Tooltip title={`Current role: ${user.role}`}>
+                      <Chip
+                        icon={<SupervisorAccount sx={{ fontSize: 14 }} />}
+                        label={user.role}
+                        size="small"
+                        sx={{
+                          height: 28,
+                          borderRadius: 3,
+                          fontWeight: 700,
+                          fontSize: '0.7rem',
+                          bgcolor: roleColors[user.role]?.bg || roleColors.USER.bg,
+                          color: roleColors[user.role]?.color || roleColors.USER.color,
+                          border: `1px solid ${roleColors[user.role]?.border || roleColors.USER.border}`,
+                          display: { xs: 'none', md: 'flex' },
+                        }}
+                      />
+                    </Tooltip>
+                  )}
+
                   {/* Currency Switcher */}
                   <FormControl size="small" sx={{ minWidth: 80, display: { xs: 'none', md: 'block' } }}>
                     <Select
@@ -739,6 +769,19 @@ const EnhancedHeader = () => {
                         height: 32,
                         borderRadius: 3,
                       }}
+                      MenuProps={{
+                        disablePortal: false,
+                        container: typeof document !== 'undefined' ? document.body : undefined,
+                        PaperProps: {
+                          style: {
+                            maxHeight: 300,
+                            zIndex: 1300,
+                          },
+                          sx: {
+                            zIndex: '1300 !important',
+                          },
+                        },
+                      }}
                     >
                       <MenuItem value="USD">USD</MenuItem>
                       <MenuItem value="EUR">EUR</MenuItem>
@@ -746,6 +789,33 @@ const EnhancedHeader = () => {
                       <MenuItem value="HT">HealthToken</MenuItem>
                     </Select>
                   </FormControl>
+
+                  {/* Health ID QR Code Button - Only for Patients */}
+                  {user?.role === 'USER' && (
+                    <Tooltip title={t('header.healthId', 'Health ID QR Kodu')}>
+                      <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <IconButton
+                          onClick={handleQrCodeOpen}
+                          size="small"
+                          sx={{
+                            bgcolor: 'rgba(79, 70, 229, 0.1)',
+                            color: 'primary.main',
+                            borderRadius: 3,
+                            width: 36,
+                            height: 36,
+                            '&:hover': {
+                              bgcolor: 'rgba(79, 70, 229, 0.2)',
+                            },
+                          }}
+                        >
+                          <QrCode2 sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </motion.div>
+                    </Tooltip>
+                  )}
 
                   {/* User Menu - Modern Avatar */}
                   <motion.div
@@ -785,8 +855,7 @@ const EnhancedHeader = () => {
               {!isAuthenticated && (
                 <>
                   <Button 
-                    component={RouterLink} 
-                    to="/login" 
+                    onClick={() => navigate('/login')}
                     variant="text"
                     size="small"
                     className="px-4 py-2 rounded-xl text-sm font-semibold hover:bg-gray-50"
@@ -799,6 +868,7 @@ const EnhancedHeader = () => {
                       fontSize: '0.875rem',
                       color: 'text.primary',
                       transition: 'all 0.2s ease',
+                      cursor: 'pointer',
                       '&:hover': {
                         bgcolor: 'rgba(0,0,0,0.04)',
                       }
@@ -807,8 +877,7 @@ const EnhancedHeader = () => {
                     {t('common.login', 'Giriş Yap')}
                   </Button>
                   <Button 
-                    component={RouterLink} 
-                    to="/register" 
+                    onClick={() => navigate('/register')}
                     variant="contained"
                     size="small"
                     className="px-6 py-2 rounded-xl text-sm font-bold shadow-lg hover:shadow-xl transition-all"
@@ -822,6 +891,7 @@ const EnhancedHeader = () => {
                       background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
                       boxShadow: '0 10px 25px rgba(79, 70, 229, 0.3)',
                       transition: 'all 0.3s ease',
+                      cursor: 'pointer',
                       '&:hover': {
                         transform: 'translateY(-2px)',
                         boxShadow: '0 15px 35px rgba(79, 70, 229, 0.4)',
@@ -870,46 +940,18 @@ const EnhancedHeader = () => {
             >
               <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {/* Herkese Açık Sayfalar */}
-                <Button component={RouterLink} to="/hospitals" fullWidth className="rounded-xl">
-                  {t('nav.hospitals', 'Hastaneler')}
+                <Button onClick={handleHealthSolutionsMenuOpen} fullWidth className="rounded-xl">
+                  {t('nav.healthSolutions', 'Sağlık Çözümleri')}
                 </Button>
-                <Button component={RouterLink} to="/doctors" fullWidth className="rounded-xl">
-                  {t('nav.doctors', 'Doktorlar')}
+                <Button onClick={handleLogisticsMenuOpen} fullWidth className="rounded-xl">
+                  Seyahat & Planlama
                 </Button>
-                <Button component={RouterLink} to="/accommodations" fullWidth className="rounded-xl">
-                  {t('nav.accommodations', 'Konaklama')}
+                <Button onClick={handleAiToolsMenuOpen} fullWidth className="rounded-xl">
+                  AI & Akıllı Araçlar
                 </Button>
-                <Button component={RouterLink} to="/packages" fullWidth className="rounded-xl">
-                  {t('nav.packages', 'Paketler')}
+                <Button onClick={handleCommunityMenuOpen} fullWidth className="rounded-xl">
+                  Topluluk
                 </Button>
-                <Button onClick={handleTravelMenuOpen} fullWidth className="rounded-xl">
-                  {t('nav.travel', 'Seyahat')}
-                </Button>
-                
-                {/* Giriş Yapıldıktan Sonra Görünür */}
-                {isAuthenticated && (
-                  <>
-                    <Divider sx={{ my: 1 }} />
-                    <Button component={RouterLink} to="/dashboard" fullWidth className="rounded-xl">
-                      {t('nav.dashboard', 'Dashboard')}
-                    </Button>
-                    <Button component={RouterLink} to="/patient-journey" fullWidth className="rounded-xl">
-                      {t('nav.journey', 'Yolculuk')}
-                    </Button>
-                    <Button component={RouterLink} to="/health-wallet" fullWidth className="rounded-xl">
-                      {t('nav.wallet', 'Cüzdan')}
-                    </Button>
-                    <Button component={RouterLink} to="/reservations" fullWidth className="rounded-xl">
-                      {t('nav.reservations', 'Rezervasyonlar')}
-                    </Button>
-                    <Button component={RouterLink} to="/digital-twin" fullWidth className="rounded-xl">
-                      {t('nav.digitalTwin', 'Dijital İkiz')}
-                    </Button>
-                    <Button component={RouterLink} to="/favorites" fullWidth className="rounded-xl">
-                      {t('nav.favorites', 'Favoriler')}
-                    </Button>
-                  </>
-                )}
               </Box>
             </motion.div>
           )}
@@ -1012,17 +1054,111 @@ const EnhancedHeader = () => {
           ))}
         </Menu>
 
-        {/* Travel Menu (Seyahat) */}
+        {/* Health Solutions Menu (Sağlık Çözümleri) */}
         <Menu
-          anchorEl={travelMenuAnchor}
-          open={Boolean(travelMenuAnchor)}
-          onClose={handleTravelMenuClose}
-          PaperProps={{ sx: { borderRadius: 3, mt: 1, minWidth: 200 } }}
+          anchorEl={healthSolutionsMenuAnchor}
+          open={Boolean(healthSolutionsMenuAnchor)}
+          onClose={handleHealthSolutionsMenuClose}
+          PaperProps={{ sx: { borderRadius: 3, mt: 1, minWidth: 240 } }}
         >
           <MenuItem
             component={RouterLink}
+            to="/hospitals"
+            onClick={handleHealthSolutionsMenuClose}
+            className="rounded-lg"
+            sx={{ borderRadius: 2, mb: 0.5 }}
+          >
+            <ListItemIcon>
+              <LocalHospital fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary={t('nav.hospitals', 'Hastaneler')} />
+          </MenuItem>
+          <MenuItem
+            component={RouterLink}
+            to="/doctors"
+            onClick={handleHealthSolutionsMenuClose}
+            className="rounded-lg"
+            sx={{ borderRadius: 2, mb: 0.5 }}
+          >
+            <ListItemIcon>
+              <LocalHospital fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary={t('nav.doctors', 'Doktorlar')} />
+          </MenuItem>
+          <MenuItem
+            component={RouterLink}
+            to="/packages"
+            onClick={handleHealthSolutionsMenuClose}
+            className="rounded-lg"
+            sx={{ borderRadius: 2, mb: 0.5 }}
+          >
+            <ListItemIcon>
+              <LocalHospital fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Sağlık Paketleri" />
+          </MenuItem>
+          <Divider sx={{ my: 0.5 }} />
+          <MenuItem
+            component={RouterLink}
+            to="/before-after"
+            onClick={handleHealthSolutionsMenuClose}
+            className="rounded-lg"
+            sx={{ borderRadius: 2, mb: 0.5 }}
+          >
+            <ListItemIcon>
+              <PhotoLibrary fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Before & After Galerisi" />
+          </MenuItem>
+          <MenuItem
+            component={RouterLink}
+            to="/treatment-guide"
+            onClick={handleHealthSolutionsMenuClose}
+            className="rounded-lg"
+            sx={{ borderRadius: 2, mb: 0.5 }}
+          >
+            <ListItemIcon>
+              <MenuBook fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Tedavi Rehberi" />
+          </MenuItem>
+          <MenuItem
+            component={RouterLink}
+            to="/virtual-tours"
+            onClick={handleHealthSolutionsMenuClose}
+            className="rounded-lg"
+            sx={{ borderRadius: 2 }}
+          >
+            <ListItemIcon>
+              <VideoLibrary fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Sanal Turlar" />
+          </MenuItem>
+        </Menu>
+
+        {/* Logistics Menu (Seyahat & Planlama) */}
+        <Menu
+          anchorEl={logisticsMenuAnchor}
+          open={Boolean(logisticsMenuAnchor)}
+          onClose={handleLogisticsMenuClose}
+          PaperProps={{ sx: { borderRadius: 3, mt: 1, minWidth: 240 } }}
+        >
+          <MenuItem
+            component={RouterLink}
+            to="/accommodations"
+            onClick={handleLogisticsMenuClose}
+            className="rounded-lg"
+            sx={{ borderRadius: 2, mb: 0.5 }}
+          >
+            <ListItemIcon>
+              <AccountBalance fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary={t('nav.accommodations', 'Konaklama')} />
+          </MenuItem>
+          <MenuItem
+            component={RouterLink}
             to="/flights"
-            onClick={handleTravelMenuClose}
+            onClick={handleLogisticsMenuClose}
             className="rounded-lg"
             sx={{ borderRadius: 2, mb: 0.5 }}
           >
@@ -1034,7 +1170,7 @@ const EnhancedHeader = () => {
           <MenuItem
             component={RouterLink}
             to="/transfers"
-            onClick={handleTravelMenuClose}
+            onClick={handleLogisticsMenuClose}
             className="rounded-lg"
             sx={{ borderRadius: 2, mb: 0.5 }}
           >
@@ -1046,14 +1182,217 @@ const EnhancedHeader = () => {
           <MenuItem
             component={RouterLink}
             to="/car-rentals"
-            onClick={handleTravelMenuClose}
+            onClick={handleLogisticsMenuClose}
             className="rounded-lg"
-            sx={{ borderRadius: 2 }}
+            sx={{ borderRadius: 2, mb: 0.5 }}
           >
             <ListItemIcon>
               <DirectionsCar fontSize="small" />
             </ListItemIcon>
             <ListItemText primary={t('nav.carRentals', 'Araç Kiralama')} />
+          </MenuItem>
+          <Divider sx={{ my: 0.5 }} />
+          <MenuItem
+            component={RouterLink}
+            to="/travel-planner"
+            onClick={handleLogisticsMenuClose}
+            className="rounded-lg"
+            sx={{ borderRadius: 2, mb: 0.5 }}
+          >
+            <ListItemIcon>
+              <TravelExplore fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Yolculuk Planlayıcı" />
+          </MenuItem>
+          <MenuItem
+            component={RouterLink}
+            to="/cultural-guide"
+            onClick={handleLogisticsMenuClose}
+            className="rounded-lg"
+            sx={{ borderRadius: 2 }}
+          >
+            <ListItemIcon>
+              <People fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Kültürel Rehber" />
+          </MenuItem>
+        </Menu>
+
+        {/* Health ID QR Code Popover */}
+        <Popover
+          open={Boolean(qrCodeAnchor)}
+          anchorEl={qrCodeAnchor}
+          onClose={handleQrCodeClose}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          PaperProps={{ 
+            sx: { 
+              borderRadius: 4,
+              p: 2.5,
+              minWidth: 300,
+              maxWidth: 320,
+              minHeight: 350,
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            } 
+          }}
+        >
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.75, fontSize: '1.1rem' }}>
+              {t('header.healthId', 'Health ID')}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 1.5, display: 'block', fontSize: '0.75rem', lineHeight: 1.3 }}>
+              {t('header.scanQRCode', 'Hastanede QR kodu okutarak blockchain verilerinizi paylaşın')}
+            </Typography>
+            <Box 
+              sx={{ 
+                bgcolor: 'white',
+                p: 1.5,
+                borderRadius: 2,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                mb: 1.5,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+              }}
+            >
+              {/* QR Code Image */}
+              {qrCodeData ? (
+                <>
+                  <Box
+                    component="img"
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrCodeData)}`}
+                    alt="Health ID QR Code"
+                    sx={{
+                      width: 150,
+                      height: 150,
+                      border: '4px solid white',
+                      borderRadius: 1.5,
+                    }}
+                  />
+                  {healthWallet?.qrCodeHash && (
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 0.75, textAlign: 'center', wordBreak: 'break-word', fontSize: '0.65rem', display: 'block' }}>
+                      {t('header.qrCodeHash', 'Hash:')} {healthWallet.qrCodeHash.substring(0, 16)}...
+                    </Typography>
+                  )}
+                </>
+              ) : (
+                <Box sx={{ width: 150, height: 150, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    {t('header.loadingQR', 'Yükleniyor...')}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+            <Button 
+              variant="outlined" 
+              size="small" 
+              onClick={() => { navigate('/health-wallet'); handleQrCodeClose(); }}
+              sx={{ mt: 0.5, fontSize: '0.75rem', py: 0.5, px: 1.5 }}
+            >
+              {t('header.viewFullWallet', 'Tam Cüzdanı Görüntüle')}
+            </Button>
+          </Box>
+        </Popover>
+
+        {/* AI & Akıllı Araçlar Menu */}
+        <Menu
+          anchorEl={aiToolsMenuAnchor}
+          open={Boolean(aiToolsMenuAnchor)}
+          onClose={handleAiToolsMenuClose}
+          PaperProps={{ sx: { borderRadius: 3, mt: 1, minWidth: 240 } }}
+        >
+          <MenuItem
+            component={RouterLink}
+            to="/super-app"
+            onClick={handleAiToolsMenuClose}
+            className="rounded-lg"
+            sx={{ borderRadius: 2, mb: 0.5 }}
+          >
+            <ListItemIcon>
+              <AutoAwesome fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Super-App" />
+          </MenuItem>
+          <MenuItem
+            component={RouterLink}
+            to="/ai-health-companion"
+            onClick={handleAiToolsMenuClose}
+            className="rounded-lg"
+            sx={{ borderRadius: 2, mb: 0.5 }}
+          >
+            <ListItemIcon>
+              <Psychology fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="AI Health Companion" />
+          </MenuItem>
+          <MenuItem
+            component={RouterLink}
+            to="/patient-risk-scoring"
+            onClick={handleAiToolsMenuClose}
+            className="rounded-lg"
+            sx={{ borderRadius: 2, mb: 0.5 }}
+          >
+            <ListItemIcon>
+              <Assessment fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Risk Skorlama" />
+          </MenuItem>
+          <MenuItem
+            component={RouterLink}
+            to="/digital-twin"
+            onClick={handleAiToolsMenuClose}
+            className="rounded-lg"
+            sx={{ borderRadius: 2 }}
+          >
+            <ListItemIcon>
+              <AccountTree fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Dijital İkiz" />
+          </MenuItem>
+        </Menu>
+
+        {/* Topluluk Menu */}
+        <Menu
+          anchorEl={communityMenuAnchor}
+          open={Boolean(communityMenuAnchor)}
+          onClose={handleCommunityMenuClose}
+          PaperProps={{ sx: { borderRadius: 3, mt: 1, minWidth: 200 } }}
+        >
+          <MenuItem
+            component={RouterLink}
+            to="/blog"
+            onClick={handleCommunityMenuClose}
+            className="rounded-lg"
+            sx={{ borderRadius: 2, mb: 0.5 }}
+          >
+            <ListItemIcon>
+              <Article fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Blog" />
+          </MenuItem>
+          <MenuItem
+            component={RouterLink}
+            to="/forum"
+            onClick={handleCommunityMenuClose}
+            className="rounded-lg"
+            sx={{ borderRadius: 2, mb: 0.5 }}
+          >
+            <ListItemIcon>
+              <ForumIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Forum" />
+          </MenuItem>
+          <MenuItem
+            component={RouterLink}
+            to="/why-us"
+            onClick={handleCommunityMenuClose}
+            className="rounded-lg"
+            sx={{ borderRadius: 2 }}
+          >
+            <ListItemIcon>
+              <People fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Neden Biz?" />
           </MenuItem>
         </Menu>
 
@@ -1062,24 +1401,64 @@ const EnhancedHeader = () => {
           anchorEl={userMenuAnchor}
           open={Boolean(userMenuAnchor)}
           onClose={handleUserMenuClose}
-          PaperProps={{ sx: { borderRadius: 3, mt: 1, minWidth: 200 } }}
+          PaperProps={{ sx: { borderRadius: 3, mt: 1, minWidth: 240 } }}
         >
           <MenuItem onClick={() => { navigate('/dashboard'); handleUserMenuClose(); }} className="rounded-lg" sx={{ borderRadius: 2, mb: 0.5 }}>
-            <Dashboard sx={{ mr: 1 }} fontSize="small" />
-            {t('dashboard', 'Dashboard')}
+            <ListItemIcon>
+              <Dashboard fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary={t('dashboard', 'Dashboard')} />
           </MenuItem>
+          <MenuItem onClick={() => { navigate('/patient-journey'); handleUserMenuClose(); }} className="rounded-lg" sx={{ borderRadius: 2, mb: 0.5 }}>
+            <ListItemIcon>
+              <Timeline fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary={t('nav.journey', 'Yolculuk')} />
+          </MenuItem>
+          <Divider sx={{ my: 0.5 }} />
+          <MenuItem onClick={() => { navigate('/health-wallet'); handleUserMenuClose(); }} className="rounded-lg" sx={{ borderRadius: 2, mb: 0.5 }}>
+            <ListItemIcon>
+              <AccountBalanceWallet fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary={t('nav.wallet', 'Sağlık Cüzdanı')} />
+          </MenuItem>
+          <MenuItem onClick={() => { navigate('/medical-passport'); handleUserMenuClose(); }} className="rounded-lg" sx={{ borderRadius: 2, mb: 0.5 }}>
+            <ListItemIcon>
+              <BadgeIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Medikal Pasaport" />
+          </MenuItem>
+          <MenuItem onClick={() => { navigate('/favorites'); handleUserMenuClose(); }} className="rounded-lg" sx={{ borderRadius: 2, mb: 0.5 }}>
+            <ListItemIcon>
+              <Favorite fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary={t('common.favorites', 'Favoriler')} />
+          </MenuItem>
+          <MenuItem onClick={() => { navigate('/reservations'); handleUserMenuClose(); }} className="rounded-lg" sx={{ borderRadius: 2, mb: 0.5 }}>
+            <ListItemIcon>
+              <Timeline fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary={t('nav.reservations', 'Rezervasyonlar')} />
+          </MenuItem>
+          <Divider sx={{ my: 0.5 }} />
           <MenuItem onClick={() => { navigate('/profile'); handleUserMenuClose(); }} className="rounded-lg" sx={{ borderRadius: 2, mb: 0.5 }}>
-            <Person sx={{ mr: 1 }} fontSize="small" />
-            {t('profile', 'Profil')}
+            <ListItemIcon>
+              <Person fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary={t('profile', 'Profil')} />
           </MenuItem>
           <MenuItem onClick={() => { navigate('/settings'); handleUserMenuClose(); }} className="rounded-lg" sx={{ borderRadius: 2, mb: 0.5 }}>
-            <Settings sx={{ mr: 1 }} fontSize="small" />
-            {t('settings', 'Ayarlar')}
+            <ListItemIcon>
+              <Settings fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary={t('settings', 'Ayarlar')} />
           </MenuItem>
-          <Divider />
+          <Divider sx={{ my: 0.5 }} />
           <MenuItem onClick={handleLogout} className="rounded-lg text-red-600" sx={{ borderRadius: 2, color: 'error.main' }}>
-            <Logout sx={{ mr: 1 }} fontSize="small" />
-            {t('logout', 'Çıkış Yap')}
+            <ListItemIcon>
+              <Logout fontSize="small" sx={{ color: 'error.main' }} />
+            </ListItemIcon>
+            <ListItemText primary={t('logout', 'Çıkış Yap')} />
           </MenuItem>
         </Menu>
 
@@ -1089,6 +1468,16 @@ const EnhancedHeader = () => {
             @keyframes spin {
               from { transform: rotate(0deg); }
               to { transform: rotate(360deg); }
+            }
+            @keyframes pulse {
+              0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+              }
+              50% {
+                opacity: 0.8;
+                transform: scale(1.05);
+              }
             }
           `}
         </style>

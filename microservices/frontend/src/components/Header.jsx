@@ -1,11 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Bell, Wallet, User, Menu, X, Command, Cpu, Globe, Zap } from 'lucide-react';
+import { Search, Bell, Wallet, User, Menu, X, Command, Cpu, Globe, Zap, ChevronDown } from 'lucide-react';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [role, setRole] = useState('Patient'); 
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isRoleMenuOpen, setIsRoleMenuOpen] = useState(false);
+  const roleMenuRef = useRef(null);
+
+  // Role-specific color schemes
+  const roleColors = {
+    Patient: 'text-indigo-600 bg-indigo-50 border-indigo-100',
+    Doctor: 'text-emerald-600 bg-emerald-50 border-emerald-100',
+    Admin: 'text-rose-600 bg-rose-50 border-rose-100'
+  };
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -13,10 +22,21 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Close role menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (roleMenuRef.current && !roleMenuRef.current.contains(event.target)) {
+        setIsRoleMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <nav className={`fixed top-0 w-full z-[100] transition-all duration-500 ${
       isScrolled 
-        ? 'bg-white/60 backdrop-blur-2xl border-b border-white/20 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.05)]' 
+        ? 'bg-white/60 backdrop-blur-2xl saturate-150 border-b border-white/20 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.05)]' 
         : 'bg-transparent py-6'
     }`}>
       <div className="max-w-[1440px] mx-auto px-8 flex items-center justify-between">
@@ -59,7 +79,9 @@ const Header = () => {
         {/* Orta Kısım: AI Search (Daha Akıllı Görünüm) */}
         <div className="hidden md:flex flex-1 max-w-md mx-12">
           <div className={`relative w-full group transition-all duration-300 ${isSearchFocused ? 'scale-105' : ''}`}>
-            <div className={`absolute inset-y-0 left-4 flex items-center transition-colors ${isSearchFocused ? 'text-indigo-600' : 'text-slate-400'}`}>
+            {/* AI Shimmer Effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-violet-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl pointer-events-none" />
+            <div className={`absolute inset-y-0 left-4 flex items-center transition-colors z-10 ${isSearchFocused ? 'text-indigo-600' : 'text-slate-400'}`}>
               <Search size={18} strokeWidth={2.5} />
             </div>
             <input 
@@ -67,9 +89,9 @@ const Header = () => {
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
               placeholder="GraphRAG asistanına danışın..." 
-              className="w-full pl-12 pr-16 py-3 bg-slate-100/50 border-none focus:bg-white focus:ring-4 focus:ring-indigo-50 rounded-2xl text-sm transition-all outline-none font-medium text-slate-700"
+              className="relative w-full pl-12 pr-16 py-3 bg-slate-100/50 border-none focus:bg-white focus:ring-4 focus:ring-indigo-50 rounded-2xl text-sm transition-all outline-none font-medium text-slate-700 z-10"
             />
-            <div className="absolute right-3 inset-y-0 flex items-center gap-1">
+            <div className="absolute right-3 inset-y-0 flex items-center gap-1 z-10">
               <kbd className="hidden sm:flex items-center px-2 py-1 text-[10px] font-bold text-slate-400 bg-white border border-slate-200 rounded-lg shadow-sm">
                 <Command size={10} className="mr-1" /> K
               </kbd>
@@ -96,11 +118,63 @@ const Header = () => {
             <span className="absolute top-2.5 right-2.5 h-2.5 w-2.5 bg-indigo-600 border-2 border-white rounded-full"></span>
           </button>
 
+          {/* Dynamic Role Switcher (Quick Toggle) */}
+          <div className="relative" ref={roleMenuRef}>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsRoleMenuOpen(!isRoleMenuOpen)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl border-2 transition-all shadow-sm ${
+                roleColors[role] || roleColors.Patient
+              } hover:shadow-lg font-bold`}
+            >
+              <User size={14} />
+              <span className="text-xs font-black uppercase tracking-tight hidden sm:inline">{role}</span>
+              <ChevronDown 
+                size={14} 
+                className={`transition-transform duration-200 ${isRoleMenuOpen ? 'rotate-180' : ''}`}
+              />
+            </motion.button>
+
+            <AnimatePresence>
+              {isRoleMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute right-0 top-full mt-2 w-40 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-50"
+                >
+                  {Object.keys(roleColors).map((roleOption) => (
+                    <button
+                      key={roleOption}
+                      onClick={() => {
+                        setRole(roleOption);
+                        setIsRoleMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 text-sm font-bold transition-all hover:bg-slate-50 ${
+                        role === roleOption
+                          ? roleColors[roleOption]
+                          : 'text-slate-600'
+                      }`}
+                    >
+                      {roleOption}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           {/* Profil */}
           <div className="flex items-center gap-3 ml-2 group cursor-pointer">
             <div className="text-right hidden xl:block">
               <p className="text-sm font-black text-slate-800 leading-none group-hover:text-indigo-600 transition-colors">Semanur Uykun</p>
-              <span className="text-[10px] font-black text-indigo-500 uppercase tracking-tighter bg-indigo-50 px-1.5 rounded mt-1 inline-block">Pro {role}</span>
+              <span className={`text-[10px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded mt-1 inline-block border ${
+                roleColors[role] || roleColors.Patient
+              }`}>
+                Pro {role}
+              </span>
             </div>
             <div className="relative">
               <div className="h-11 w-11 rounded-2xl bg-indigo-100 border-2 border-white shadow-md overflow-hidden group-hover:ring-4 ring-indigo-50 transition-all">

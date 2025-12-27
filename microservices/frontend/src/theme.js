@@ -347,27 +347,47 @@ const getTheme = (mode = 'light') => {
           },
         },
       },
-      // CssBaseline - Fix scroll issues
-      MuiCssBaseline: {
+      // MUI Menu - Fix dropdown z-index
+      MuiMenu: {
         styleOverrides: {
-          html: {
-            overflowY: 'scroll !important',
-            overflowX: 'hidden !important',
-            height: '100%',
-            WebkitOverflowScrolling: 'touch',
+          paper: {
+            zIndex: '1300 !important',
           },
-          body: {
-            overflowY: 'scroll !important',
-            overflowX: 'hidden !important',
-            height: '100%',
-            position: 'relative',
+        },
+        defaultProps: {
+          MenuListProps: {
+            sx: {
+              maxHeight: 300,
+            },
           },
-          '#root': {
-            minHeight: '100%',
-            height: 'auto',
-            overflowY: 'visible !important',
-            overflowX: 'hidden !important',
-            position: 'relative',
+        },
+      },
+      // MUI Popover - Fix dropdown z-index
+      MuiPopover: {
+        styleOverrides: {
+          paper: {
+            zIndex: '1300 !important',
+          },
+        },
+      },
+      // MUI Select - Default MenuProps for all Select components
+      MuiSelect: {
+        defaultProps: {
+          MenuProps: {
+            disablePortal: false,
+            container: typeof window !== 'undefined' ? document.body : undefined,
+            PaperProps: {
+              style: {
+                maxHeight: 300,
+                zIndex: 1300,
+              },
+              sx: {
+                zIndex: '1300 !important',
+              },
+            },
+            sx: {
+              zIndex: 1300,
+            },
           },
         },
       },

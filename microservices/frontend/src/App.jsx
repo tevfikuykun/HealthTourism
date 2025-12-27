@@ -36,6 +36,7 @@ const LazyHospitals = lazy(() => import('./pages/Hospitals.jsx'));
 const LazyDoctors = lazy(() => import('./pages/Doctors.jsx'));
 const LazyHospitalDetail = lazy(() => import('./pages/HospitalDetail.jsx'));
 const LazyDoctorDetail = lazy(() => import('./pages/DoctorDetail.jsx'));
+const LazyConnectWallet = lazy(() => import('./pages/ConnectWallet.jsx'));
 const LazyAccommodations = lazy(() => import('./pages/Accommodations.jsx'));
 const LazyFlights = lazy(() => import('./pages/Flights.jsx'));
 const LazyCarRentals = lazy(() => import('./pages/CarRentals.jsx'));
@@ -300,8 +301,7 @@ function AppContent() {
                       display: 'flex', 
                       flexDirection: 'column', 
                       minHeight: '100vh',
-                      height: 'auto',
-                      overflowY: 'visible',
+                      height: '100%',
                       overflowX: 'hidden',
                       position: 'relative'
                     }}>
@@ -310,7 +310,6 @@ function AppContent() {
 
                         <Box component="main" sx={{ 
                           flexGrow: 1, 
-                          overflowY: 'visible',
                           overflowX: 'hidden', 
                           width: '100%',
                           minHeight: 'calc(100vh - 72px)',
@@ -343,6 +342,7 @@ function AppContent() {
                                     <Route path="/dashboard" element={renderSuspense(LazyDashboard)} />
                                     <Route path="/profile" element={renderSuspense(LazyProfile)} />
                                     <Route path="/settings" element={renderSuspense(LazySettings)} />
+                                    <Route path="/connect-wallet" element={renderSuspense(LazyConnectWallet)} />
                                     <Route path="/post-treatment-care" element={renderSuspense(LazyPostTreatmentCare)} />
                                     <Route path="/virtual-tours" element={renderSuspense(LazyVirtualTours)} />
                                     <Route path="/influencer-management" element={renderSuspense(LazyInfluencerManagement)} />

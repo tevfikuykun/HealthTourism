@@ -1,5 +1,5 @@
 // src/pages/Settings.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Box,
@@ -30,6 +30,9 @@ import {
   Palette as PaletteIcon,
   Delete as DeleteIcon,
   Save as SaveIcon,
+  SupervisorAccount as SupervisorAccountIcon,
+  Person as PersonIcon,
+  LocalHospital as LocalHospitalIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -38,6 +41,7 @@ import Loading from '../components/Loading';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import i18n from '../i18n';
+import api, { userService } from '../services/api';
 
 export default function Settings() {
   const { t } = useTranslation();
@@ -46,7 +50,7 @@ export default function Settings() {
   const queryClient = useQueryClient();
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
-  const [settings, setSettings] = useState({
+  const [settings, setSettings] = useState(() => ({
     language: i18n.language || 'tr',
     theme: localStorage.getItem('theme') || 'light',
     emailNotifications: true,
@@ -55,7 +59,37 @@ export default function Settings() {
     marketingEmails: false,
     twoFactorAuth: false,
     biometricAuth: false,
+    role: user?.role || 'USER',
+  }));
+
+  const updateRoleMutation = useMutation({
+    mutationFn: async (newRole) => {
+      return await userService.updateProfile({ role: newRole });
+    },
+    onSuccess: (data) => {
+      // Update local user object
+      const updatedUser = { ...user, role: settings.role };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      queryClient.invalidateQueries(['user', 'profile']);
+      setSnackbar({ open: true, message: t('roleUpdated', 'Rol başarıyla güncellendi'), severity: 'success' });
+      // Refresh page to update header
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    },
+    onError: (error) => {
+      setSnackbar({ open: true, message: error?.response?.data?.message || t('roleUpdateError', 'Rol güncellenirken bir hata oluştu'), severity: 'error' });
+      // Reset to original role on error
+      setSettings(prev => ({ ...prev, role: user?.role || 'USER' }));
+    },
   });
+
+  // Update role in settings when user changes
+  useEffect(() => {
+    if (user?.role) {
+      setSettings(prev => ({ ...prev, role: user.role }));
+    }
+  }, [user?.role]);
 
   if (!isAuthenticated) {
     return (
@@ -238,6 +272,52 @@ export default function Settings() {
               >
                 {t('advancedSettings', 'Gelişmiş Ayarlar')}
               </Button>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Hesap Bilgileri */}
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <SupervisorAccountIcon sx={{ mr: 1, color: 'primary.main' }} />
+                <Typography variant="h6">{t('accountInfo', 'Hesap Bilgileri')}</Typography>
+              </Box>
+              <Divider sx={{ mb: 2 }} />
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>{t('role', 'Rol')}</InputLabel>
+                <Select
+                  value={settings.role}
+                  onChange={(e) => {
+                    const newRole = e.target.value;
+                    setSettings({ ...settings, role: newRole });
+                    if (window.confirm(t('confirmRoleChange', `Rolünüzü ${newRole === 'USER' ? 'Kullanıcı' : newRole === 'DOCTOR' ? 'Doktor' : 'Admin'} olarak değiştirmek istediğinizden emin misiniz?`))) {
+                      updateRoleMutation.mutate(newRole);
+                    } else {
+                      setSettings({ ...settings, role: user?.role || 'USER' });
+                    }
+                  }}
+                  label={t('role', 'Rol')}
+                  disabled={updateRoleMutation.isLoading}
+                >
+                  <MenuItem value="USER">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <PersonIcon fontSize="small" />
+                      <Typography>{t('rolePatient', 'Hasta')}</Typography>
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="DOCTOR">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <LocalHospitalIcon fontSize="small" />
+                      <Typography>{t('roleDoctor', 'Doktor')}</Typography>
+                    </Box>
+                  </MenuItem>
+                </Select>
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                  {t('roleChangeDescription', 'Not: Rol değişikliği sistemdeki yetkilerinizi etkiler. Doktor rolü için ek doğrulama gerekebilir.')}
+                </Typography>
+              </FormControl>
             </CardContent>
           </Card>
         </Grid>
