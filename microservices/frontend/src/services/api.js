@@ -62,10 +62,13 @@ const showThrottledToast = (message, errorCode, config = {}) => {
       activeToasts.delete(toastId);
     }, autoCloseTime + 100); // Add small buffer
     
-    // For network errors, show as warning instead of error (less intrusive)
-    if (errorCode === 'NETWORK_ERROR') {
+    // Determine toast type based on error code or config
+    const toastType = config.type || (errorCode === 'NETWORK_ERROR' || errorCode === 'RATE_LIMIT' ? 'warning' : 'error');
+    
+    // For network errors and rate limits, show as warning (less intrusive)
+    if (toastType === 'warning') {
       toast.warning(message, {
-        autoClose: 3000,
+        autoClose: autoCloseTime,
         hideProgressBar: false,
         toastId, // Use toastId to prevent duplicates
         onClose: () => {
@@ -101,10 +104,14 @@ export const api = axios.create({
   timeout: 30000,
 });
 
-// Request interceptor - Auth token ekleme
+// Request interceptor - Auth token ekleme ve otomatik refresh
 api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
+  async (config) => {
+    // Get token from localStorage
+    let token = localStorage.getItem('token');
+    
+    // If no token, try to get from refresh token (optional - implement if needed)
+    // For now, just use the token if available
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -150,14 +157,34 @@ api.interceptors.response.use(
       }
     }
     
+    // 401 Unauthorized - Redirect to login
     if (appError.statusCode === 401) {
       localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
+      // Clear query cache before redirect
+      if (window.queryClient) {
+        window.queryClient.clear();
+      }
       window.location.href = '/login';
       return Promise.reject(appError);
     }
     
-    // Only show toast for non-401, non-500, and non-503 errors
+    // 429 Rate Limit - Show friendly message
+    if (appError.statusCode === 429) {
+      showThrottledToast(
+        'Sakin ol şampiyon! Çok fazla istek gönderiyorsun. Biraz bekleyip tekrar dene.',
+        'RATE_LIMIT',
+        { 
+          toastId: 'rate-limit-error',
+          autoClose: 5000,
+          type: 'warning'
+        }
+      );
+      return Promise.reject(appError);
+    }
+    
+    // Only show toast for non-401, non-429, non-500, and non-503 errors
     // 500/503 errors are backend issues - completely disable toasts for these
     // Network errors are throttled and shown as warnings
     // Skip toast for 500/503 errors entirely - backend is down, user can't fix it
@@ -166,7 +193,7 @@ api.interceptors.response.use(
       return Promise.reject(appError);
     }
     
-    if (appError.statusCode !== 401 && appError.statusCode !== 500 && appError.statusCode !== 503) {
+    if (appError.statusCode !== 401 && appError.statusCode !== 429 && appError.statusCode !== 500 && appError.statusCode !== 503) {
       // For network errors, only show if backend was previously reachable
       // This prevents spam when backend is completely down
       if (appError.code === 'NETWORK_ERROR') {
@@ -334,6 +361,36 @@ export const reservationService = {
   getById: (id) => api.get(`/reservations/${id}`),
   update: (id, reservation) => api.put(`/reservations/${id}`, reservation),
   cancel: (id) => api.delete(`/reservations/${id}`),
+  // Availability & Conflict Check
+  checkAvailability: (doctorId, hospitalId, date, time) => 
+    api.get('/reservations/check-availability', { 
+      params: { doctorId, hospitalId, date, time } 
+    }),
+  checkConflict: (reservationData) => 
+    api.post('/reservations/check-conflict', reservationData),
+  getAvailableSlots: (doctorId, hospitalId, date) => 
+    api.get('/reservations/available-slots', { 
+      params: { doctorId, hospitalId, date } 
+    }),
+};
+
+// Calendar Service (for availability calendar)
+export const calendarService = {
+  getAppointments: (params) => api.get('/calendar/appointments', { params }),
+  checkConflict: (appointment) => api.post('/calendar/check-conflict', appointment),
+  getUpcoming: () => api.get('/calendar/upcoming'),
+};
+
+// Additional Services
+export const visaService = {
+  checkRequirements: (country, nationality) => 
+    api.get('/visa/requirements', { params: { country, nationality } }),
+  apply: (data) => api.post('/visa/apply', data),
+};
+
+export const translationService = {
+  getLanguages: () => api.get('/translation/languages'),
+  request: (data) => api.post('/translation/request', data),
 };
 
 export const quoteService = {

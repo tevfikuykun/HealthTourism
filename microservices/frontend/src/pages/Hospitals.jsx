@@ -98,6 +98,9 @@ const HospitalCard = ({ hospital }) => {
 };
 // --- BİLEŞEN SONU: HospitalCard ---
 
+// Export HospitalCard for use in other components
+export { HospitalCard };
+
 
 function Hospitals() {
     const { t } = useTranslation();

@@ -12,6 +12,7 @@ import { initAnalytics } from './utils/analytics';
 import { requestNotificationPermission } from './utils/pushNotifications';
 import { initSentry } from './utils/sentry';
 import { initCurrency } from './utils/currency';
+import { setupNetworkMonitor } from './utils/networkErrorHandler';
 import i18n from './i18n'; // Initialize i18n
 import './index.css';
 import './styles/print.css';
@@ -24,6 +25,9 @@ initAnalytics();
 
 // Initialize currency service
 initCurrency();
+
+// Setup network error monitoring (ERR_NETWORK_CHANGED handling)
+setupNetworkMonitor();
 
 // Request notification permission
 requestNotificationPermission();

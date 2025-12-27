@@ -13,6 +13,7 @@ import com.example.HealthTourism.repository.HospitalRepository;
 import com.example.HealthTourism.repository.TravelPackageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -53,9 +54,11 @@ public class TravelPackageService {
     /**
      * Gets all active travel packages.
      * Performance: Uses JOIN FETCH to prevent N+1 queries.
+     * Cache: Results are cached for 10 minutes to reduce database load.
      * 
      * @return List of active packages with all details
      */
+    @Cacheable(value = "packages", key = "'all-active'")
     public List<TravelPackageDTO> getAllActivePackages() {
         log.debug("Fetching all active travel packages");
         return travelPackageRepository.findAllActiveWithDetails()
