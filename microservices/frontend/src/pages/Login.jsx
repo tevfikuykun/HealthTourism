@@ -124,25 +124,36 @@ export default function Login() {
         console.log('Response data (stringified):', JSON.stringify(responseData, null, 2));
         
         // Try different possible error message fields
+        let rawMessage = '';
         if (responseData.message) {
-          errorMessage = responseData.message;
-          console.log('Found message in responseData.message:', errorMessage);
+          rawMessage = responseData.message;
+          console.log('Found message in responseData.message:', rawMessage);
         } else if (responseData.error) {
-          errorMessage = responseData.error;
-          console.log('Found message in responseData.error:', errorMessage);
+          rawMessage = responseData.error;
+          console.log('Found message in responseData.error:', rawMessage);
         } else if (responseData.errorMessage) {
-          errorMessage = responseData.errorMessage;
-          console.log('Found message in responseData.errorMessage:', errorMessage);
+          rawMessage = responseData.errorMessage;
+          console.log('Found message in responseData.errorMessage:', rawMessage);
         } else if (Array.isArray(responseData.errors) && responseData.errors.length > 0) {
-          errorMessage = responseData.errors.map(e => e.defaultMessage || e.message || e).join(', ');
-          console.log('Found message in responseData.errors:', errorMessage);
+          rawMessage = responseData.errors.map(e => e.defaultMessage || e.message || e).join(', ');
+          console.log('Found message in responseData.errors:', rawMessage);
         } else if (typeof responseData === 'string') {
-          errorMessage = responseData;
-          console.log('Response data is string:', errorMessage);
+          rawMessage = responseData;
+          console.log('Response data is string:', rawMessage);
         } else {
           // If no message found, show the full response for debugging
-          errorMessage = `Geçersiz istek. Detaylar: ${JSON.stringify(responseData)}`;
-          console.log('No message found, using full response:', errorMessage);
+          rawMessage = `Geçersiz istek. Detaylar: ${JSON.stringify(responseData)}`;
+          console.log('No message found, using full response:', rawMessage);
+        }
+        
+        // Skip email verification error - don't show it to user
+        if (rawMessage && (rawMessage.toLowerCase().includes('email not verified') || 
+            rawMessage.toLowerCase().includes('verify your email') ||
+            rawMessage.toLowerCase().includes('email doğrulanmamış'))) {
+          // Silently ignore email verification errors - allow login to proceed
+          errorMessage = 'Geçersiz e-posta veya şifre';
+        } else {
+          errorMessage = rawMessage;
         }
       }
       // Priority 2: Check if it's an AppError instance (from api.js interceptor)

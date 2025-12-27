@@ -636,12 +636,13 @@ function Home() {
                             >
                                 {t('home.partnerHospitals', 'Partner Hastanelerimiz')}
                             </Typography>
-                            <Grid container spacing={2.5} justifyContent="center">
+                            <Grid container spacing={2.5} justifyContent="center" sx={{ alignItems: 'stretch' }}>
                                 {['Acıbadem', 'Memorial', 'Liv Hospital', 'Medical Park', 'Anadolu Sağlık', 'Amerikan Hastanesi'].map((name, idx) => (
-                                    <Grid item xs={6} sm={4} md={2} key={idx}>
+                                    <Grid item xs={6} sm={4} md={2} key={idx} sx={{ display: 'flex' }}>
                                         <motion.div
                                             whileHover={{ y: -8, scale: 1.02 }}
                                             transition={{ duration: 0.2 }}
+                                            style={{ width: '100%', height: '100%' }}
                                         >
                                             <Paper
                                                 elevation={0}
@@ -655,6 +656,7 @@ function Home() {
                                                         : 'white',
                                                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                                     cursor: 'pointer',
+                                                    width: '100%',
                                                     height: '100%',
                                                     display: 'flex',
                                                     flexDirection: 'column',

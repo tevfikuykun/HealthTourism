@@ -10,6 +10,10 @@ import {
   Alert,
   InputAdornment,
   IconButton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -22,6 +26,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import PhoneIcon from '@mui/icons-material/Phone';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
+import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import Loading from '../components/Loading';
 import { useTranslation } from '../i18n';
 
@@ -67,6 +73,10 @@ const registerSchema = yup.object().shape({
     .string()
     .oneOf([yup.ref('password'), null], 'Şifreler eşleşmiyor')
     .required('Şifre tekrarı gereklidir'),
+  role: yup
+    .string()
+    .oneOf(['USER', 'DOCTOR'], 'Geçerli bir rol seçin')
+    .required('Rol seçimi gereklidir'),
 });
 
 export default function Register() {
@@ -80,13 +90,28 @@ export default function Register() {
   const formRef = useRef(null);
   const alertRef = useRef(null);
 
+  // Debug: Check if component is rendering
+  useEffect(() => {
+    console.log('Register component mounted');
+    return () => console.log('Register component unmounted');
+  }, []);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
+    watch,
   } = useForm({
     resolver: yupResolver(registerSchema),
+    defaultValues: {
+      role: 'USER',
+      country: 'Türkiye',
+    },
   });
+
+  const selectedRole = watch('role');
+  const selectedCountry = watch('country');
 
   // Scroll to alert when error or success message appears
   useEffect(() => {
@@ -108,9 +133,9 @@ export default function Register() {
 
       const { confirmPassword, ...registerData } = data;
       
-      // Ensure country is set (default to Turkey if not provided)
-      if (!registerData.country || registerData.country.trim() === '') {
-        registerData.country = 'Türkiye';
+      // Ensure country is set (trim whitespace)
+      if (registerData.country) {
+        registerData.country = registerData.country.trim();
       }
       
       const response = await authService.register(registerData);
@@ -257,8 +282,11 @@ export default function Register() {
     return <Loading message="Kayıt yapılıyor..." fullScreen />;
   }
 
+  // Debug: Log before render
+  console.log('Register page rendering...', { isLoading, error, success });
+
   return (
-    <Container maxWidth="sm" sx={{ py: 4, minHeight: 'auto' }}>
+    <Container maxWidth="sm" sx={{ py: 4, minHeight: 'auto', overflow: 'visible', position: 'relative' }}>
       <Box
         sx={{
           minHeight: '80vh',
@@ -267,6 +295,7 @@ export default function Register() {
           justifyContent: 'center',
           py: 4,
           position: 'relative',
+          overflow: 'visible',
         }}
       >
         <Paper
@@ -275,6 +304,9 @@ export default function Register() {
           sx={{
             p: 4,
             width: '100%',
+            position: 'relative',
+            overflow: 'visible',
+            zIndex: 1,
           }}
         >
           <Typography variant="h4" component="h1" gutterBottom align="center">
@@ -367,16 +399,98 @@ export default function Register() {
               }}
             />
 
-            <TextField
-              {...register('country')}
-              fullWidth
-              label={t('country', 'Ülke')}
-              error={!!errors.country}
-              helperText={errors.country?.message}
-              sx={{ mb: 2 }}
-              placeholder="Türkiye"
-              defaultValue="Türkiye"
-            />
+            <FormControl fullWidth sx={{ mb: 2 }} error={!!errors.country}>
+              <InputLabel>{t('country', 'Ülke')}</InputLabel>
+              <Select
+                value={selectedCountry || ''}
+                onChange={(e) => setValue('country', e.target.value, { shouldValidate: true })}
+                label={t('country', 'Ülke')}
+                MenuProps={{
+                  disablePortal: false,
+                  container: typeof document !== 'undefined' ? document.body : undefined,
+                  PaperProps: {
+                    style: {
+                      maxHeight: 300,
+                      zIndex: 1300,
+                    },
+                    sx: {
+                      zIndex: '1300 !important',
+                    },
+                  },
+                }}
+              >
+                <MenuItem value="">{t('selectCountry', 'Ülke Seçiniz')}</MenuItem>
+                <MenuItem value="Türkiye">Türkiye</MenuItem>
+                <MenuItem value="Almanya">Almanya</MenuItem>
+                <MenuItem value="İngiltere">İngiltere</MenuItem>
+                <MenuItem value="Fransa">Fransa</MenuItem>
+                <MenuItem value="İtalya">İtalya</MenuItem>
+                <MenuItem value="İspanya">İspanya</MenuItem>
+                <MenuItem value="Hollanda">Hollanda</MenuItem>
+                <MenuItem value="Belçika">Belçika</MenuItem>
+                <MenuItem value="İsviçre">İsviçre</MenuItem>
+                <MenuItem value="Avusturya">Avusturya</MenuItem>
+                <MenuItem value="ABD">ABD</MenuItem>
+                <MenuItem value="Kanada">Kanada</MenuItem>
+                <MenuItem value="Avustralya">Avustralya</MenuItem>
+                <MenuItem value="Japonya">Japonya</MenuItem>
+                <MenuItem value="Çin">Çin</MenuItem>
+                <MenuItem value="Rusya">Rusya</MenuItem>
+                <MenuItem value="Birleşik Arap Emirlikleri">Birleşik Arap Emirlikleri</MenuItem>
+                <MenuItem value="Suudi Arabistan">Suudi Arabistan</MenuItem>
+                <MenuItem value="Güney Kore">Güney Kore</MenuItem>
+                <MenuItem value="Brezilya">Brezilya</MenuItem>
+                <MenuItem value="Arjantin">Arjantin</MenuItem>
+                <MenuItem value="Meksika">Meksika</MenuItem>
+                <MenuItem value="Güney Afrika">Güney Afrika</MenuItem>
+                <MenuItem value="Mısır">Mısır</MenuItem>
+                <MenuItem value="Yunanistan">Yunanistan</MenuItem>
+                <MenuItem value="İsveç">İsveç</MenuItem>
+                <MenuItem value="Norveç">Norveç</MenuItem>
+                <MenuItem value="Danimarka">Danimarka</MenuItem>
+                <MenuItem value="Finlandiya">Finlandiya</MenuItem>
+                <MenuItem value="Polonya">Polonya</MenuItem>
+              </Select>
+              {errors.country && (
+                <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
+                  {errors.country.message}
+                </Typography>
+              )}
+            </FormControl>
+
+            <FormControl fullWidth sx={{ mb: 2 }} error={!!errors.role}>
+              <InputLabel>{t('role', 'Rol')}</InputLabel>
+              <Select
+                value={selectedRole || 'USER'}
+                onChange={(e) => setValue('role', e.target.value, { shouldValidate: true })}
+                label={t('role', 'Rol')}
+                MenuProps={{
+                  disablePortal: false,
+                  container: typeof document !== 'undefined' ? document.body : undefined,
+                  PaperProps: {
+                    style: {
+                      maxHeight: 300,
+                      zIndex: 1300,
+                    },
+                    sx: {
+                      zIndex: '1300 !important',
+                    },
+                  },
+                }}
+              >
+                <MenuItem value="USER">
+                  {t('rolePatient', 'Hasta')}
+                </MenuItem>
+                <MenuItem value="DOCTOR">
+                  {t('roleDoctor', 'Doktor')}
+                </MenuItem>
+              </Select>
+              {errors.role && (
+                <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
+                  {errors.role.message}
+                </Typography>
+              )}
+            </FormControl>
 
             <TextField
               {...register('password')}

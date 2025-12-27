@@ -86,8 +86,8 @@ public class AuthService {
         user.setRole(request.getRole() != null ? request.getRole() : "USER");
         user.setIsActive(true);
         
-        // Production: Email verification required (default: false)
-        user.setEmailVerified(false); // Changed from true - production ready
+        // Email verification temporarily disabled
+        user.setEmailVerified(true); // Temporarily set to true - will re-enable later
         
         // Generate email verification token
         String verificationToken = UUID.randomUUID().toString();
@@ -159,10 +159,10 @@ public class AuthService {
             throw new AuthException(AuthErrorCode.ACCOUNT_INACTIVE);
         }
         
-        // Check if email is verified (production requirement)
-        if (!user.getEmailVerified()) {
-            throw new AuthException(AuthErrorCode.EMAIL_NOT_VERIFIED);
-        }
+        // Email verification check temporarily disabled - will re-enable later
+        // if (!user.getEmailVerified()) {
+        //     throw new AuthException(AuthErrorCode.EMAIL_NOT_VERIFIED);
+        // }
         
         // Clear failed login attempts on successful login
         rateLimitService.clearLoginAttempts(clientIp);

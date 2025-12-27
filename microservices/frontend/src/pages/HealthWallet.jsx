@@ -17,14 +17,16 @@ import { blockchainWalletService, healthWalletService, smartInsuranceService } f
 import { useAuth } from '../hooks/useAuth';
 import { fadeInUp, staggerContainer, staggerItem, hoverLift, scaleIn } from '../utils/ui-helpers';
 // RainbowKit & Wagmi for Web3 Wallet Connection
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount, useBalance, useChainId, useDisconnect } from 'wagmi';
-import { formatEther } from 'viem';
+import { formatEther, isAddress, getAddress } from 'viem';
 import { toast } from 'react-toastify';
+import { normalizeAddress } from '../utils/walletSecurity';
+import { useNavigate } from 'react-router-dom';
 
 const HealthWallet = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [tabValue, setTabValue] = useState(0);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
@@ -39,13 +41,20 @@ const HealthWallet = () => {
   const chainId = useChainId();
   const { disconnect } = useDisconnect();
 
-  // Copy wallet address to clipboard
+  // Copy wallet address to clipboard (with security: normalize to checksum format)
   const copyAddress = () => {
-    if (address) {
-      navigator.clipboard.writeText(address);
-      setCopiedAddress(true);
-      toast.success(t('wallet.addressCopied', 'Cüzdan adresi kopyalandı'));
-      setTimeout(() => setCopiedAddress(false), 2000);
+    if (address && isAddress(address)) {
+      try {
+        // Security: Normalize to checksum format to prevent phishing
+        const normalizedAddress = normalizeAddress(address);
+        navigator.clipboard.writeText(normalizedAddress);
+        setCopiedAddress(true);
+        toast.success(t('wallet.addressCopied', 'Cüzdan adresi kopyalandı'));
+        setTimeout(() => setCopiedAddress(false), 2000);
+      } catch (error) {
+        console.error('Address normalization error:', error);
+        toast.error(t('wallet.addressError', 'Adres formatı geçersiz'));
+      }
     }
   };
 
@@ -182,34 +191,33 @@ const HealthWallet = () => {
                 </motion.div>
               )}
 
-              {/* RainbowKit Connect Button */}
-              <Box
-                sx={{
-                  '& button': {
-                    borderRadius: '12px !important',
+              {/* Connect Wallet Button - Redirects to Connect Wallet Page */}
+              {!isConnected ? (
+                <Button
+                  variant="contained"
+                  onClick={() => navigate('/connect-wallet')}
+                  sx={{
+                    borderRadius: '12px',
                     fontWeight: 700,
                     textTransform: 'none',
                     backdropFilter: 'blur(20px) saturate(180%)',
                     WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                    backgroundColor: 'rgba(79, 70, 229, 0.15) !important',
-                    border: '1px solid rgba(79, 70, 229, 0.3) !important',
-                    boxShadow: '0 8px 32px rgba(79, 70, 229, 0.2) !important',
+                    backgroundColor: '#4F46E5',
+                    border: '1px solid #4F46E5',
+                    boxShadow: '0 8px 32px rgba(79, 70, 229, 0.4)',
+                    color: '#FFFFFF',
                     '&:hover': {
-                      backgroundColor: 'rgba(79, 70, 229, 0.25) !important',
-                      boxShadow: '0 12px 40px rgba(79, 70, 229, 0.3) !important',
+                      backgroundColor: '#4338CA',
+                      borderColor: '#4338CA',
+                      boxShadow: '0 12px 40px rgba(79, 70, 229, 0.5)',
+                      color: '#FFFFFF',
                     },
-                  },
-                }}
-              >
-                <ConnectButton 
-                  chainStatus="icon"
-                  showBalance={true}
-                  accountStatus={{
-                    smallScreen: 'avatar',
-                    largeScreen: 'full',
                   }}
-                />
-              </Box>
+                  startIcon={<Wallet size={20} style={{ color: '#FFFFFF' }} />}
+                >
+                  {t('wallet.connect', 'Cüzdan Bağla')}
+                </Button>
+              ) : null}
 
               {/* Connected Wallet Info */}
               {isConnected && address && (

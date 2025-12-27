@@ -106,7 +106,7 @@ const SmartSearch = ({ variant = 'hero' }) => {
             flexDirection: { xs: 'column', md: 'row' },
             gap: { xs: 2, md: 0 },
             alignItems: 'stretch',
-            overflow: 'hidden',
+            overflow: 'visible',
             position: 'relative',
             '&::before': {
               content: '""',
@@ -177,6 +177,19 @@ const SmartSearch = ({ variant = 'hero' }) => {
                     boxSizing: 'border-box',
                     display: 'flex',
                     alignItems: 'center',
+                  },
+                }}
+                MenuProps={{
+                  disablePortal: false,
+                  container: typeof document !== 'undefined' ? document.body : undefined,
+                  PaperProps: {
+                    style: {
+                      maxHeight: 300,
+                      zIndex: 1300,
+                    },
+                    sx: {
+                      zIndex: '1300 !important',
+                    },
                   },
                 }}
                 renderValue={(selected) => {
@@ -272,6 +285,19 @@ const SmartSearch = ({ variant = 'hero' }) => {
                     boxSizing: 'border-box',
                     display: 'flex',
                     alignItems: 'center',
+                  },
+                }}
+                MenuProps={{
+                  disablePortal: false,
+                  container: typeof document !== 'undefined' ? document.body : undefined,
+                  PaperProps: {
+                    style: {
+                      maxHeight: 300,
+                      zIndex: 1300,
+                    },
+                    sx: {
+                      zIndex: '1300 !important',
+                    },
                   },
                 }}
                 renderValue={(selected) => {
@@ -429,6 +455,19 @@ const SmartSearch = ({ variant = 'hero' }) => {
           value={treatmentType}
           onChange={(e) => setTreatmentType(e.target.value)}
           displayEmpty
+          MenuProps={{
+            disablePortal: false,
+            container: typeof document !== 'undefined' ? document.body : undefined,
+            PaperProps: {
+              style: {
+                maxHeight: 300,
+                zIndex: 1300,
+              },
+              sx: {
+                zIndex: '1300 !important',
+              },
+            },
+          }}
         >
           <MenuItem value="">{t('smartSearch.allTreatments', 'Tüm Tedaviler')}</MenuItem>
           {treatmentTypes.map((type) => (
