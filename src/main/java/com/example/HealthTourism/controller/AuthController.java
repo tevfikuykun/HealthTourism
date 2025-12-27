@@ -12,55 +12,51 @@ import org.springframework.web.bind.annotation.*;
 /**
  * Authentication Controller
  * Handles login and registration endpoints
+ * 
+ * Error handling is delegated to GlobalExceptionHandler:
+ * - EmailAlreadyExistsException -> 409 CONFLICT
+ * - InvalidCredentialsException -> 401 UNAUTHORIZED
+ * - MethodArgumentNotValidException -> 400 BAD_REQUEST (validation errors)
  */
 @RestController
-@RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class AuthController {
     
     private final AuthService authService;
     
     /**
      * Register a new user
-     * POST /api/auth/register
+     * POST /api/v1/auth/register
      */
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
-        try {
-            AuthResponse response = authService.register(request);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+        AuthResponse response = authService.register(request);
+        return ResponseEntity.ok(response);
     }
     
     /**
      * Login user
-     * POST /api/auth/login
+     * POST /api/v1/auth/login
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-        try {
-            AuthResponse response = authService.login(request);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        AuthResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
     }
     
     /**
      * Validate JWT token
-     * POST /api/auth/validate
+     * POST /api/v1/auth/validate
+     * 
+     * Note: In production, JWT validation is typically handled by Security Filter Chain,
+     * but this endpoint is useful for client-side validation or microservice communication.
      */
     @PostMapping("/validate")
-    public ResponseEntity<?> validateToken(@RequestParam String token) {
-        try {
-            Boolean isValid = authService.validateToken(token);
-            return ResponseEntity.ok(isValid);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(false);
-        }
+    public ResponseEntity<Boolean> validateToken(@RequestParam String token) {
+        Boolean isValid = authService.validateToken(token);
+        return ResponseEntity.ok(isValid);
     }
 }
 

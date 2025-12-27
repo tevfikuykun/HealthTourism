@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -79,6 +80,56 @@ public class FlightBookingService {
         return flightBookingRepository.findByDepartureCityAndArrivalCityAndIsAvailableTrue(departureCity, arrivalCity)
                 .stream()
                 .filter(f -> f.getDepartureDateTime().isAfter(now)) // Business rule: only future flights
+                .filter(f -> f.getAvailableSeats() > 0) // Business rule: must have available seats
+                .sorted(Comparator
+                        .comparing(FlightBooking::getIsDirectFlight, Comparator.reverseOrder()) // Direct flights first
+                        .thenComparing(FlightBooking::getDepartureDateTime)) // Then by departure time
+                .map(flightBookingMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Searches flights by departure and arrival cities with optional departure date.
+     * Business Logic:
+     * - Filters out past flights
+     * - Filters by departure date if provided
+     * - Prioritizes direct flights (health tourism preference)
+     * - Only shows flights with available seats
+     * 
+     * Critical for health tourism: Patients usually search by date to match their treatment appointments.
+     * 
+     * @param departureCity Departure city
+     * @param arrivalCity Arrival city
+     * @param departureDate Optional departure date (filters flights on this specific date)
+     * @return List of matching flights (direct flights first, then by departure time)
+     */
+    public List<FlightBookingDTO> searchFlights(String departureCity, String arrivalCity, LocalDate departureDate) {
+        log.debug("Searching flights from {} to {} on date {}", departureCity, arrivalCity, departureDate);
+        
+        // Business logic validation
+        if (departureCity == null || departureCity.trim().isEmpty()) {
+            throw new IllegalArgumentException("Departure city cannot be null or empty");
+        }
+        if (arrivalCity == null || arrivalCity.trim().isEmpty()) {
+            throw new IllegalArgumentException("Arrival city cannot be null or empty");
+        }
+        if (departureDate == null) {
+            throw new IllegalArgumentException("Departure date cannot be null");
+        }
+        if (departureDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Departure date cannot be in the past");
+        }
+        
+        LocalDateTime startOfDay = departureDate.atStartOfDay();
+        LocalDateTime endOfDay = departureDate.atTime(23, 59, 59);
+        
+        return flightBookingRepository.findByDepartureCityAndArrivalCityAndIsAvailableTrue(departureCity, arrivalCity)
+                .stream()
+                .filter(f -> {
+                    LocalDateTime departureDateTime = f.getDepartureDateTime();
+                    // Filter flights on the specific date
+                    return !departureDateTime.isBefore(startOfDay) && !departureDateTime.isAfter(endOfDay);
+                })
                 .filter(f -> f.getAvailableSeats() > 0) // Business rule: must have available seats
                 .sorted(Comparator
                         .comparing(FlightBooking::getIsDirectFlight, Comparator.reverseOrder()) // Direct flights first

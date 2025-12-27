@@ -8,6 +8,7 @@ import { Box, CssBaseline, ThemeProvider, Typography, CircularProgress } from '@
 import { Provider } from 'react-redux'; 
 import store from './store'; 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useTranslation } from './i18n';
 import i18n from './i18n'; 
 
@@ -136,11 +137,28 @@ const LazySecurityCenter = lazy(() => import('./pages/SecurityCenter.jsx'));
 const LazyPatientJourney = lazy(() => import('./pages/PatientJourney.jsx'));
 const LazyDigitalTwin = lazy(() => import('./pages/DigitalTwin.jsx'));
 
-// React Query Client with optimized retry settings
+// React Query Client with SWR (Stale-While-Revalidate) Strategy
+// Backend'de Redis ile sağladığımız hızı, frontend'de SWR stratejisiyle destekliyoruz
+// Kullanıcı geri tuşuna bastığında sayfa anında yüklenecek (cache'den)
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Reduce retries for network errors to prevent spam
+      // SWR Strategy: Veri stale olsa bile önce cache'den göster, arka planda revalidate et
+      staleTime: 5 * 60 * 1000, // 5 dakika - Veri bu süre boyunca "fresh" kabul edilir
+      gcTime: 10 * 60 * 1000, // 10 dakika (v5'te cacheTime yerine gcTime) - Cache bu süre boyunca tutulur
+      
+      // SWR'nin temel özelliği: Pencereye focus olduğunda arka planda revalidate
+      // Kullanıcı başka sekmeye geçip geri döndüğünde veri güncellenir
+      refetchOnWindowFocus: true,
+      
+      // İnternet bağlantısı geldiğinde revalidate
+      refetchOnReconnect: true,
+      
+      // Mount olduğunda refetch yapma, cache'den göster (SWR stratejisi)
+      // Eğer veri stale ise arka planda revalidate edilir
+      refetchOnMount: false,
+      
+      // Retry stratejisi - Network hatalarında retry yapma
       retry: (failureCount, error) => {
         // Don't retry on network errors (0 status code)
         if (error?.code === 'NETWORK_ERROR' || error?.statusCode === 0) {
@@ -150,12 +168,6 @@ const queryClient = new QueryClient({
         return failureCount < 1;
       },
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      // Disable refetch on window focus to reduce unnecessary requests
-      refetchOnWindowFocus: false,
-      // Disable refetch on reconnect to prevent spam
-      refetchOnReconnect: false,
-      // Stale time to reduce unnecessary refetches
-      staleTime: 5 * 60 * 1000, // 5 minutes
     },
     mutations: {
       // Don't retry mutations on network errors
@@ -168,6 +180,11 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// QueryClient'ı global olarak erişilebilir yap (interceptor'larda kullanmak için)
+if (typeof window !== 'undefined') {
+  window.queryClient = queryClient;
+}
 
 const routeMap = {
     '/': LazyHome,
@@ -464,6 +481,8 @@ function AppContent() {
                     </RainbowKitProvider>
                 </WagmiProvider>
             </Provider>
+    {/* React Query DevTools - Sadece development modunda görünür */}
+    {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
         </QueryClientProvider>
     );
 }

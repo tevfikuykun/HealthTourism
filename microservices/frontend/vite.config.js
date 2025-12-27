@@ -47,10 +47,29 @@ export default defineConfig({
   ],
   server: {
     port: 3000,
+    host: true, // Allow external connections
+    strictPort: false, // Try next available port if 3000 is busy
+    hmr: {
+      // HMR (Hot Module Replacement) ayarları
+      protocol: 'ws',
+      host: 'localhost',
+      port: 3000,
+      clientPort: 3000,
+      // Network değişikliklerinde otomatik reconnect
+      overlay: true,
+    },
+    watch: {
+      // File system watcher ayarları
+      usePolling: false,
+      interval: 100,
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:8080',
-        changeOrigin: true
+        changeOrigin: true,
+        secure: false,
+        // WebSocket proxy için
+        ws: true,
       }
     }
   },

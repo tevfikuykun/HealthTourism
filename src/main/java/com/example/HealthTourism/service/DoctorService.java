@@ -10,6 +10,7 @@ import com.example.HealthTourism.repository.HospitalRepository;
 import com.example.HealthTourism.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,10 +46,12 @@ public class DoctorService {
     /**
      * Gets all doctors for a hospital.
      * Performance: Uses JOIN FETCH to prevent N+1 query problem when accessing hospital data.
+     * Cache: Results are cached for 5 minutes to reduce database load.
      * 
      * @param hospitalId Hospital ID
      * @return List of doctors
      */
+    @Cacheable(value = "doctors", key = "'hospital-' + #hospitalId")
     public List<DoctorDTO> getDoctorsByHospital(Long hospitalId) {
         log.debug("Fetching doctors for hospital ID: {}", hospitalId);
         
